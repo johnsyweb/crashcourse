@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { parseString } from 'xml2js';
 
 const FileUpload = () => {
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
+  const [, setGpsPoints] = useState<number[][]>([]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -10,8 +12,18 @@ const FileUpload = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        console.log('File content:', e.target?.result);
-        // Process the GPX file content here
+        const fileContent = e.target?.result as string;
+        parseString(fileContent, (err, result) => {
+          if (err) {
+            console.error('Error parsing GPX file:', err);
+          } else {
+            const points = result?.gpx?.trk?.[0]?.trkseg?.[0]?.trkpt?.map((pt: { $: { lat: string; lon: string } }) => [
+              parseFloat(pt.$.lat),
+              parseFloat(pt.$.lon),
+            ]) || [];
+            setGpsPoints(points);
+          }
+        });
       };
       reader.readAsText(selectedFile);
     }
