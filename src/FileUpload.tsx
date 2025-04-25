@@ -39,27 +39,27 @@ const FileUpload = () => {
   }, [gpsPoints]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('handleFileChange triggered');
-    if (event.target.files && event.target.files.length > 0) {
-      const selectedFile = event.target.files[0];
-      console.log('File selected:', selectedFile.name);
-      setFile(selectedFile);
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        console.log('File read successfully');
-        const fileContent = e.target?.result as string;
-        console.log('Raw file content:', fileContent);
-        try {
-          const points = await loadGpsPoints(fileContent);
-          console.log('Parsed GPS Points:', points);
-          setGpsPoints(points);
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      reader.readAsText(selectedFile);
-    }
+    console.log('File selected:', file.name);
+    setFile(file);
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const fileContent = e.target?.result as string;
+      if (!fileContent) return;
+
+      console.log('Raw file content:', fileContent);
+      try {
+        const points = await loadGpsPoints(fileContent);
+        console.log('Parsed GPS Points:', points);
+        setGpsPoints(points);
+      } catch (error) {
+        console.error('Error parsing GPS points:', error);
+      }
+    };
+    reader.readAsText(file);
   };
 
   const startSimulation = () => {
