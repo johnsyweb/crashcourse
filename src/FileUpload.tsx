@@ -83,13 +83,13 @@ const FileUpload = () => {
           />
           {gpsPoints.length > 0 && (
             <>
-              <Polyline positions={gpsPoints} color="blue" />
+              <Polyline positions={gpsPoints} color="orange" />
               {gpsPoints.map((point, index) => (
                 <CircleMarker
                   key={index}
                   center={point}
-                  radius={5}
-                  pathOptions={{ color: 'orange', fillColor: 'orange', fillOpacity: 1 }}
+                  radius={1}
+                  // pathOptions={{ color: 'purple', fillColor: 'orange', fillOpacity: 1 }}
                 />
               ))}
               <FitBounds gpsPoints={gpsPoints} />
