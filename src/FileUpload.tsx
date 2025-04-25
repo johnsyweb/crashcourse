@@ -211,7 +211,7 @@ const FileUpload = () => {
 
   const courseLength = gpsPoints.length > 1 ? calculateTrackLength(gpsPoints) : 0;
 
-  const formatElapsedTime = (seconds: number) => {
+  const formatElapsedTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}m ${remainingSeconds}s`;
