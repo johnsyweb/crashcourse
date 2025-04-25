@@ -87,29 +87,33 @@ const FileUpload = () => {
 
   const calculateParticipantPosition = (): LatLngTuple => {
     if (gpsPoints.length === 0) return [0, 0]; // Default position if no points
-    
+
     const totalDistance = calculateTrackLength(gpsPoints); // Total course length in meters
     const distanceCovered = (elapsedTime / 60) * totalDistance; // Distance in meters
 
     let cumulativeDistance = 0;
     for (let i = 1; i < gpsPoints.length; i++) {
-      const [lat1, lon1] = gpsPoints[i - 1];
-      const [lat2, lon2] = gpsPoints[i];
+      const segmentDistance = calculateSegmentDistance(
+        gpsPoints[i - 1],
+        gpsPoints[i]
+      );
 
-      const segmentDistance = calculateSegmentDistance(lat1, lon1, lat2, lon2);
       if (cumulativeDistance + segmentDistance >= distanceCovered) {
-        const ratio = (distanceCovered - cumulativeDistance) / segmentDistance;
-        const lat = lat1 + ratio * (lat2 - lat1);
-        const lon = lon1 + ratio * (lon2 - lon1);
-        return [lat, lon] as LatLngTuple;
+        return interpolatePosition(
+          gpsPoints[i - 1],
+          gpsPoints[i],
+          distanceCovered - cumulativeDistance,
+          segmentDistance
+        );
       }
+
       cumulativeDistance += segmentDistance;
     }
 
-    return gpsPoints[gpsPoints.length - 1] as LatLngTuple; // Finish point
+    return gpsPoints[gpsPoints.length - 1]; // Finish point
   };
 
-  const calculateSegmentDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const calculateSegmentDistance = ([lat1, lon1]: LatLngTuple, [lat2, lon2]: LatLngTuple): number => {
     const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
     const earthRadius = 6371e3; // Earth's radius in meters
 
@@ -126,6 +130,18 @@ const FileUpload = () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return earthRadius * c;
+  };
+
+  const interpolatePosition = (
+    [lat1, lon1]: LatLngTuple,
+    [lat2, lon2]: LatLngTuple,
+    distanceCovered: number,
+    segmentDistance: number
+  ): LatLngTuple => {
+    const ratio = distanceCovered / segmentDistance;
+    const lat = lat1 + ratio * (lat2 - lat1);
+    const lon = lon1 + ratio * (lon2 - lon1);
+    return [lat, lon];
   };
 
   const participantPosition = calculateParticipantPosition();
