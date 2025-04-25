@@ -9,13 +9,13 @@ import {
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
-import { loadGpsPoints } from './utils/gpsLoader';
 import calculateTrackLength from './utils/calculateTrackLength';
 import L from 'leaflet';
 import checkeredFlagIcon from './assets/checkered_flag.png';
 import runnerIcon from './assets/runner_icon.png';
 import flagIcon from './assets/flag.svg';
 import { FitBounds } from './FitBounds';
+import readFileContent from './utils/readFileContent';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -50,25 +50,7 @@ const FileUpload = () => {
 
     console.log('File selected:', file.name);
     setFile(file);
-    readFileContent(file);
-  };
-
-  const readFileContent = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const fileContent = e.target?.result as string;
-      if (!fileContent) return;
-
-      console.log('Raw file content:', fileContent);
-      try {
-        const points = await loadGpsPoints(fileContent);
-        console.log('Parsed GPS Points:', points);
-        setGpsPoints(points);
-      } catch (error) {
-        console.error('Error parsing GPS points:', error);
-      }
-    };
-    reader.readAsText(file);
+    readFileContent(file, setGpsPoints);
   };
 
   const startSimulation = () => {
