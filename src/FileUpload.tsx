@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Polyline, useMap, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, useMap, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
 import { loadGpsPoints } from './utils/gpsLoader';
+import calculateTrackLength from './utils/calculateTrackLength';
+import L from 'leaflet';
 
 const FitBounds = ({ gpsPoints }: { gpsPoints: LatLngTuple[] }) => {
   const map = useMap();
@@ -55,52 +57,112 @@ const FileUpload = () => {
     }
   };
 
+  // Create a custom finish icon using Material UI's flag icon styling
+  const finishIcon = L.divIcon({
+    className: 'material-icons-finish-marker',
+    html: '<span class="material-icons">flag</span>',
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+
+
+
+  const renderMarkers = () => {
+    const markers = [];
+    if (gpsPoints.length > 0) {
+      // Add start marker
+      markers.push(
+        <Marker key="start" position={gpsPoints[0]}>
+          <Popup>Start</Popup>
+        </Marker>
+      );
+
+      // Add kilometer markers
+      let distance = 0;
+      const earthRadius = 6371e3; // Earth's radius in meters
+      const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+      for (let i = 1; i < gpsPoints.length; i++) {
+        const [lat1, lon1] = gpsPoints[i - 1];
+        const [lat2, lon2] = gpsPoints[i];
+
+        const dLat = toRadians(lat2 - lat1);
+        const dLon = toRadians(lon2 - lon1);
+
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRadians(lat1)) *
+            Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        distance += earthRadius * c;
+
+        if (Math.floor(distance / 1000) > Math.floor((distance - earthRadius * c) / 1000)) {
+          markers.push(
+            <Marker key={`km-${Math.floor(distance / 1000)}`} position={gpsPoints[i]}>
+              <Popup>{`${Math.floor(distance / 1000)} km`}</Popup>
+            </Marker>
+          );
+        }
+      }
+
+      // Add finish marker with checkered flag icon
+      markers.push(
+        <Marker key="finish" position={gpsPoints[gpsPoints.length - 1]} icon={finishIcon}>
+          <Popup>Finish</Popup>
+        </Marker>
+      );
+    }
+    return markers;
+  };
+
+  const courseLength = gpsPoints.length > 1 ? calculateTrackLength(gpsPoints) : 0;
+
   return (
     <div>
-      <h2>Upload GPX File</h2>
-      <button
-        className="upload-button"
-        onClick={() => {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = '.gpx';
-          input.onchange = (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            if (target && target.files) {
-              handleFileChange({ target } as React.ChangeEvent<HTMLInputElement>);
-            }
-          };
-          input.click();
-        }}
-      >
-        Select GPX File
-      </button>
-      <div className="map-container">
-        <MapContainer center={[0, 0]} zoom={2} style={{ height: '100%', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-          />
-          {gpsPoints.length > 0 && (
-            <>
-              <Polyline positions={gpsPoints} color="orange" />
-              {gpsPoints.map((point, index) => (
-                <CircleMarker
-                  key={index}
-                  center={point}
-                  radius={1}
-                  // pathOptions={{ color: 'purple', fillColor: 'orange', fillOpacity: 1 }}
-                />
-              ))}
-              <FitBounds gpsPoints={gpsPoints} />
-            </>
-          )}
-        </MapContainer>
-      </div>
-      <div className="stats-container">
-        <p>Number of GPS Points Loaded: {gpsPoints.length}</p>
-        {error && <p className="error-message">{error}</p>}
-      </div>
+      {gpsPoints.length === 0 ? (
+        <div>
+          <h2>Upload GPX File</h2>
+          <button
+            className="upload-button"
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.gpx';
+              input.onchange = (event: Event) => {
+                const target = event.target as HTMLInputElement;
+                if (target && target.files) {
+                  handleFileChange({ target } as React.ChangeEvent<HTMLInputElement>);
+                }
+              };
+              input.click();
+            }}
+          >
+            Select GPX File
+          </button>
+        </div>
+      ) : (
+        <div className="map-container">
+          {error && <div className="error-message">{error}</div>}
+          <p>Course Length: {(courseLength / 1000).toFixed(2)} km</p>
+          <MapContainer center={[0, 0]} zoom={2} style={{ height: '100%', width: '100%' }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            />
+            {gpsPoints.length > 0 && (
+              <>
+                <Polyline positions={gpsPoints} color="blue" />
+                {renderMarkers()}
+                <FitBounds gpsPoints={gpsPoints} />
+              </>
+            )}
+          </MapContainer>
+        </div>
+      )}
     </div>
   );
 };
