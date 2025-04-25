@@ -18,6 +18,7 @@ import { FitBounds } from './FitBounds';
 import readFileContent from './utils/readFileContent';
 import FileUploadSection from './FileUploadSection';
 import SimulatorDisplay from './SimulatorDisplay';
+import { Participant } from './models/Participant';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -37,6 +38,7 @@ const FileUpload = () => {
   const [error, setError] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [participant, setParticipant] = useState<Participant | null>(null);
 
   useEffect(() => {
     setError(
@@ -45,6 +47,18 @@ const FileUpload = () => {
         : null,
     );
   }, [gpsPoints]);
+
+  useEffect(() => {
+    if (gpsPoints.length > 0) {
+      setParticipant(new Participant(gpsPoints));
+    }
+  }, [gpsPoints]);
+
+  useEffect(() => {
+    if (participant) {
+      participant.updateElapsedTime(elapsedTime);
+    }
+  }, [elapsedTime, participant]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -78,69 +92,10 @@ const FileUpload = () => {
     }
   };
 
-  const calculateParticipantPosition = (): LatLngTuple => {
-    if (gpsPoints.length === 0) return [0, 0]; // Default position if no points
-
-    const totalDistance = calculateTrackLength(gpsPoints); // Total course length in meters
-    const distanceCovered = (elapsedTime / 60) * totalDistance; // Distance in meters
-
-    let cumulativeDistance = 0;
-    for (let i = 1; i < gpsPoints.length; i++) {
-      const segmentDistance = calculateSegmentDistance(
-        gpsPoints[i - 1],
-        gpsPoints[i],
-      );
-
-      if (cumulativeDistance + segmentDistance >= distanceCovered) {
-        return interpolatePosition(
-          gpsPoints[i - 1],
-          gpsPoints[i],
-          distanceCovered - cumulativeDistance,
-          segmentDistance,
-        );
-      }
-
-      cumulativeDistance += segmentDistance;
-    }
-
-    return gpsPoints[gpsPoints.length - 1]; // Finish point
-  };
-
-  const calculateSegmentDistance = (
-    [lat1, lon1]: LatLngTuple,
-    [lat2, lon2]: LatLngTuple,
-  ): number => {
-    const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-    const earthRadius = 6371e3; // Earth's radius in meters
-
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return earthRadius * c;
-  };
-
-  const interpolatePosition = (
-    [lat1, lon1]: LatLngTuple,
-    [lat2, lon2]: LatLngTuple,
-    distanceCovered: number,
-    segmentDistance: number,
-  ): LatLngTuple => {
-    const ratio = distanceCovered / segmentDistance;
-    const lat = lat1 + ratio * (lat2 - lat1);
-    const lon = lon1 + ratio * (lon2 - lon1);
-    return [lat, lon];
-  };
-
-  const participantPosition = calculateParticipantPosition();
+  const participantPosition: LatLngTuple =
+    participant && participant.getPosition().length === 2
+      ? (participant.getPosition() as LatLngTuple)
+      : [0, 0];
 
   const finishIcon = new L.Icon({
     iconUrl: checkeredFlagIcon,
@@ -255,7 +210,19 @@ const FileUpload = () => {
                 <Polyline positions={gpsPoints} color="blue" />
                 {renderMarkers()}
                 <Marker position={participantPosition} icon={participantIcon}>
-                  <Popup>Participant</Popup>
+                  <Popup>
+                    {participant && (
+                      <div>
+                        {Object.entries(participant.getProperties()).map(
+                          ([key, value]) => (
+                            <p key={key}>
+                              <strong>{key}:</strong> {value.toString()}
+                            </p>
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </Popup>
                 </Marker>
                 <FitBounds gpsPoints={gpsPoints} />
               </>
