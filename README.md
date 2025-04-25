@@ -1,54 +1,66 @@
-# React + TypeScript + Vite
+# Crashcourse
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+How accessible is this 5km course? Will participants and the public be able to enjoy the space together? Let's find out!
 
-Currently, two official plugins are available:
+## What
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Upload a course GPS data file.
+2. See the course overlaid on OpenStreetMap.
+3. Given a default path width, adjust it and specify narrower and wider sections.
+4. Run simulations of walkers, joggers, and runners of varying paces and numbers following this course and highlight any areas of congestion. Add in some public path users with prams and bikes for good measure.
+5. Tweak your course for accessibility, following the visualisations.
 
-## Expanding the ESLint configuration
+## Developing
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+To set up the development environment:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+1. Clone the repository:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+   ```bash
+   git clone johnsyweb/crashcourse
+   cd crashcourse
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. Install dependencies:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+   ```bash
+   pnpm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   pnpm run dev
+   ```
+
+4. Open your browser and navigate to the provided local development URL.
+
+## Contributing
+
+We welcome contributions! To contribute:
+
+1. Fork the repository and create your branch:
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make your changes and commit them using Commitizen for conventional commits:
+
+   ```bash
+   pnpm commit
+   ```
+
+3. Push to your fork:
+
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+4. Open a pull request on the main repository.
+
+Please ensure your code follows the project's coding standards and includes tests where applicable.
+
+## Licence
+
+MIT
