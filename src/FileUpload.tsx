@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Polyline,
+  Marker,
+  Popup,
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
@@ -31,11 +37,11 @@ const FileUpload = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (gpsPoints.length > 0 && gpsPoints.length < 2) {
-      setError('Error: At least two GPS points are required.');
-    } else {
-      setError(null);
-    }
+    setError(
+      gpsPoints.length < 2
+        ? 'Error: At least two GPS points are required.'
+        : null,
+    );
   }, [gpsPoints]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +104,7 @@ const FileUpload = () => {
     for (let i = 1; i < gpsPoints.length; i++) {
       const segmentDistance = calculateSegmentDistance(
         gpsPoints[i - 1],
-        gpsPoints[i]
+        gpsPoints[i],
       );
 
       if (cumulativeDistance + segmentDistance >= distanceCovered) {
@@ -106,7 +112,7 @@ const FileUpload = () => {
           gpsPoints[i - 1],
           gpsPoints[i],
           distanceCovered - cumulativeDistance,
-          segmentDistance
+          segmentDistance,
         );
       }
 
@@ -116,7 +122,10 @@ const FileUpload = () => {
     return gpsPoints[gpsPoints.length - 1]; // Finish point
   };
 
-  const calculateSegmentDistance = ([lat1, lon1]: LatLngTuple, [lat2, lon2]: LatLngTuple): number => {
+  const calculateSegmentDistance = (
+    [lat1, lon1]: LatLngTuple,
+    [lat2, lon2]: LatLngTuple,
+  ): number => {
     const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
     const earthRadius = 6371e3; // Earth's radius in meters
 
@@ -139,7 +148,7 @@ const FileUpload = () => {
     [lat1, lon1]: LatLngTuple,
     [lat2, lon2]: LatLngTuple,
     distanceCovered: number,
-    segmentDistance: number
+    segmentDistance: number,
   ): LatLngTuple => {
     const ratio = distanceCovered / segmentDistance;
     const lat = lat1 + ratio * (lat2 - lat1);
@@ -161,13 +170,23 @@ const FileUpload = () => {
     const markers = [
       createMarker('start', gpsPoints[0], 'Start'),
       ...createKilometerMarkers(),
-      createMarker('finish', gpsPoints[gpsPoints.length - 1], 'Finish', finishIcon),
+      createMarker(
+        'finish',
+        gpsPoints[gpsPoints.length - 1],
+        'Finish',
+        finishIcon,
+      ),
     ];
 
     return markers;
   };
 
-  const createMarker = (key: string, position: LatLngTuple, popupText: string, icon?: L.Icon) => (
+  const createMarker = (
+    key: string,
+    position: LatLngTuple,
+    popupText: string,
+    icon?: L.Icon,
+  ) => (
     <Marker key={key} position={position} icon={icon}>
       <Popup>{popupText}</Popup>
     </Marker>
@@ -197,14 +216,17 @@ const FileUpload = () => {
 
       distance += earthRadius * c;
 
-      if (Math.floor(distance / 1000) > Math.floor((distance - earthRadius * c) / 1000)) {
+      if (
+        Math.floor(distance / 1000) >
+        Math.floor((distance - earthRadius * c) / 1000)
+      ) {
         markers.push(
           createMarker(
             `km-${Math.floor(distance / 1000)}`,
             gpsPoints[i],
             `${Math.floor(distance / 1000)} km`,
-            kmMarkerIcon
-          )
+            kmMarkerIcon,
+          ),
         );
       }
     }
@@ -212,7 +234,8 @@ const FileUpload = () => {
     return markers;
   };
 
-  const courseLength = gpsPoints.length > 1 ? calculateTrackLength(gpsPoints) : 0;
+  const courseLength =
+    gpsPoints.length > 1 ? calculateTrackLength(gpsPoints) : 0;
 
   const formatElapsedTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -234,7 +257,9 @@ const FileUpload = () => {
               input.onchange = (event: Event) => {
                 const target = event.target as HTMLInputElement;
                 if (target && target.files) {
-                  handleFileChange({ target } as React.ChangeEvent<HTMLInputElement>);
+                  handleFileChange({
+                    target,
+                  } as React.ChangeEvent<HTMLInputElement>);
                 }
               };
               input.click();
@@ -250,7 +275,11 @@ const FileUpload = () => {
           <p>Elapsed Time: {formatElapsedTime(elapsedTime)}</p>
           <button onClick={startSimulation}>Start Simulation</button>
           <button onClick={stopSimulation}>Stop Simulation</button>
-          <MapContainer center={[0, 0]} zoom={2} style={{ height: '100%', width: '100%' }}>
+          <MapContainer
+            center={[0, 0]}
+            zoom={2}
+            style={{ height: '100%', width: '100%' }}
+          >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
