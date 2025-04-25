@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Polyline, useMap, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
@@ -9,19 +9,7 @@ import L from 'leaflet';
 import checkeredFlagIcon from './assets/checkered_flag.png';
 import runnerIcon from './assets/runner_icon.png';
 import flagIcon from './assets/flag.svg';
-
-const FitBounds = ({ gpsPoints }: { gpsPoints: LatLngTuple[] }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (gpsPoints.length > 0) {
-      const bounds: LatLngTuple[] = gpsPoints.map(([lat, lon]) => [lat, lon]);
-      map.fitBounds(bounds);
-    }
-  }, [gpsPoints, map]);
-
-  return null;
-};
+import { FitBounds } from './FitBounds';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
