@@ -4,7 +4,7 @@ How accessible is this 5km course? Will participants and the public be able to e
 
 ## What
 
-1. Upload a course GPS data file.
+1. Upload a course GPS data file (supported formats: `.gpx`, `.kml`).
 2. See the course overlaid on OpenStreetMap.
 3. Given a default path width, adjust it and specify narrower and wider sections.
 4. Run simulations of walkers, joggers, and runners of varying paces and numbers following this course and highlight any areas of congestion. Add in some public path users with prams and bikes for good measure.
