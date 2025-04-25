@@ -17,6 +17,7 @@ import flagIcon from './assets/flag.svg';
 import { FitBounds } from './FitBounds';
 import readFileContent from './utils/readFileContent';
 import FileUploadSection from './FileUploadSection';
+import SimulatorDisplay from './SimulatorDisplay';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -227,12 +228,6 @@ const FileUpload = () => {
   const courseLength =
     gpsPoints.length > 1 ? calculateTrackLength(gpsPoints) : 0;
 
-  const formatElapsedTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
-  };
-
   return (
     <div>
       {gpsPoints.length === 0 ? (
@@ -240,10 +235,12 @@ const FileUpload = () => {
       ) : (
         <div className="map-container">
           {error && <div className="error-message">{error}</div>}
-          <p>Course Length: {(courseLength / 1000).toFixed(2)} km</p>
-          <p>Elapsed Time: {formatElapsedTime(elapsedTime)}</p>
-          <button onClick={startSimulation}>Start Simulation</button>
-          <button onClick={stopSimulation}>Stop Simulation</button>
+          <SimulatorDisplay
+            courseLength={courseLength}
+            elapsedTime={elapsedTime}
+            startSimulation={startSimulation}
+            stopSimulation={stopSimulation}
+          />
           <MapContainer
             center={[0, 0]}
             zoom={2}
