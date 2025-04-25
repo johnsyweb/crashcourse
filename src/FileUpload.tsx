@@ -17,8 +17,8 @@ import flagIcon from './assets/flag.svg';
 import { FitBounds } from './FitBounds';
 import readFileContent from './utils/readFileContent';
 import FileUploadSection from './FileUploadSection';
-import SimulatorDisplay from './SimulatorDisplay';
 import { Participant } from './models/Participant';
+import SimulatorDisplay from './SimulatorDisplay';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -39,6 +39,7 @@ const FileUpload = () => {
   const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const playbackSpeed = 10; // Default playback speed
 
   useEffect(() => {
     setError(
@@ -89,6 +90,14 @@ const FileUpload = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+  };
+
+  const resetSimulation = () => {
+    stopSimulation();
+    setElapsedTime(0);
+    if (participant) {
+      participant.reset();
     }
   };
 
@@ -195,6 +204,7 @@ const FileUpload = () => {
             elapsedTime={elapsedTime}
             startSimulation={startSimulation}
             stopSimulation={stopSimulation}
+            resetSimulation={resetSimulation}
           />
           <MapContainer
             center={[0, 0]}

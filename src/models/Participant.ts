@@ -111,12 +111,19 @@ export class Participant {
     return this.position;
   }
 
-  public getProperties(): Record<string, any> {
+  public getProperties(): Record<string, string | number | LatLngTuple> {
     return {
       position: this.position,
       elapsedTime: this.elapsedTime,
       pace: this.formatPace(),
       cumulativeDistance: this.cumulativeDistance,
+      totalDistance: this.calculateTotalDistance(),
     };
+  }
+
+  public reset(): void {
+    this.elapsedTime = 0;
+    this.position = this.gpsPoints.length > 0 ? this.gpsPoints[0] : [0, 0];
+    this.cumulativeDistance = 0;
   }
 }
