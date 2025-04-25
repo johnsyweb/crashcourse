@@ -153,54 +153,59 @@ const FileUpload = () => {
   });
 
   const renderMarkers = () => {
+    if (gpsPoints.length === 0) return [];
+
+    const markers = [
+      createMarker('start', gpsPoints[0], 'Start'),
+      ...createKilometerMarkers(),
+      createMarker('finish', gpsPoints[gpsPoints.length - 1], 'Finish', finishIcon),
+    ];
+
+    return markers;
+  };
+
+  const createMarker = (key: string, position: LatLngTuple, popupText: string, icon?: L.Icon) => (
+    <Marker key={key} position={position} icon={icon}>
+      <Popup>{popupText}</Popup>
+    </Marker>
+  );
+
+  const createKilometerMarkers = () => {
     const markers = [];
-    if (gpsPoints.length > 0) {
-      // Add start marker
-      markers.push(
-        <Marker key="start" position={gpsPoints[0]}>
-          <Popup>Start</Popup>
-        </Marker>
-      );
+    let distance = 0;
+    const earthRadius = 6371e3; // Earth's radius in meters
+    const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
-      // Add kilometer markers
-      let distance = 0;
-      const earthRadius = 6371e3; // Earth's radius in meters
-      const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+    for (let i = 1; i < gpsPoints.length; i++) {
+      const [lat1, lon1] = gpsPoints[i - 1];
+      const [lat2, lon2] = gpsPoints[i];
 
-      for (let i = 1; i < gpsPoints.length; i++) {
-        const [lat1, lon1] = gpsPoints[i - 1];
-        const [lat2, lon2] = gpsPoints[i];
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
 
-        const dLat = toRadians(lat2 - lat1);
-        const dLon = toRadians(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) *
+          Math.cos(toRadians(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
 
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRadians(lat1)) *
-            Math.cos(toRadians(lat2)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      distance += earthRadius * c;
 
-        distance += earthRadius * c;
-
-        if (Math.floor(distance / 1000) > Math.floor((distance - earthRadius * c) / 1000)) {
-          markers.push(
-            <Marker key={`km-${Math.floor(distance / 1000)}`} position={gpsPoints[i]} icon={kmMarkerIcon}>
-              <Popup>{`${Math.floor(distance / 1000)} km`}</Popup>
-            </Marker>
-          );
-        }
+      if (Math.floor(distance / 1000) > Math.floor((distance - earthRadius * c) / 1000)) {
+        markers.push(
+          createMarker(
+            `km-${Math.floor(distance / 1000)}`,
+            gpsPoints[i],
+            `${Math.floor(distance / 1000)} km`,
+            kmMarkerIcon
+          )
+        );
       }
-
-      // Add finish marker with checkered flag icon
-      markers.push(
-        <Marker key="finish" position={gpsPoints[gpsPoints.length - 1]} icon={finishIcon}>
-          <Popup>Finish</Popup>
-        </Marker>
-      );
     }
+
     return markers;
   };
 
