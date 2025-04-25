@@ -16,6 +16,7 @@ import runnerIcon from './assets/runner_icon.png';
 import flagIcon from './assets/flag.svg';
 import { FitBounds } from './FitBounds';
 import readFileContent from './utils/readFileContent';
+import FileUploadSection from './FileUploadSection';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -235,28 +236,7 @@ const FileUpload = () => {
   return (
     <div>
       {gpsPoints.length === 0 ? (
-        <div>
-          <h2>Upload GPX File</h2>
-          <button
-            className="upload-button"
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.gpx';
-              input.onchange = (event: Event) => {
-                const target = event.target as HTMLInputElement;
-                if (target && target.files) {
-                  handleFileChange({
-                    target,
-                  } as React.ChangeEvent<HTMLInputElement>);
-                }
-              };
-              input.click();
-            }}
-          >
-            Select GPX File
-          </button>
-        </div>
+        <FileUploadSection handleFileChange={handleFileChange} />
       ) : (
         <div className="map-container">
           {error && <div className="error-message">{error}</div>}
