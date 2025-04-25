@@ -168,7 +168,7 @@ const FileUpload = () => {
     if (gpsPoints.length === 0) return [];
 
     const markers = [
-      createMarker('start', gpsPoints[0], 'Start'),
+      createMarker('start', gpsPoints[0], 'Start', kmMarkerIcon),
       ...createKilometerMarkers(),
       createMarker(
         'finish',
@@ -186,11 +186,18 @@ const FileUpload = () => {
     position: LatLngTuple,
     popupText: string,
     icon?: L.Icon,
-  ) => (
-    <Marker key={key} position={position} icon={icon}>
-      <Popup>{popupText}</Popup>
-    </Marker>
-  );
+  ) => {
+    if (!position || !Array.isArray(position) || position.length !== 2) {
+      console.error(`Invalid position for marker ${key}:`, position);
+      return null;
+    }
+
+    return (
+      <Marker key={key} position={position} icon={icon}>
+        <Popup>{popupText}</Popup>
+      </Marker>
+    );
+  };
 
   const createKilometerMarkers = () => {
     const markers = [];
