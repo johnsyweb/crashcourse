@@ -71,8 +71,7 @@ const FileUpload = () => {
       setElapsedTime((prevTime) => {
         const newTime = prevTime + 1;
         if (newTime >= totalTime) {
-          clearInterval(timerRef.current!);
-          timerRef.current = null;
+          stopSimulation();
         }
         return newTime;
       });
