@@ -44,7 +44,10 @@ const FileUpload = () => {
 
     console.log('File selected:', file.name);
     setFile(file);
+    readFileContent(file);
+  };
 
+  const readFileContent = (file: File) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       const fileContent = e.target?.result as string;
