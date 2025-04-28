@@ -61,6 +61,66 @@ We welcome contributions! To contribute:
 
 Please ensure your code follows the project's coding standards and includes tests where applicable.
 
+## Components and Responsibilities
+
+### FileUpload
+
+Handles the uploading of GPS data files and manages the state of the uploaded course data. It also initializes the simulation and renders the map with markers.
+
+### FileUploadSection
+
+A reusable component for the file upload interface, allowing users to select and upload GPS files.
+
+### SimulatorDisplay
+
+Displays simulation controls, including start, stop, reset, and playback speed adjustment. It also shows course length and elapsed time.
+
+### ElapsedTime
+
+A reusable timer component that displays and controls elapsed time. Features include:
+
+- Start/stop/reset functionality with both button and keyboard controls (P, S, R keys)
+- Visual display of elapsed time in minutes and seconds
+- Callback support to notify parent components of time changes
+
+### Participant
+
+A model representing a participant in the simulation. It calculates the participant's position, pace, and cumulative distance based on elapsed time and GPS points.
+
+### FitBounds
+
+Adjusts the map view to fit all GPS points within the visible area.
+
+### Utilities
+
+- **calculateTrackLength**: Calculates the total length of the course based on GPS points.
+- **gpsLoader**: Parses GPS data files and extracts GPS points.
+- **readFileContent**: Reads the content of uploaded files and processes them for further use.
+
+### Component Relationships
+
+```mermaid
+graph TD
+    App[App] --> FU[FileUpload]
+    App --> SD[SimulatorDisplay]
+    FU --> FUS[FileUploadSection]
+    FU --> FB[FitBounds]
+    SD --> ET[ElapsedTime]
+    FU --> GL[gpsLoader]
+    GL --> RFC[readFileContent]
+    FU -.uses.-> CTL[calculateTrackLength]
+    SD -.uses.-> P[Participant]
+    
+    style ET stroke:#4CAF50,stroke-width:2px
+    style App fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
+    style SD fill:#e3f2fd,stroke:#333,stroke-width:1px
+```
+
+### Assets
+
+Contains static assets such as icons for markers used in the map visualization.
+
 ## Licence
 
 MIT

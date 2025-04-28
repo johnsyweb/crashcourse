@@ -1,0 +1,70 @@
+/* ElapsedTime.module.css */
+
+.elapsedTimeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeDisplay {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.button {
+  padding: 8px 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.button:hover {
+  background-color: #e0e0e0;
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.startButton {
+  background-color: #e6f7e6;
+}
+
+.stopButton {
+  background-color: #ffe6e6;
+}
+
+.resetButton {
+  background-color: #e6e6ff;
+}
+
+.keyboardHelp {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+.keyboardHelp kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  line-height: 1;
+  color: #444;
+  background-color: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  margin: 0 2px;
+}

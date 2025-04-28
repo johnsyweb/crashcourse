@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -19,6 +19,7 @@ import readFileContent from './utils/readFileContent';
 import FileUploadSection from './FileUploadSection';
 import { Participant } from './models/Participant';
 import SimulatorDisplay from './SimulatorDisplay';
+import ElapsedTime from './ElapsedTime';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -37,9 +38,7 @@ const FileUpload = () => {
   const [gpsPoints, setGpsPoints] = useState<LatLngTuple[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [participant, setParticipant] = useState<Participant | null>(null);
-  const playbackSpeed = 10; // Default playback speed
 
   useEffect(() => {
     setError(
@@ -70,34 +69,10 @@ const FileUpload = () => {
     readFileContent(file, setGpsPoints);
   };
 
-  const startSimulation = () => {
-    if (timerRef.current) return; // Prevent multiple timers
-
-    const totalTime = 60; // Total time in seconds (1 minute)
-
-    timerRef.current = setInterval(() => {
-      setElapsedTime((prevTime) => {
-        const newTime = prevTime + 1;
-        if (newTime >= totalTime) {
-          stopSimulation();
-        }
-        return newTime;
-      });
-    }, 1000);
-  };
-
-  const stopSimulation = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const resetSimulation = () => {
-    stopSimulation();
-    setElapsedTime(0);
+  const handleElapsedTimeChange = (newElapsedTime: number) => {
+    setElapsedTime(newElapsedTime);
     if (participant) {
-      participant.reset();
+      participant.updateElapsedTime(newElapsedTime);
     }
   };
 
@@ -199,13 +174,8 @@ const FileUpload = () => {
       ) : (
         <div className="map-container">
           {error && <div className="error-message">{error}</div>}
-          <SimulatorDisplay
-            courseLength={courseLength}
-            elapsedTime={elapsedTime}
-            startSimulation={startSimulation}
-            stopSimulation={stopSimulation}
-            resetSimulation={resetSimulation}
-          />
+          <SimulatorDisplay courseLength={courseLength} />
+          <ElapsedTime onElapsedTimeChange={handleElapsedTimeChange} />
           <MapContainer
             center={[0, 0]}
             zoom={2}
