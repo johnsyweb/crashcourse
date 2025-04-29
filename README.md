@@ -74,10 +74,29 @@ A reusable component for the file upload interface, allowing users to select GPS
 ### GPXFile
 
 A specialized component that handles parsing and processing of GPX files. Features include:
+
 - Parsing XML data from GPX files
 - Extracting track points with coordinates
 - Error handling for malformed or incomplete GPS data
 - Providing structured data (start/endpoints, track points) to parent components
+
+### Course
+
+A model representing an event course, defined by a series of geographical points. Features include:
+
+- Calculating the total course length using the Haversine formula
+- Providing access to start and finish points
+- Finding coordinates at any specific distance along the course
+- Determining the distance of a given position relative to the course
+
+### CourseDisplay
+
+A visualization component for rendering a course on a map. Features include:
+
+- Rendering the course path as a polyline
+- Displaying start and finish markers
+- Optional kilometer markers along the course
+- Customizable line styling
 
 ### SimulatorDisplay
 
@@ -86,6 +105,7 @@ Displays simulation controls, including playback speed adjustment and course len
 ### ElapsedTime
 
 A reusable timer component that displays and controls elapsed time. Features include:
+
 - Start/stop/reset functionality with both button and keyboard controls (P, S, R keys)
 - Visual display of elapsed time in minutes and seconds
 - Callback support to notify parent components of time changes
@@ -110,13 +130,16 @@ graph TD
     App --> SD[SimulatorDisplay]
     FU --> FUS[FileUploadSection]
     FU --> GPX[GPXFile]
+    FU --> C[Course]
+    C --> CD[CourseDisplay]
     FU --> FB[FitBounds]
     SD --> ET[ElapsedTime]
-    FU -.uses.-> CTL[calculateTrackLength]
-    SD -.uses.-> P[Participant]
-    
+    FU -.uses.-> P[Participant]
+
     style ET stroke:#4CAF50,stroke-width:2px
     style GPX stroke:#4CAF50,stroke-width:2px
+    style C stroke:#4CAF50,stroke-width:2px
+    style CD stroke:#4CAF50,stroke-width:2px
     style App fill:#f9f9f9,stroke:#333,stroke-width:1px
     style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
     style SD fill:#e3f2fd,stroke:#333,stroke-width:1px
@@ -134,11 +157,11 @@ MIT
 
 - [ ] Extract more components, using ElapsedTime as an example.
   - [x] GPXFile, a specialized component that handles parsing and processing of GPX files.
-  - [ ] Course, describing where an event takes place, defined by a series of points between the start and finish point. Has properties such as:
-    - [ ] Start point
-    - [ ] Finish point
-    - [ ] Length, the distance from the start to the finish passing through each of the points in sequence
-  - Can also be queried for the coordinates of a point a given distance from the start
+  - [x] Course, describing where an event takes place, defined by a series of points between the start and finish point. Has properties such as:
+    - [x] Start point
+    - [x] Finish point
+    - [x] Length, the distance from the start to the finish passing through each of the points in sequence
+  - [x] Can also be queried for the coordinates of a point a given distance from the start
   - [ ] Participant, an individual who travels the length of the course at their prefered pace
   - [ ] Map, a graphical representation of the local geography upon which a course and participants may be overlaid.
   - [ ] Simulator, given a course and a timer, can play participants' progress along the course.
