@@ -129,4 +129,65 @@ describe('ElapsedTime Component', () => {
 
     jest.useRealTimers();
   });
+
+  it('initializes with initialElapsedTime prop', () => {
+    render(<ElapsedTime initialElapsedTime={5} />);
+    expect(screen.getByText(/Elapsed Time: 0m 5s/i)).toBeInTheDocument();
+  });
+
+  it('calls onElapsedTimeChange callback when time changes', () => {
+    jest.useFakeTimers();
+    const mockCallback = jest.fn();
+    render(<ElapsedTime onElapsedTimeChange={mockCallback} />);
+
+    const startButton = screen.getByRole('button', { name: /start timer/i });
+    fireEvent.click(startButton);
+
+    act(() => {
+      jest.advanceTimersByTime(1000); // Advance 1 second
+    });
+
+    expect(mockCallback).toHaveBeenCalledWith(1);
+
+    jest.useRealTimers();
+  });
+
+  it('does not call callback multiple times for same time value', () => {
+    const mockCallback = jest.fn();
+    render(<ElapsedTime onElapsedTimeChange={mockCallback} />);
+
+    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    // Reset multiple times (same value of 0)
+    fireEvent.click(resetButton);
+    fireEvent.click(resetButton);
+
+    // Callback should only be called once since time didn't change
+    expect(mockCallback).toHaveBeenCalledTimes(0);
+  });
+
+  it('always resets to 0, ignoring initialElapsedTime', () => {
+    jest.useFakeTimers();
+    const mockCallback = jest.fn();
+    render(
+      <ElapsedTime
+        initialElapsedTime={10}
+        onElapsedTimeChange={mockCallback}
+      />,
+    );
+
+    const startButton = screen.getByRole('button', { name: /start timer/i });
+    fireEvent.click(startButton);
+
+    act(() => {
+      jest.advanceTimersByTime(2000); // Advance 2 seconds
+    });
+
+    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    fireEvent.click(resetButton);
+
+    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    expect(mockCallback).toHaveBeenCalledWith(0);
+
+    jest.useRealTimers();
+  });
 });

@@ -98,9 +98,23 @@ A visualization component for rendering a course on a map. Features include:
 - Optional kilometer markers along the course
 - Customizable line styling
 
-### SimulatorDisplay
+### Map
 
-Displays simulation controls, including playback speed adjustment and course length information.
+A reusable component that renders a Leaflet map with the ability to:
+
+- Display geographical data using OpenStreetMap tiles
+- Automatically fit map bounds to show all GPS points
+- Accept children components like course paths and participant markers
+- Customize initial center position and zoom level
+
+### Simulator
+
+Controls the simulation of participants' movement along a course. Features include:
+
+- Start/stop/reset controls for the simulation
+- Dynamic updating of participant positions based on elapsed time
+- Real-time feedback on course length and participant count
+- Integration with ElapsedTime for timing control
 
 ### ElapsedTime
 
@@ -122,35 +136,37 @@ A model representing a participant in the simulation. Features include:
 
 ### FitBounds
 
-Adjusts the map view to fit all GPS points within the visible area.
-
-### Utilities
-
-- **calculateTrackLength**: Calculates the total length of the course based on GPS points.
+A utility component that automatically adjusts the map view to fit all GPS points within the visible area.
 
 ### Component Relationships
 
 ```mermaid
 graph TD
     App[App] --> FU[FileUpload]
-    App --> SD[SimulatorDisplay]
     FU --> FUS[FileUploadSection]
     FU --> GPX[GPXFile]
+    FU --> M[Map]
+    M --> FB[FitBounds]
+    M --> CD[CourseDisplay]
+    M --> PD[ParticipantDisplay]
     FU --> C[Course]
-    C --> CD[CourseDisplay]
-    FU --> FB[FitBounds]
-    SD --> ET[ElapsedTime]
+    C --> CD
+    FU --> S[Simulator]
+    S --> ET[ElapsedTime]
     FU --> P[Participant]
     P -.uses.-> C
+    PD --> P
 
     style ET stroke:#4CAF50,stroke-width:2px
     style GPX stroke:#4CAF50,stroke-width:2px
     style C stroke:#4CAF50,stroke-width:2px
     style CD stroke:#4CAF50,stroke-width:2px
     style P stroke:#4CAF50,stroke-width:2px
+    style M stroke:#4CAF50,stroke-width:2px
+    style S stroke:#4CAF50,stroke-width:2px
+    style FB stroke:#4CAF50,stroke-width:2px
     style App fill:#f9f9f9,stroke:#333,stroke-width:1px
     style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
-    style SD fill:#e3f2fd,stroke:#333,stroke-width:1px
 ```
 
 ### Assets
@@ -160,16 +176,3 @@ Contains static assets such as icons for markers used in the map visualization.
 ## Licence
 
 MIT
-
-### TODO
-
-- [ ] Extract more components, using ElapsedTime as an example.
-  - [x] GPXFile, a specialized component that handles parsing and processing of GPX files.
-  - [x] Course, describing where an event takes place, defined by a series of points between the start and finish point. Has properties such as:
-    - [x] Start point
-    - [x] Finish point
-    - [x] Length, the distance from the start to the finish passing through each of the points in sequence
-  - [x] Can also be queried for the coordinates of a point a given distance from the start
-  - [x] Participant, an individual who travels the length of the course at their preferred pace
-  - [ ] Map, a graphical representation of the local geography upon which a course and participants may be overlaid.
-  - [ ] Simulator, given a course and a timer, can play participants' progress along the course.

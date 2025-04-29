@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
-import { FitBounds } from './FitBounds';
 import FileUploadSection from './FileUploadSection';
 import { Participant } from './Participant/Participant';
-import { ParticipantDisplay } from './Participant/ParticipantDisplay';
-import SimulatorDisplay from './SimulatorDisplay';
-import ElapsedTime from './ElapsedTime';
+import ParticipantDisplay from './Participant/ParticipantDisplay';
 import GPXFile, { GPXData } from './GPXFile';
 import { Course, CourseDisplay } from './Course';
+import Map from './Map';
+import Simulator from './Simulator';
 
 const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [gpsPoints, setGpsPoints] = useState<LatLngTuple[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
-  const [participant, setParticipant] = useState<Participant | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
 
   useEffect(() => {
@@ -45,15 +42,11 @@ const FileUpload = () => {
 
   useEffect(() => {
     if (gpsPoints.length > 0) {
-      setParticipant(new Participant(gpsPoints));
+      // Initialize a participant with the default pace
+      const newParticipant = new Participant(gpsPoints);
+      setParticipants([newParticipant]);
     }
   }, [gpsPoints]);
-
-  useEffect(() => {
-    if (participant) {
-      participant.updateElapsedTime(elapsedTime);
-    }
-  }, [elapsedTime, participant]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -76,11 +69,8 @@ const FileUpload = () => {
     }
   };
 
-  const handleElapsedTimeChange = (newElapsedTime: number) => {
-    setElapsedTime(newElapsedTime);
-    if (participant) {
-      participant.updateElapsedTime(newElapsedTime);
-    }
+  const handleParticipantUpdate = (updatedParticipants: Participant[]) => {
+    setParticipants([...updatedParticipants]);
   };
 
   return (
@@ -93,27 +83,23 @@ const FileUpload = () => {
       ) : (
         <div className="map-container">
           {error && <div className="error-message">{error}</div>}
-          <SimulatorDisplay courseLength={course ? course.length : 0} />
-          <ElapsedTime onElapsedTimeChange={handleElapsedTimeChange} />
-          <MapContainer
-            center={[0, 0]}
-            zoom={2}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-            />
+
+          <Simulator
+            course={course}
+            participants={participants}
+            onParticipantUpdate={handleParticipantUpdate}
+          />
+
+          <Map gpsPoints={gpsPoints}>
             {course && (
               <>
                 <CourseDisplay course={course} />
-                {participant && (
-                  <ParticipantDisplay participant={participant} />
-                )}
-                <FitBounds gpsPoints={gpsPoints} />
+                {participants.map((participant, index) => (
+                  <ParticipantDisplay key={index} participant={participant} />
+                ))}
               </>
             )}
-          </MapContainer>
+          </Map>
         </div>
       )}
     </div>

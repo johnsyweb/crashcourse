@@ -1,13 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './ElapsedTime.module.css';
 
 interface ElapsedTimeProps {
   onElapsedTimeChange?: (elapsedTime: number) => void;
+  initialElapsedTime?: number;
 }
 
-const ElapsedTime: React.FC<ElapsedTimeProps> = ({ onElapsedTimeChange }) => {
-  const [elapsedTime, setElapsedTime] = useState(0);
+const ElapsedTime: React.FC<ElapsedTimeProps> = ({
+  onElapsedTimeChange,
+  initialElapsedTime = 0,
+}) => {
+  const [elapsedTime, setElapsedTime] = useState(initialElapsedTime);
   const [isRunning, setIsRunning] = useState(false);
+  // Use a ref to avoid unnecessary callback invocations
+  const lastReportedTime = useRef(initialElapsedTime);
+  // Use a ref to track initialization
+  const isInitialized = useRef(false);
+
+  // Initialize lastReportedTime and handle initialElapsedTime properly
+  useEffect(() => {
+    // Only run once to initialize
+    if (!isInitialized.current) {
+      lastReportedTime.current = initialElapsedTime;
+
+      // Only call the callback during initialization if initialElapsedTime is not 0
+      if (onElapsedTimeChange && initialElapsedTime !== 0) {
+        onElapsedTimeChange(initialElapsedTime);
+      }
+
+      isInitialized.current = true;
+    }
+  }, [initialElapsedTime, onElapsedTimeChange]);
+
+  // Define resetTime with useCallback to make it stable across renders
+  const resetTime = useCallback(() => {
+    const resetValue = 0; // Always reset to 0 rather than initialElapsedTime
+    setElapsedTime(resetValue);
+
+    if (onElapsedTimeChange && lastReportedTime.current !== resetValue) {
+      lastReportedTime.current = resetValue;
+      onElapsedTimeChange(resetValue);
+    }
+  }, [onElapsedTimeChange]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -36,7 +70,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({ onElapsedTimeChange }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  });
+  }, [resetTime]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -44,26 +78,20 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({ onElapsedTimeChange }) => {
       timer = setInterval(() => {
         setElapsedTime((prev) => {
           const newTime = prev + 1;
-          if (onElapsedTimeChange) {
+          // Only call the callback if the time has actually changed
+          if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
+            lastReportedTime.current = newTime;
             onElapsedTimeChange(newTime);
           }
           return newTime;
         });
       }, 1000);
-    } else if (timer) {
-      clearInterval(timer);
     }
+
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [isRunning, onElapsedTimeChange]);
-
-  const resetTime = () => {
-    setElapsedTime(0);
-    if (onElapsedTimeChange) {
-      onElapsedTimeChange(0);
-    }
-  };
 
   return (
     <div className={styles.elapsedTimeContainer}>
