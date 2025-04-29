@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import './mapStyles.css';
-import L from 'leaflet';
-import runnerIcon from './assets/runner_icon.png';
 import { FitBounds } from './FitBounds';
 import FileUploadSection from './FileUploadSection';
-import { Participant } from './models/Participant';
+import { Participant } from './Participant/Participant';
+import { ParticipantDisplay } from './Participant/ParticipantDisplay';
 import SimulatorDisplay from './SimulatorDisplay';
 import ElapsedTime from './ElapsedTime';
 import GPXFile, { GPXData } from './GPXFile';
 import { Course, CourseDisplay } from './Course';
-
-const participantIcon = new L.Icon({
-  iconUrl: runnerIcon,
-  iconSize: [36, 36],
-  iconAnchor: [18, 18],
-});
 
 const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -90,11 +83,6 @@ const FileUpload = () => {
     }
   };
 
-  const participantPosition: LatLngTuple =
-    participant && participant.getPosition().length === 2
-      ? (participant.getPosition() as LatLngTuple)
-      : [0, 0];
-
   return (
     <div>
       {gpsPoints.length === 0 ? (
@@ -119,21 +107,9 @@ const FileUpload = () => {
             {course && (
               <>
                 <CourseDisplay course={course} />
-                <Marker position={participantPosition} icon={participantIcon}>
-                  <Popup>
-                    {participant && (
-                      <div>
-                        {Object.entries(participant.getProperties()).map(
-                          ([key, value]) => (
-                            <p key={key}>
-                              <strong>{key}:</strong> {value.toString()}
-                            </p>
-                          ),
-                        )}
-                      </div>
-                    )}
-                  </Popup>
-                </Marker>
+                {participant && (
+                  <ParticipantDisplay participant={participant} />
+                )}
                 <FitBounds gpsPoints={gpsPoints} />
               </>
             )}

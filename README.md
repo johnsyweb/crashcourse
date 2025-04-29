@@ -112,7 +112,13 @@ A reusable timer component that displays and controls elapsed time. Features inc
 
 ### Participant
 
-A model representing a participant in the simulation. It calculates the participant's position, pace, and cumulative distance based on elapsed time and GPS points.
+A model representing a participant in the simulation. Features include:
+
+- Tracking position along a course based on elapsed time and pace
+- Calculating cumulative distance traveled
+- Supporting different paces (specified as minutes:seconds per kilometer)
+- Reset capability to return to starting position
+- Built to work directly with the Course class for efficient distance calculations and position determination
 
 ### FitBounds
 
@@ -134,12 +140,14 @@ graph TD
     C --> CD[CourseDisplay]
     FU --> FB[FitBounds]
     SD --> ET[ElapsedTime]
-    FU -.uses.-> P[Participant]
+    FU --> P[Participant]
+    P -.uses.-> C
 
     style ET stroke:#4CAF50,stroke-width:2px
     style GPX stroke:#4CAF50,stroke-width:2px
     style C stroke:#4CAF50,stroke-width:2px
     style CD stroke:#4CAF50,stroke-width:2px
+    style P stroke:#4CAF50,stroke-width:2px
     style App fill:#f9f9f9,stroke:#333,stroke-width:1px
     style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
     style SD fill:#e3f2fd,stroke:#333,stroke-width:1px
@@ -162,6 +170,6 @@ MIT
     - [x] Finish point
     - [x] Length, the distance from the start to the finish passing through each of the points in sequence
   - [x] Can also be queried for the coordinates of a point a given distance from the start
-  - [ ] Participant, an individual who travels the length of the course at their prefered pace
+  - [x] Participant, an individual who travels the length of the course at their preferred pace
   - [ ] Map, a graphical representation of the local geography upon which a course and participants may be overlaid.
   - [ ] Simulator, given a course and a timer, can play participants' progress along the course.
