@@ -14,17 +14,23 @@ export default {
     // Style and asset mocks
     '\\.module\\.(css|less|scss)$': '<rootDir>/test/__mocks__/styleMock.js',
     '\\.(css|less|scss)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/test/__mocks__/fileMock.js'
+    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/test/__mocks__/fileMock.js',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.test.json',
-      useESM: true,
-      jsx: 'react-jsx'
-    }],
-    '^.+\\.(js|jsx)$': 'babel-jest'
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.test.json',
+        useESM: true,
+        jsx: 'react-jsx',
+      },
+    ],
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  testMatch: ['<rootDir>/src/**/__tests__/**/*.tsx', '<rootDir>/src/**/*.test.tsx']
+  testMatch: [
+    '<rootDir>/src/**/__tests__/**/*.tsx',
+    '<rootDir>/src/**/*.test.tsx',
+  ],
 };

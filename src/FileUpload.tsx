@@ -15,11 +15,11 @@ import checkeredFlagIcon from './assets/checkered_flag.png';
 import runnerIcon from './assets/runner_icon.png';
 import flagIcon from './assets/flag.svg';
 import { FitBounds } from './FitBounds';
-import readFileContent from './utils/readFileContent';
 import FileUploadSection from './FileUploadSection';
 import { Participant } from './models/Participant';
 import SimulatorDisplay from './SimulatorDisplay';
 import ElapsedTime from './ElapsedTime';
+import GPXFile, { GPXData } from './GPXFile';
 
 const participantIcon = new L.Icon({
   iconUrl: runnerIcon,
@@ -34,7 +34,7 @@ const kmMarkerIcon = new L.Icon({
 });
 
 const FileUpload = () => {
-  const [, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [gpsPoints, setGpsPoints] = useState<LatLngTuple[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
@@ -61,12 +61,24 @@ const FileUpload = () => {
   }, [elapsedTime, participant]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
 
-    console.log('File selected:', file.name);
-    setFile(file);
-    readFileContent(file, setGpsPoints);
+    console.log('File selected:', selectedFile.name);
+    setFile(selectedFile);
+  };
+
+  const handleGPXDataParsed = (data: GPXData) => {
+    if (data.isValid && data.points.length > 0) {
+      // Convert GPXPoint array to LatLngTuple array
+      const points: LatLngTuple[] = data.points.map((point) => [
+        point.lat,
+        point.lon,
+      ]);
+      setGpsPoints(points);
+    } else if (data.errorMessage) {
+      setError(data.errorMessage);
+    }
   };
 
   const handleElapsedTimeChange = (newElapsedTime: number) => {
@@ -170,7 +182,10 @@ const FileUpload = () => {
   return (
     <div>
       {gpsPoints.length === 0 ? (
-        <FileUploadSection handleFileChange={handleFileChange} />
+        <>
+          <FileUploadSection handleFileChange={handleFileChange} />
+          {file && <GPXFile file={file} onDataParsed={handleGPXDataParsed} />}
+        </>
       ) : (
         <div className="map-container">
           {error && <div className="error-message">{error}</div>}

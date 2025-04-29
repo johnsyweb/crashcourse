@@ -33,11 +33,10 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({ onElapsedTimeChange }) => {
 
     window.addEventListener('keydown', handleKeyDown);
 
-    // Clean up event listener on component unmount
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []); // Empty dependency array so this only runs once on mount
+  });
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;

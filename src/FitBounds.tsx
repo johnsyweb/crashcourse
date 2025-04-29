@@ -2,7 +2,7 @@ import { LatLngTuple } from 'leaflet';
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 
-export const FitBounds = ({ gpsPoints }: { gpsPoints: LatLngTuple[]; }) => {
+export const FitBounds = ({ gpsPoints }: { gpsPoints: LatLngTuple[] }) => {
   const map = useMap();
 
   useEffect(() => {

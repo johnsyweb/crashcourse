@@ -65,20 +65,27 @@ Please ensure your code follows the project's coding standards and includes test
 
 ### FileUpload
 
-Handles the uploading of GPS data files and manages the state of the uploaded course data. It also initializes the simulation and renders the map with markers.
+Handles the overall simulation setup and visualization. It manages the state of the uploaded course data and renders the map with markers.
 
 ### FileUploadSection
 
-A reusable component for the file upload interface, allowing users to select and upload GPS files.
+A reusable component for the file upload interface, allowing users to select GPS files.
+
+### GPXFile
+
+A specialized component that handles parsing and processing of GPX files. Features include:
+- Parsing XML data from GPX files
+- Extracting track points with coordinates
+- Error handling for malformed or incomplete GPS data
+- Providing structured data (start/endpoints, track points) to parent components
 
 ### SimulatorDisplay
 
-Displays simulation controls, including start, stop, reset, and playback speed adjustment. It also shows course length and elapsed time.
+Displays simulation controls, including playback speed adjustment and course length information.
 
 ### ElapsedTime
 
 A reusable timer component that displays and controls elapsed time. Features include:
-
 - Start/stop/reset functionality with both button and keyboard controls (P, S, R keys)
 - Visual display of elapsed time in minutes and seconds
 - Callback support to notify parent components of time changes
@@ -94,8 +101,6 @@ Adjusts the map view to fit all GPS points within the visible area.
 ### Utilities
 
 - **calculateTrackLength**: Calculates the total length of the course based on GPS points.
-- **gpsLoader**: Parses GPS data files and extracts GPS points.
-- **readFileContent**: Reads the content of uploaded files and processes them for further use.
 
 ### Component Relationships
 
@@ -104,14 +109,14 @@ graph TD
     App[App] --> FU[FileUpload]
     App --> SD[SimulatorDisplay]
     FU --> FUS[FileUploadSection]
+    FU --> GPX[GPXFile]
     FU --> FB[FitBounds]
     SD --> ET[ElapsedTime]
-    FU --> GL[gpsLoader]
-    GL --> RFC[readFileContent]
     FU -.uses.-> CTL[calculateTrackLength]
     SD -.uses.-> P[Participant]
     
     style ET stroke:#4CAF50,stroke-width:2px
+    style GPX stroke:#4CAF50,stroke-width:2px
     style App fill:#f9f9f9,stroke:#333,stroke-width:1px
     style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
     style SD fill:#e3f2fd,stroke:#333,stroke-width:1px
@@ -128,7 +133,7 @@ MIT
 ### TODO
 
 - [ ] Extract more components, using ElapsedTime as an example.
-  - [ ] GPX File, a type of file that the user uploads, containing a set of points, which are then used to define a course.
+  - [x] GPXFile, a specialized component that handles parsing and processing of GPX files.
   - [ ] Course, describing where an event takes place, defined by a series of points between the start and finish point. Has properties such as:
     - [ ] Start point
     - [ ] Finish point

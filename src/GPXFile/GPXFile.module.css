@@ -1,0 +1,23 @@
+.gpxFile {
+  margin-bottom: 16px;
+}
+
+.loadingIndicator {
+  padding: 8px;
+  background-color: #e6f7ff;
+  color: #0072b1;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.errorMessage {
+  padding: 8px;
+  background-color: #fff2f0;
+  color: #d32f2f;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
