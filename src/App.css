@@ -1,18 +1,44 @@
 #root {
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
-.card {
-  padding: 2em;
+.App {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.read-the-docs {
-  color: #888;
+.App-header {
+  margin-bottom: 1.5rem;
+}
+
+.App-header h1 {
+  color: var(--base02);
+  margin-bottom: 0.5rem;
+}
+
+.App-header p {
+  color: var(--base01);
+  margin-top: 0;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+footer {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: var(--base01);
+  padding: 1rem 0;
 }

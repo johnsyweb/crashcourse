@@ -25,20 +25,40 @@ body {
 }
 
 button {
-  background-color: var(--yellow);
-  color: var(--base03);
-  border: none;
+  background-color: var(--base2);
+  color: var(--base02);
+  border: 1px solid var(--base1);
   border-radius: 5px;
   padding: 10px 20px;
   cursor: pointer;
   font-size: 16px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 button:hover {
-  background-color: var(--orange);
+  background-color: var(--yellow);
+  color: var(--base03);
 }
 
-.map-container {
+/* Theme-specific map styling */
+.map-theme {
   background-color: var(--base2);
   border: 1px solid var(--base1);
+}
+
+/* Theme-specific marker styling */
+.marker-finish {
+  color: var(--red);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.marker-start {
+  color: var(--green);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }

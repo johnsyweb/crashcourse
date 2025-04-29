@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './FileUploadSection.module.css';
 
 const FileUploadSection = ({
   handleFileChange,
@@ -6,10 +7,10 @@ const FileUploadSection = ({
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
   return (
-    <div>
+    <div className={styles.uploadSection}>
       <h2>Upload GPX File</h2>
       <button
-        className="upload-button"
+        className={styles.uploadButton}
         onClick={() => {
           const input = document.createElement('input');
           input.type = 'file';

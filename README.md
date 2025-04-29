@@ -63,9 +63,17 @@ Please ensure your code follows the project's coding standards and includes test
 
 ## Components and Responsibilities
 
-### FileUpload
+### CourseSimulationApp
 
-Handles the overall simulation setup and visualization. It manages the state of the uploaded course data and renders the map with markers.
+The main coordinator for the application flow. It handles the switching between the course data import and simulation stages, maintaining the state of the GPS course points.
+
+### CourseDataImporter
+
+Handles the importing and processing of GPS course data. It manages the file selection interface and handles the parsing of GPS files through the GPXFile component.
+
+### CourseSimulation
+
+Manages the visualization and interactive simulation of the course. It coordinates between the Map, Course, and Simulator components to provide a coherent simulation experience.
 
 ### FileUploadSection
 
@@ -142,18 +150,20 @@ A utility component that automatically adjusts the map view to fit all GPS point
 
 ```mermaid
 graph TD
-    App[App] --> FU[FileUpload]
-    FU --> FUS[FileUploadSection]
-    FU --> GPX[GPXFile]
-    FU --> M[Map]
+    App[App] --> CSA[CourseSimulationApp]
+    CSA --> CDI[CourseDataImporter]
+    CDI --> FUS[FileUploadSection]
+    CDI --> GPX[GPXFile]
+    CSA --> CS[CourseSimulation]
+    CS --> M[Map]
     M --> FB[FitBounds]
     M --> CD[CourseDisplay]
     M --> PD[ParticipantDisplay]
-    FU --> C[Course]
+    CS --> C[Course]
     C --> CD
-    FU --> S[Simulator]
+    CS --> S[Simulator]
     S --> ET[ElapsedTime]
-    FU --> P[Participant]
+    CS --> P[Participant]
     P -.uses.-> C
     PD --> P
 
@@ -166,7 +176,9 @@ graph TD
     style S stroke:#4CAF50,stroke-width:2px
     style FB stroke:#4CAF50,stroke-width:2px
     style App fill:#f9f9f9,stroke:#333,stroke-width:1px
-    style FU fill:#e3f2fd,stroke:#333,stroke-width:1px
+    style CSA fill:#e3f2fd,stroke:#333,stroke-width:1px
+    style CDI fill:#e8f5e9,stroke:#333,stroke-width:1px
+    style CS fill:#fff8e1,stroke:#333,stroke-width:1px
 ```
 
 ### Assets

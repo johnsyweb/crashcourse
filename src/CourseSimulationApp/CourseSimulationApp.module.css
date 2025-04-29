@@ -1,0 +1,9 @@
+/* CourseSimulationApp.module.css */
+
+.courseSimulationApp {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}

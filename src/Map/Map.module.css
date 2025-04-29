@@ -7,4 +7,30 @@
 .mapContainer {
   height: 100%;
   width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
 }
+
+/* Marker styles */
+.finishMarker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--red);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.startMarker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Import from theme.css will provide the color variables */
