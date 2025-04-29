@@ -124,3 +124,16 @@ Contains static assets such as icons for markers used in the map visualization.
 ## Licence
 
 MIT
+
+### TODO
+
+- [ ] Extract more components, using ElapsedTime as an example.
+  - [ ] GPX File, a type of file that the user uploads, containing a set of points, which are then used to define a course.
+  - [ ] Course, describing where an event takes place, defined by a series of points between the start and finish point. Has properties such as:
+    - [ ] Start point
+    - [ ] Finish point
+    - [ ] Length, the distance from the start to the finish passing through each of the points in sequence
+  - Can also be queried for the coordinates of a point a given distance from the start
+  - [ ] Participant, an individual who travels the length of the course at their prefered pace
+  - [ ] Map, a graphical representation of the local geography upon which a course and participants may be overlaid.
+  - [ ] Simulator, given a course and a timer, can play participants' progress along the course.
