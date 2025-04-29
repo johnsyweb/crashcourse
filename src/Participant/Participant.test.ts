@@ -9,7 +9,7 @@ jest.mock('../Course', () => {
       return {
         length: 5000, // 5km mock length
         startPoint: points[0],
-        getPositionAtDistance: (distance) => {
+        getPositionAtDistance: (distance: number) => {
           if (distance <= 0) return points[0];
           if (distance >= 5000) return points[points.length - 1];
 

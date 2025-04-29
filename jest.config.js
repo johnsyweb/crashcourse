@@ -7,7 +7,6 @@ export default {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/$1',
     '^@styles/(.*)$': '<rootDir>/src/$1',
-    '^@models/(.*)$': '<rootDir>/src/models/$1',
     '^@assets/(.*)$': '<rootDir>/src/assets/$1',
 
     // Style and asset mocks
