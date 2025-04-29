@@ -12,6 +12,23 @@ interface CourseSimulationProps {
   onReset: () => void;
 }
 
+// Helper function to generate random pace between min and max minutes per km
+const generateRandomPace = (minPace: number, maxPace: number): string => {
+  // Convert min and max pace to seconds
+  const minSeconds = minPace * 60;
+  const maxSeconds = maxPace * 60;
+
+  // Generate random seconds between min and max
+  const totalSeconds =
+    Math.floor(Math.random() * (maxSeconds - minSeconds + 1)) + minSeconds;
+
+  // Convert back to minutes:seconds format
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 const CourseSimulation: React.FC<CourseSimulationProps> = ({
   coursePoints,
   onReset,
@@ -35,9 +52,21 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   // Initialize participants
   useEffect(() => {
     if (course) {
-      // Initialize a participant with the default pace
-      const newParticipant = new Participant(coursePoints);
-      setParticipants([newParticipant]);
+      // Create 100 participants with random paces between 2:30/km and 18:00/km
+      const newParticipants: Participant[] = [];
+
+      // Define min and max paces (in minutes per km)
+      const MIN_PACE = 2.5; // 2:30 min/km
+      const MAX_PACE = 18; // 18:00 min/km
+
+      // Create 100 participants
+      for (let i = 0; i < 100; i++) {
+        const randomPace = generateRandomPace(MIN_PACE, MAX_PACE);
+        const participant = new Participant(coursePoints, 0, randomPace);
+        newParticipants.push(participant);
+      }
+
+      setParticipants(newParticipants);
     }
   }, [course, coursePoints]);
 
