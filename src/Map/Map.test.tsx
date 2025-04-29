@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Map from './Map';
 import '@testing-library/jest-dom';
-import * as FitBoundsModule from '../FitBounds';
 import { LatLngTuple } from 'leaflet';
 
 // Mock the CSS module
@@ -10,6 +9,23 @@ jest.mock('./Map.module.css', () => ({
   mapWrapper: 'mapWrapper',
   mapContainer: 'mapContainer',
 }));
+
+// Mock the FitBounds component completely instead of using spyOn
+jest.mock('../FitBounds', () => ({
+  FitBounds: jest.fn(({ gpsPoints }) => {
+    if (gpsPoints && gpsPoints.length > 0) {
+      // Add a div to the document for testing purposes only
+      const div = document.createElement('div');
+      div.setAttribute('data-testid', 'fit-bounds');
+      div.setAttribute('data-points', JSON.stringify(gpsPoints));
+      document.body.appendChild(div);
+    }
+    return null;
+  }),
+}));
+
+// Get the mocked FitBounds function for verification
+const mockedFitBounds = jest.requireMock('../FitBounds').FitBounds;
 
 // Define interfaces for the mock components
 interface MapContainerProps {
@@ -50,31 +66,12 @@ jest.mock('react-leaflet', () => ({
 }));
 
 describe('Map Component', () => {
-  // Create a spy on the FitBounds component before each test
-  let fitBoundsSpy: jest.SpyInstance;
-
   beforeEach(() => {
-    // Instead of using mockImplementation, we'll use mockReturnValue
-    // This addresses the type mismatch since we're not changing the component function itself
-    fitBoundsSpy = jest.spyOn(FitBoundsModule, 'FitBounds');
-
-    // Use a function that adds a test marker to the DOM for verification
-    // while still preserving the original return type (null)
-    fitBoundsSpy.mockImplementation(({ gpsPoints }) => {
-      // Add a div to the document for testing purposes only
-      const div = document.createElement('div');
-      div.setAttribute('data-testid', 'fit-bounds');
-      div.setAttribute('data-points', JSON.stringify(gpsPoints));
-      document.body.appendChild(div);
-
-      // Actual component returns null
-      return null;
-    });
+    // Clear mock calls before each test
+    mockedFitBounds.mockClear();
   });
 
   afterEach(() => {
-    fitBoundsSpy.mockRestore();
-
     // Clean up any elements we added to the body
     const element = document.querySelector('[data-testid="fit-bounds"]');
     if (element && element.parentNode) {
@@ -146,11 +143,12 @@ describe('Map Component', () => {
     render(<Map gpsPoints={testPoints} />);
 
     // Verify FitBounds was called with the correct props
-    expect(fitBoundsSpy).toHaveBeenCalled();
-    expect(fitBoundsSpy.mock.calls[0][0]).toEqual({ gpsPoints: testPoints });
+    expect(mockedFitBounds).toHaveBeenCalled();
+    // The second argument is the React elements props object, which we don't need to test
+    expect(mockedFitBounds.mock.calls[0][0]).toEqual({ gpsPoints: testPoints });
 
-    const fitBounds = screen.getByTestId('fit-bounds');
-    expect(fitBounds).toBeInTheDocument();
+    const fitBounds = document.querySelector('[data-testid="fit-bounds"]');
+    expect(fitBounds).not.toBeNull();
     expect(fitBounds).toHaveAttribute(
       'data-points',
       JSON.stringify(testPoints),
@@ -160,15 +158,19 @@ describe('Map Component', () => {
   it('does not render FitBounds when no gpsPoints are provided', () => {
     render(<Map />);
 
-    expect(screen.queryByTestId('fit-bounds')).not.toBeInTheDocument();
-    expect(fitBoundsSpy).not.toHaveBeenCalled();
+    expect(document.querySelector('[data-testid="fit-bounds"]')).toBeNull();
+    expect(mockedFitBounds).not.toHaveBeenCalled();
   });
 
   it('does not render FitBounds when gpsPoints array is empty', () => {
     render(<Map gpsPoints={[]} />);
 
-    expect(screen.queryByTestId('fit-bounds')).not.toBeInTheDocument();
-    expect(fitBoundsSpy).not.toHaveBeenCalled();
+    // Check that the FitBounds element isn't rendered
+    expect(document.querySelector('[data-testid="fit-bounds"]')).toBeNull();
+
+    // FitBounds component shouldn't be called at all because of the condition in Map.tsx:
+    // {gpsPoints && gpsPoints.length > 0 && (<FitBounds gpsPoints={gpsPoints} />)}
+    expect(mockedFitBounds).not.toHaveBeenCalled();
   });
 
   it('applies custom and default classes to the wrapper', () => {
