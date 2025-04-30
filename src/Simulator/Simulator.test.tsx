@@ -31,16 +31,10 @@ jest.mock('../ElapsedTime', () => {
       <div>
         <p>Mock ElapsedTime</p>
         <button
-          data-testid="start-button"
+          data-testid="elapsed-time-control"
           onClick={() => onElapsedTimeChange && onElapsedTimeChange(10)}
         >
-          Start
-        </button>
-        <button
-          data-testid="reset-button"
-          onClick={() => onElapsedTimeChange && onElapsedTimeChange(0)}
-        >
-          Reset
+          Control Time
         </button>
       </div>
     );
@@ -78,7 +72,7 @@ describe('Simulator Component', () => {
     expect(screen.getByText(/Participants: 2/i)).toBeInTheDocument();
   });
 
-  it('shows reset button when timer is running', () => {
+  it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
     render(
       <Simulator
         course={mockCourse}
@@ -87,35 +81,11 @@ describe('Simulator Component', () => {
       />,
     );
 
-    // Start button from our mocked ElapsedTime component
-    const startButton = screen.getByTestId('start-button');
-
-    // Initially the reset button should not be visible
-    expect(screen.queryByText(/Reset Simulation/i)).not.toBeInTheDocument();
-
-    // Click the start button which will call onElapsedTimeChange(10)
-    act(() => {
-      fireEvent.click(startButton);
-    });
-
-    // Reset button should now be visible
-    expect(screen.getByText(/Reset Simulation/i)).toBeInTheDocument();
-  });
-
-  it('updates participants and calls onParticipantUpdate when time changes', async () => {
-    render(
-      <Simulator
-        course={mockCourse}
-        participants={mockParticipants}
-        onParticipantUpdate={mockParticipantUpdate}
-      />,
-    );
-
-    // Start the timer
-    const startButton = screen.getByTestId('start-button');
+    // Use our mocked elapsed time control
+    const timeControl = screen.getByTestId('elapsed-time-control');
 
     act(() => {
-      fireEvent.click(startButton);
+      fireEvent.click(timeControl);
       // We need to wait for the effect to run
       jest.runAllTimers();
     });
@@ -125,42 +95,7 @@ describe('Simulator Component', () => {
 
     // Verify that updateElapsedTime was called on all participants
     mockParticipants.forEach((participant) => {
-      expect(participant.updateElapsedTime).toHaveBeenCalled();
+      expect(participant.updateElapsedTime).toHaveBeenCalledWith(10);
     });
-  });
-
-  it('resets the simulation when reset button is clicked', () => {
-    render(
-      <Simulator
-        course={mockCourse}
-        participants={mockParticipants}
-        onParticipantUpdate={mockParticipantUpdate}
-      />,
-    );
-
-    // Start the timer first to show reset button
-    const startButton = screen.getByTestId('start-button');
-
-    act(() => {
-      fireEvent.click(startButton);
-    });
-
-    // Reset the simulation
-    const resetButton = screen.getByText(/Reset Simulation/i);
-
-    act(() => {
-      fireEvent.click(resetButton);
-    });
-
-    // Verify that updateElapsedTime was called with 0
-    mockParticipants.forEach((participant) => {
-      expect(participant.updateElapsedTime).toHaveBeenCalledWith(0);
-    });
-
-    // Verify that onParticipantUpdate was called
-    expect(mockParticipantUpdate).toHaveBeenCalled();
-
-    // Reset button should no longer be visible
-    expect(screen.queryByText(/Reset Simulation/i)).not.toBeInTheDocument();
   });
 });

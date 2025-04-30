@@ -16,7 +16,6 @@ const Simulator: React.FC<SimulatorProps> = ({
   onParticipantUpdate,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
 
@@ -46,14 +45,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 
   const handleElapsedTimeChange = (newElapsedTime: number) => {
     setElapsedTime(newElapsedTime);
-    setIsRunning(newElapsedTime > 0);
     participantsNeedUpdate.current = true;
-  };
-
-  const handleReset = () => {
-    setElapsedTime(0);
-    setIsRunning(false);
-    updateParticipants(0);
   };
 
   return (
@@ -71,12 +63,6 @@ const Simulator: React.FC<SimulatorProps> = ({
           onElapsedTimeChange={handleElapsedTimeChange}
           initialElapsedTime={0}
         />
-
-        {isRunning && (
-          <button className={styles.resetButton} onClick={handleReset}>
-            Reset Simulation
-          </button>
-        )}
       </div>
     </div>
   );
