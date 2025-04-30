@@ -42,6 +42,22 @@ const invalidGPXContent = `
 `;
 
 describe('GPXFile Component', () => {
+  // Mock console methods to prevent pollution
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+  beforeAll(() => {
+    // Silence console logs during tests
+    console.log = jest.fn();
+    console.error = jest.fn();
+  });
+
+  afterAll(() => {
+    // Restore console methods after tests
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+  });
+
   // Mock implementation of readFileAsText using Jest's mocking
   beforeEach(() => {
     // Create a custom mock of FileReader
@@ -81,6 +97,8 @@ describe('GPXFile Component', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    // Reset the mock state of console methods
+    jest.clearAllMocks();
   });
 
   it('parses valid GPX file successfully', async () => {
