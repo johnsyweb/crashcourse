@@ -12,10 +12,15 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 }) => {
   const [elapsedTime, setElapsedTime] = useState(initialElapsedTime);
   const [isRunning, setIsRunning] = useState(false);
+  // Add speed multiplier state with default 60x
+  const [speedMultiplier, setSpeedMultiplier] = useState(60);
   // Use a ref to avoid unnecessary callback invocations
   const lastReportedTime = useRef(initialElapsedTime);
   // Use a ref to track initialization
   const isInitialized = useRef(false);
+
+  // Define available speed options
+  const speedOptions = React.useMemo(() => [1, 10, 30, 60, 120], []);
 
   // Initialize lastReportedTime and handle initialElapsedTime properly
   useEffect(() => {
@@ -43,6 +48,28 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     }
   }, [onElapsedTimeChange]);
 
+  // Function to increase speed
+  const increaseSpeed = useCallback(() => {
+    setSpeedMultiplier((prevSpeed) => {
+      const currentIndex = speedOptions.indexOf(prevSpeed);
+      if (currentIndex < speedOptions.length - 1) {
+        return speedOptions[currentIndex + 1];
+      }
+      return prevSpeed; // Already at max speed
+    });
+  }, [speedOptions]);
+
+  // Function to decrease speed
+  const decreaseSpeed = useCallback(() => {
+    setSpeedMultiplier((prevSpeed) => {
+      const currentIndex = speedOptions.indexOf(prevSpeed);
+      if (currentIndex > 0) {
+        return speedOptions[currentIndex - 1];
+      }
+      return prevSpeed; // Already at min speed
+    });
+  }, [speedOptions]);
+
   // Handle keyboard events
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -62,6 +89,12 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         setIsRunning(false);
       } else if (key === 'r') {
         resetTime();
+      } else if (key === '+' || key === '=') {
+        // Use = as alternative for + since it's the same key without shift
+        increaseSpeed();
+      } else if (key === '-' || key === '_') {
+        // Use _ as alternative for - since it's the same key with shift
+        decreaseSpeed();
       }
     };
 
@@ -70,13 +103,17 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [resetTime]);
+  }, [resetTime, increaseSpeed, decreaseSpeed]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     if (isRunning) {
+      // Calculate interval based on speed multiplier (faster updates at higher speeds)
+      const updateInterval = 1000 / speedMultiplier;
+      
       timer = setInterval(() => {
         setElapsedTime((prev) => {
+          // Each tick adds 1 second to the simulation time
           const newTime = prev + 1;
           // Only call the callback if the time has actually changed
           if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
@@ -85,19 +122,57 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
           }
           return newTime;
         });
-      }, 1000);
+      }, updateInterval);
     }
 
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, onElapsedTimeChange]);
+  }, [isRunning, onElapsedTimeChange, speedMultiplier]);
+
+  // Handle speed change
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSpeedMultiplier(Number(e.target.value));
+  };
 
   return (
     <div className={styles.elapsedTimeContainer}>
       <p className={styles.timeDisplay}>
         Elapsed Time: {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
       </p>
+      
+      <div className={styles.speedControl}>
+        <button 
+          className={`${styles.button} ${styles.speedButton}`}
+          onClick={decreaseSpeed}
+          disabled={speedMultiplier === speedOptions[0]}
+          title="Decrease Speed (-)"
+          aria-label="Decrease simulation speed"
+        >
+          -
+        </button>
+        <label htmlFor="speedSelect">Speed: </label>
+        <select 
+          id="speedSelect" 
+          value={speedMultiplier} 
+          onChange={handleSpeedChange}
+          className={styles.speedSelect}
+        >
+          {speedOptions.map(option => (
+            <option key={option} value={option}>{option}x</option>
+          ))}
+        </select>
+        <button 
+          className={`${styles.button} ${styles.speedButton}`}
+          onClick={increaseSpeed}
+          disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
+          title="Increase Speed (+)"
+          aria-label="Increase simulation speed"
+        >
+          +
+        </button>
+      </div>
+      
       <div className={styles.buttonContainer}>
         <button
           className={`${styles.button} ${styles.startButton}`}
@@ -125,7 +200,8 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         </button>
       </div>
       <div className={styles.keyboardHelp}>
-        Keyboard: <kbd>P</kbd> Play, <kbd>S</kbd> Stop, <kbd>R</kbd> Reset
+        Keyboard: <kbd>P</kbd> Play, <kbd>S</kbd> Stop, <kbd>R</kbd> Reset,{" "}
+        <kbd>+</kbd> Faster, <kbd>-</kbd> Slower
       </div>
     </div>
   );
