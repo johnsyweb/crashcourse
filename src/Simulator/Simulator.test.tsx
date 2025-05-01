@@ -69,7 +69,12 @@ describe('Simulator Component', () => {
     );
 
     expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
-    expect(screen.getByText(/Course Length: 5.00 km/i)).toBeInTheDocument();
+    
+    // In our new UI structure, the course length is displayed differently
+    // Check for label and value separately
+    expect(screen.getByText(/Course Length/i)).toBeInTheDocument();
+    expect(screen.getByText(/5.00/i)).toBeInTheDocument();
+    expect(screen.getByText(/km/i)).toBeInTheDocument();
 
     // Instead of using getByLabelText which is too generic now, use a more specific query
     const inputElement = screen.getByRole('spinbutton', {

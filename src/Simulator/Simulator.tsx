@@ -118,52 +118,104 @@ const Simulator: React.FC<SimulatorProps> = ({
   return (
     <div className={styles.simulatorContainer}>
       <div className={styles.simulatorControls}>
-        <h3>Simulator Controls</h3>
-        <div className={styles.courseInfo}>
-          <p>
-            Course Length: {course ? (course.length / 1000).toFixed(2) : 0} km
-          </p>
-          <div className={styles.participantControl}>
-            <label htmlFor="participantCount">Participants:</label>
-            <div className={styles.participantCountWrapper}>
-              <button
-                className={styles.participantCountButton}
-                onClick={decreaseParticipantCount}
-                disabled={participantCount <= 1}
-                title="Decrease Participants ([)"
-                aria-label="Decrease number of participants"
-              >
-                -
-              </button>
-              <input
-                id="participantCount"
-                type="number"
-                min="1"
-                value={participantCount}
-                onChange={handleParticipantCountChange}
-                aria-label="Number of participants"
-                className={styles.participantCountInput}
+        <h3 className={styles.sectionTitle}>Simulator Controls</h3>
+        
+        {/* Course Information */}
+        <div className={styles.infoSection}>
+          <div className={styles.infoItem}>
+            <span className={styles.infoLabel}>Course Length:</span>
+            <span className={styles.infoValue}>{course ? (course.length / 1000).toFixed(2) : 0} km</span>
+          </div>
+        </div>
+        
+        {/* Control Sections */}
+        <div className={styles.controlSections}>
+          {/* Participant Control Section */}
+          <div className={styles.controlSection}>
+            <div className={styles.controlHeader}>Participants</div>
+            <div className={styles.controlContent}>
+              <div className={styles.controlItem}>
+                <label htmlFor="participantCount" className={styles.controlLabel}>Count:</label>
+                <div className={styles.controlInputGroup}>
+                  <button
+                    className={styles.controlButton}
+                    onClick={decreaseParticipantCount}
+                    disabled={participantCount <= 1}
+                    title="Decrease Participants"
+                    aria-label="Decrease number of participants"
+                  >
+                    −
+                  </button>
+                  <input
+                    id="participantCount"
+                    type="number"
+                    min="1"
+                    value={participantCount}
+                    onChange={handleParticipantCountChange}
+                    aria-label="Number of participants"
+                    className={styles.controlInput}
+                  />
+                  <button
+                    className={styles.controlButton}
+                    onClick={increaseParticipantCount}
+                    title="Increase Participants"
+                    aria-label="Increase number of participants"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Timer Control Section - Use the existing ElapsedTime component */}
+          <div className={styles.controlSection}>
+            <div className={styles.controlHeader}>Simulation Time</div>
+            <div className={styles.controlContent}>
+              <ElapsedTime
+                onElapsedTimeChange={handleElapsedTimeChange}
+                initialElapsedTime={0}
               />
-              <button
-                className={styles.participantCountButton}
-                onClick={increaseParticipantCount}
-                title="Increase Participants (])"
-                aria-label="Increase number of participants"
-              >
-                +
-              </button>
             </div>
           </div>
         </div>
-
-        <div className={styles.keyboardHelp}>
-          Keyboard: <kbd>[</kbd> Fewer, <kbd>]</kbd> More Participants
+        
+        {/* Unified Keyboard Shortcuts */}
+        <div className={styles.keyboardShortcuts}>
+          <div className={styles.shortcutsHeader}>Keyboard Shortcuts</div>
+          <div className={styles.shortcutsGrid}>
+            <div className={styles.shortcutGroup}>
+              <div className={styles.shortcutGroupTitle}>Participants</div>
+              <div className={styles.shortcut}>
+                <kbd>[</kbd> <span>Decrease count</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>]</kbd> <span>Increase count</span>
+              </div>
+            </div>
+            <div className={styles.shortcutGroup}>
+              <div className={styles.shortcutGroupTitle}>Simulation</div>
+              <div className={styles.shortcut}>
+                <kbd>P</kbd> <span>Play</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>S</kbd> <span>Stop</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>R</kbd> <span>Reset</span>
+              </div>
+            </div>
+            <div className={styles.shortcutGroup}>
+              <div className={styles.shortcutGroupTitle}>Speed</div>
+              <div className={styles.shortcut}>
+                <kbd>-</kbd> <span>Decrease</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>+</kbd> <span>Increase</span>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <ElapsedTime
-          onElapsedTimeChange={handleElapsedTimeChange}
-          initialElapsedTime={0}
-        />
       </div>
     </div>
   );

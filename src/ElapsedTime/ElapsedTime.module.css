@@ -3,105 +3,130 @@
 .elapsedTimeContainer {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  gap: 1rem;
+  width: 100%;
 }
 
 .timeDisplay {
   font-size: 1.2rem;
-  font-weight: 500;
-  margin: 0;
-}
-
-/* Speed control styles */
-.speedControl {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.speedSelect {
-  padding: 4px 8px;
+  font-weight: 600;
+  color: #333;
+  background-color: #f7f9fc;
+  padding: 0.5rem 0.75rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
+  text-align: center;
+  border: 1px solid #e8e8e8;
+}
+
+.controlRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.speedControls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.controlLabel {
+  font-weight: 500;
+  color: #555;
   font-size: 0.9rem;
 }
 
-.speedButton {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1;
-  border-radius: 50%;
+.controlInputGroup {
+  display: flex;
+  align-items: center;
+}
+
+.controlButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.speedButton:disabled {
+.controlButton:hover:not(:disabled) {
+  background-color: #e9e9e9;
+}
+
+.controlButton:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.controlButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.buttonContainer {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.button {
-  padding: 8px 12px;
-  font-size: 18px;
-  border: none;
+.controlSelect {
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid #ccc;
   border-radius: 4px;
+  margin: 0 0.5rem;
+  background-color: white;
+  font-size: 0.9rem;
+  min-width: 4rem;
+}
+
+.simulationControls {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.simulationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 1.2rem;
   cursor: pointer;
-  background-color: #f5f5f5;
-  transition:
-    background-color 0.2s ease-in-out,
-    transform 0.1s ease-in-out;
+  transition: all 0.2s ease;
 }
 
-.button:hover {
-  background-color: #e0e0e0;
+.simulationButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.button:active {
-  transform: scale(0.95);
+.simulationButton:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-.startButton {
+.simulationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.playButton {
   background-color: #e6f7e6;
+  border-color: #c8e6c9;
 }
 
 .stopButton {
-  background-color: #ffe6e6;
+  background-color: #fbe9e7;
+  border-color: #ffccbc;
 }
 
 .resetButton {
-  background-color: #e6e6ff;
-}
-
-.keyboardHelp {
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 4px;
-}
-
-.keyboardHelp kbd {
-  display: inline-block;
-  padding: 2px 5px;
-  font-size: 0.85rem;
-  font-family: monospace;
-  line-height: 1;
-  color: #444;
-  background-color: #f7f7f7;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
-  margin: 0 2px;
+  background-color: #e8eaf6;
+  border-color: #c5cae9;
 }

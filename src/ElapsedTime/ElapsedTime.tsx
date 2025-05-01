@@ -137,73 +137,70 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 
   return (
     <div className={styles.elapsedTimeContainer}>
-      <p className={styles.timeDisplay}>
-        Elapsed Time: {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
-      </p>
-
-      <div className={styles.speedControl}>
-        <button
-          className={`${styles.button} ${styles.speedButton}`}
-          onClick={decreaseSpeed}
-          disabled={speedMultiplier === speedOptions[0]}
-          title="Decrease Speed (-)"
-          aria-label="Decrease simulation speed"
-        >
-          -
-        </button>
-        <label htmlFor="speedSelect">Speed: </label>
-        <select
-          id="speedSelect"
-          value={speedMultiplier}
-          onChange={handleSpeedChange}
-          className={styles.speedSelect}
-        >
-          {speedOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}x
-            </option>
-          ))}
-        </select>
-        <button
-          className={`${styles.button} ${styles.speedButton}`}
-          onClick={increaseSpeed}
-          disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
-          title="Increase Speed (+)"
-          aria-label="Increase simulation speed"
-        >
-          +
-        </button>
+      <div className={styles.timeDisplay}>
+        {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
       </div>
 
-      <div className={styles.buttonContainer}>
+      <div className={styles.controlRow}>
+        <div className={styles.speedControls}>
+          <label htmlFor="speedSelect" className={styles.controlLabel}>Speed:</label>
+          <div className={styles.controlInputGroup}>
+            <button
+              className={styles.controlButton}
+              onClick={decreaseSpeed}
+              disabled={speedMultiplier === speedOptions[0]}
+              aria-label="Decrease simulation speed"
+            >
+              −
+            </button>
+            <select
+              id="speedSelect"
+              value={speedMultiplier}
+              onChange={handleSpeedChange}
+              className={styles.controlSelect}
+            >
+              {speedOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}x
+                </option>
+              ))}
+            </select>
+            <button
+              className={styles.controlButton}
+              onClick={increaseSpeed}
+              disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
+              aria-label="Increase simulation speed"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.simulationControls}>
         <button
-          className={`${styles.button} ${styles.startButton}`}
+          className={`${styles.simulationButton} ${styles.playButton}`}
           onClick={() => setIsRunning(true)}
-          title="Start (P)"
           aria-label="Start timer"
+          disabled={isRunning}
         >
           ▶️
         </button>
         <button
-          className={`${styles.button} ${styles.stopButton}`}
+          className={`${styles.simulationButton} ${styles.stopButton}`}
           onClick={() => setIsRunning(false)}
-          title="Stop (S)"
           aria-label="Stop timer"
+          disabled={!isRunning}
         >
           ⏹️
         </button>
         <button
-          className={`${styles.button} ${styles.resetButton}`}
+          className={`${styles.simulationButton} ${styles.resetButton}`}
           onClick={resetTime}
-          title="Reset (R)"
           aria-label="Reset timer"
         >
           🔄
         </button>
-      </div>
-      <div className={styles.keyboardHelp}>
-        Keyboard: <kbd>P</kbd> Play, <kbd>S</kbd> Stop, <kbd>R</kbd> Reset,{' '}
-        <kbd>+</kbd> Faster, <kbd>-</kbd> Slower
       </div>
     </div>
   );

@@ -15,7 +15,9 @@ describe('ElapsedTime Component', () => {
 
   it('renders elapsed time correctly', () => {
     render(<ElapsedTime />);
-    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    // In our new UI, the time display doesn't include the "Elapsed Time:" text
+    // Just check for the time values themselves
+    expect(screen.getByText('0m 0s')).toBeInTheDocument();
   });
 
   it('starts and updates elapsed time', () => {
@@ -37,7 +39,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Check that the elapsed time is no longer 0
-    expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
 
     // Reset the timer to have a predictable state for other tests
     const resetButton = screen.getByRole('button', { name: /reset timer/i });
@@ -65,7 +67,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Get the current displayed time text for verification later
-    const timeDisplayEl = screen.getByText(/Elapsed Time:/);
+    const timeDisplayEl = screen.getByText(/\d+m \d+s/);
     const currentTimeText = timeDisplayEl.textContent;
 
     fireEvent.click(stopButton);
@@ -79,7 +81,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // The time should not have changed
-    expect(screen.getByText(/Elapsed Time:/).textContent).toBe(currentTimeText);
+    expect(screen.getByText(/\d+m \d+s/).textContent).toBe(currentTimeText);
 
     // Reset the timer to have a predictable state for other tests
     const resetButton = screen.getByRole('button', { name: /reset timer/i });
@@ -107,13 +109,13 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Verify that time has advanced (is no longer 0)
-    expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
 
     // Reset the timer
     fireEvent.click(resetButton);
 
     // Time should be back to 0
-    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    expect(screen.getByText('0m 0s')).toBeInTheDocument();
   });
 
   it('starts timer with keyboard shortcut "p"', () => {
@@ -134,7 +136,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Verify time has advanced (no longer at 0)
-    expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
 
     // Reset for other tests
     fireEvent.keyDown(document, { key: 'r' });
@@ -158,7 +160,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Get the current displayed time text for verification later
-    const timeDisplayEl = screen.getByText(/Elapsed Time:/);
+    const timeDisplayEl = screen.getByText(/\d+m \d+s/);
     const currentTimeText = timeDisplayEl.textContent;
 
     fireEvent.keyDown(document, { key: 's' });
@@ -171,7 +173,7 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Time should not have changed after stopping
-    expect(screen.getByText(/Elapsed Time:/).textContent).toBe(currentTimeText);
+    expect(screen.getByText(/\d+m \d+s/).textContent).toBe(currentTimeText);
 
     // Reset for other tests
     fireEvent.keyDown(document, { key: 'r' });
@@ -190,12 +192,12 @@ describe('ElapsedTime Component', () => {
     fireEvent.keyDown(document, { key: 'r' });
 
     // Time should be reset to 0
-    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    expect(screen.getByText('0m 0s')).toBeInTheDocument();
   });
 
   it('initializes with initialElapsedTime prop', () => {
     render(<ElapsedTime initialElapsedTime={5} />);
-    expect(screen.getByText(/Elapsed Time: 0m 5s/i)).toBeInTheDocument();
+    expect(screen.getByText('0m 5s')).toBeInTheDocument();
   });
 
   it('calls onElapsedTimeChange callback when time changes', () => {
@@ -244,7 +246,7 @@ describe('ElapsedTime Component', () => {
     const resetButton = screen.getByRole('button', { name: /reset timer/i });
     fireEvent.click(resetButton);
 
-    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    expect(screen.getByText('0m 0s')).toBeInTheDocument();
     expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
@@ -283,7 +285,7 @@ describe('ElapsedTime Component', () => {
     });
 
     // At 1x speed, 100ms should not be enough to update the time
-    expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
+    expect(screen.getByText('0m 0s')).toBeInTheDocument();
 
     // Now set speed to 60x
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -296,7 +298,7 @@ describe('ElapsedTime Component', () => {
     // At 60x speed, 100ms is enough to update multiple times
     // 100ms real time at 60x speed should update time by ~6 seconds
     // But we're advancing the timer by specific steps, so we'll just check if it's updated at all
-    expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
   });
 
   it('allows increasing speed with + key', () => {
