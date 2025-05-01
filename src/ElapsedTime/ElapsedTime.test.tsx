@@ -20,11 +20,11 @@ describe('ElapsedTime Component', () => {
 
   it('starts and updates elapsed time', () => {
     const { rerender } = render(<ElapsedTime />);
-    
+
     // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
-    
+
     const startButton = screen.getByRole('button', { name: /start timer/i });
     fireEvent.click(startButton);
 
@@ -35,7 +35,7 @@ describe('ElapsedTime Component', () => {
 
     // Force a rerender to ensure the component updates
     rerender(<ElapsedTime />);
-    
+
     // Check that the elapsed time is no longer 0
     expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
 
@@ -46,7 +46,7 @@ describe('ElapsedTime Component', () => {
 
   it('stops elapsed time', () => {
     const { rerender } = render(<ElapsedTime />);
-    
+
     // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -63,7 +63,7 @@ describe('ElapsedTime Component', () => {
 
     // Force a rerender to ensure the component updates
     rerender(<ElapsedTime />);
-    
+
     // Get the current displayed time text for verification later
     const timeDisplayEl = screen.getByText(/Elapsed Time:/);
     const currentTimeText = timeDisplayEl.textContent;
@@ -88,7 +88,7 @@ describe('ElapsedTime Component', () => {
 
   it('resets elapsed time', () => {
     const { rerender } = render(<ElapsedTime />);
-    
+
     // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -105,7 +105,7 @@ describe('ElapsedTime Component', () => {
 
     // Force a rerender to ensure the component updates
     rerender(<ElapsedTime />);
-    
+
     // Verify that time has advanced (is no longer 0)
     expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
 
@@ -118,7 +118,7 @@ describe('ElapsedTime Component', () => {
 
   it('starts timer with keyboard shortcut "p"', () => {
     const { rerender } = render(<ElapsedTime />);
-    
+
     // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -135,14 +135,14 @@ describe('ElapsedTime Component', () => {
 
     // Verify time has advanced (no longer at 0)
     expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
-    
+
     // Reset for other tests
     fireEvent.keyDown(document, { key: 'r' });
   });
 
   it('stops timer with keyboard shortcut "s"', () => {
     const { rerender } = render(<ElapsedTime />);
-    
+
     // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -153,7 +153,7 @@ describe('ElapsedTime Component', () => {
     act(() => {
       jest.advanceTimersByTime(50);
     });
-    
+
     // Force a rerender to ensure the component updates
     rerender(<ElapsedTime />);
 
@@ -166,13 +166,13 @@ describe('ElapsedTime Component', () => {
     act(() => {
       jest.advanceTimersByTime(100); // More time while stopped
     });
-    
+
     // Force a rerender to ensure the component updates
     rerender(<ElapsedTime />);
 
     // Time should not have changed after stopping
     expect(screen.getByText(/Elapsed Time:/).textContent).toBe(currentTimeText);
-    
+
     // Reset for other tests
     fireEvent.keyDown(document, { key: 'r' });
   });
@@ -257,11 +257,11 @@ describe('ElapsedTime Component', () => {
   it('allows changing the simulation speed', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Change speed to 10x
     fireEvent.change(speedSelect, { target: { value: '10' } });
     expect(speedSelect).toHaveValue('10');
-    
+
     // Change speed to 120x
     fireEvent.change(speedSelect, { target: { value: '120' } });
     expect(speedSelect).toHaveValue('120');
@@ -272,108 +272,108 @@ describe('ElapsedTime Component', () => {
 
     const speedSelect = screen.getByRole('combobox');
     const startButton = screen.getByRole('button', { name: /start timer/i });
-    
+
     // Set speed to 1x (real time)
     fireEvent.change(speedSelect, { target: { value: '1' } });
     fireEvent.click(startButton);
-    
+
     // Advance 100ms in real time at 1x speed
     act(() => {
       jest.advanceTimersByTime(100);
     });
-    
+
     // At 1x speed, 100ms should not be enough to update the time
     expect(screen.getByText(/Elapsed Time: 0m 0s/i)).toBeInTheDocument();
-    
+
     // Now set speed to 60x
     fireEvent.change(speedSelect, { target: { value: '60' } });
-    
+
     // Advance 100ms in real time at 60x speed
     act(() => {
       jest.advanceTimersByTime(100);
     });
-    
+
     // At 60x speed, 100ms is enough to update multiple times
     // 100ms real time at 60x speed should update time by ~6 seconds
     // But we're advancing the timer by specific steps, so we'll just check if it's updated at all
     expect(screen.queryByText(/Elapsed Time: 0m 0s/i)).not.toBeInTheDocument();
   });
-  
+
   it('allows increasing speed with + key', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Set initial speed to 10x
     fireEvent.change(speedSelect, { target: { value: '10' } });
     expect(speedSelect).toHaveValue('10');
-    
+
     // Press + key
     fireEvent.keyDown(document, { key: '+' });
-    
+
     // Speed should increase to next option (30x)
     expect(speedSelect).toHaveValue('30');
   });
-  
+
   it('allows decreasing speed with - key', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Set initial speed to 60x (default)
     expect(speedSelect).toHaveValue('60');
-    
+
     // Press - key
     fireEvent.keyDown(document, { key: '-' });
-    
+
     // Speed should decrease to previous option (30x)
     expect(speedSelect).toHaveValue('30');
   });
-  
+
   it('handles equals key as alternative for increasing speed', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Set initial speed to 10x
     fireEvent.change(speedSelect, { target: { value: '10' } });
     expect(speedSelect).toHaveValue('10');
-    
+
     // Press = key (alternative for + without shift)
     fireEvent.keyDown(document, { key: '=' });
-    
+
     // Speed should increase to next option (30x)
     expect(speedSelect).toHaveValue('30');
   });
-  
+
   it('handles underscore key as alternative for decreasing speed', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Set initial speed to 60x (default)
     expect(speedSelect).toHaveValue('60');
-    
+
     // Press _ key (alternative for - with shift)
     fireEvent.keyDown(document, { key: '_' });
-    
+
     // Speed should decrease to previous option (30x)
     expect(speedSelect).toHaveValue('30');
   });
-  
+
   it('prevents speed from going beyond min and max values', () => {
     render(<ElapsedTime />);
     const speedSelect = screen.getByRole('combobox');
-    
+
     // Set to minimum speed (1x)
     fireEvent.change(speedSelect, { target: { value: '1' } });
     expect(speedSelect).toHaveValue('1');
-    
+
     // Try to decrease below minimum
     fireEvent.keyDown(document, { key: '-' });
     // Should stay at minimum
     expect(speedSelect).toHaveValue('1');
-    
+
     // Set to maximum speed (120x)
     fireEvent.change(speedSelect, { target: { value: '120' } });
     expect(speedSelect).toHaveValue('120');
-    
+
     // Try to increase beyond maximum
     fireEvent.keyDown(document, { key: '+' });
     // Should stay at maximum

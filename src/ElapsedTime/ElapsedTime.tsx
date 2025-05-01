@@ -110,7 +110,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     if (isRunning) {
       // Calculate interval based on speed multiplier (faster updates at higher speeds)
       const updateInterval = 1000 / speedMultiplier;
-      
+
       timer = setInterval(() => {
         setElapsedTime((prev) => {
           // Each tick adds 1 second to the simulation time
@@ -140,9 +140,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
       <p className={styles.timeDisplay}>
         Elapsed Time: {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
       </p>
-      
+
       <div className={styles.speedControl}>
-        <button 
+        <button
           className={`${styles.button} ${styles.speedButton}`}
           onClick={decreaseSpeed}
           disabled={speedMultiplier === speedOptions[0]}
@@ -152,17 +152,19 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
           -
         </button>
         <label htmlFor="speedSelect">Speed: </label>
-        <select 
-          id="speedSelect" 
-          value={speedMultiplier} 
+        <select
+          id="speedSelect"
+          value={speedMultiplier}
           onChange={handleSpeedChange}
           className={styles.speedSelect}
         >
-          {speedOptions.map(option => (
-            <option key={option} value={option}>{option}x</option>
+          {speedOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}x
+            </option>
           ))}
         </select>
-        <button 
+        <button
           className={`${styles.button} ${styles.speedButton}`}
           onClick={increaseSpeed}
           disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
@@ -172,7 +174,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
           +
         </button>
       </div>
-      
+
       <div className={styles.buttonContainer}>
         <button
           className={`${styles.button} ${styles.startButton}`}
@@ -200,7 +202,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         </button>
       </div>
       <div className={styles.keyboardHelp}>
-        Keyboard: <kbd>P</kbd> Play, <kbd>S</kbd> Stop, <kbd>R</kbd> Reset,{" "}
+        Keyboard: <kbd>P</kbd> Play, <kbd>S</kbd> Stop, <kbd>R</kbd> Reset,{' '}
         <kbd>+</kbd> Faster, <kbd>-</kbd> Slower
       </div>
     </div>

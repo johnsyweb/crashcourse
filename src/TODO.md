@@ -5,7 +5,7 @@
 - Each change must be made atomically.
 - We must follow the current code layout with each component having a single responsibility and having tests
 - Disused code must be removed immediately
-- All of our checks must pass at every step
+- All of our checks must pass at every step (`pno)
 - Each change must be committed to git with a meaningful, semantic message
 - Every single user input must be controllable from the keyboard
 - We should have a clean, consistent, accessible user interface
