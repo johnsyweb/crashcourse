@@ -1,5 +1,12 @@
 import { LatLngTuple } from 'leaflet';
 
+interface CourseWidthInfo {
+  narrowestPoint: LatLngTuple;
+  narrowestWidth: number;
+  widestPoint: LatLngTuple;
+  widestWidth: number;
+}
+
 /**
  * Represents a course for an event, defined by a series of GPS points.
  */
@@ -234,12 +241,47 @@ export class Course {
    */
   getCourseEdges(): { leftEdge: LatLngTuple[]; rightEdge: LatLngTuple[] } {
     const leftEdge = this.points;
-    const rightEdge = this.points.map(([lat, lon]) => {
+    const rightEdge = this.points.map(([lat, lon]): LatLngTuple => {
       // Approximate 2m to degrees (latitude/longitude)
       const offset = 2 / 111320; // 1 degree latitude ~ 111.32 km
-      return [lat, lon + offset];
+      return [lat, lon + offset] as LatLngTuple;
     });
 
     return { leftEdge, rightEdge };
+  }
+
+  /**
+   * Finds the narrowest and widest parts of the course and their widths.
+   */
+  getCourseWidthInfo(): CourseWidthInfo {
+    let narrowestWidth = Infinity;
+    let widestWidth = 0;
+    let narrowestPoint: LatLngTuple = this.points[0];
+    let widestPoint: LatLngTuple = this.points[0];
+
+    for (let i = 0; i < this.points.length; i++) {
+      const [lat, lon] = this.points[i];
+      const offset = 2 / 111320; // 2m in degrees longitude
+      const rightLon = lon + offset;
+
+      const width = this.haversineDistance(lat, lon, lat, rightLon);
+
+      if (width < narrowestWidth) {
+        narrowestWidth = width;
+        narrowestPoint = [lat, lon];
+      }
+
+      if (width > widestWidth) {
+        widestWidth = width;
+        widestPoint = [lat, lon];
+      }
+    }
+
+    return {
+      narrowestPoint,
+      narrowestWidth,
+      widestPoint,
+      widestWidth,
+    };
   }
 }

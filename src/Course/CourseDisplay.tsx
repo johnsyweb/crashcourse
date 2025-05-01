@@ -5,6 +5,8 @@ import { Course } from './Course';
 
 // Import assets for markers
 import flagIcon from '../assets/flag.svg';
+import redFlagIcon from '../assets/flag-red.svg';
+import greenFlagIcon from '../assets/flag-green.svg';
 import checkeredFlagIcon from '../assets/checkered_flag.png';
 
 interface CourseDisplayProps {
@@ -37,6 +39,19 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
     iconSize: [20, 20],
     iconAnchor: [10, 20],
   });
+
+  const narrowIcon = L.icon({
+    iconUrl: redFlagIcon,
+    iconSize: [25, 25],
+  });
+
+  const wideIcon = L.icon({
+    iconUrl: greenFlagIcon,
+    iconSize: [25, 25],
+  });
+
+  const { narrowestPoint, narrowestWidth, widestPoint, widestWidth } =
+    course.getCourseWidthInfo();
 
   // Create kilometer markers
   const renderKilometerMarkers = () => {
@@ -79,6 +94,16 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
       {/* Finish marker */}
       <Marker position={course.finishPoint} icon={finishIcon}>
         <Popup>Finish</Popup>
+      </Marker>
+
+      {/* Narrowest point marker */}
+      <Marker position={narrowestPoint} icon={narrowIcon}>
+        <Popup>Narrowest Width: {narrowestWidth.toFixed(2)}m</Popup>
+      </Marker>
+
+      {/* Widest point marker */}
+      <Marker position={widestPoint} icon={wideIcon}>
+        <Popup>Widest Width: {widestWidth.toFixed(2)}m</Popup>
       </Marker>
     </>
   );

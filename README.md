@@ -96,6 +96,8 @@ A model representing an event course, defined by a series of geographical points
 - Providing access to start and finish points
 - Finding coordinates at any specific distance along the course
 - Determining the distance of a given position relative to the course
+- Calculating the left and right edges of the course
+- Identifying the narrowest and widest parts of the course and their widths
 
 ### CourseDisplay
 
@@ -105,6 +107,7 @@ A visualization component for rendering a course on a map. Features include:
 - Displaying start and finish markers
 - Optional kilometer markers along the course
 - Customizable line styling
+- Marking the narrowest and widest points of the course with annotations
 
 ### Map
 

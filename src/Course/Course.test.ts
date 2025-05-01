@@ -135,4 +135,18 @@ describe('Course', () => {
       expect(lon).toBeCloseTo(samplePoints[index][1] + offset, 5);
     });
   });
+
+  it('should find the narrowest and widest parts of the course', () => {
+    const course = new Course(samplePoints);
+    const { narrowestPoint, narrowestWidth, widestPoint, widestWidth } =
+      course.getCourseWidthInfo();
+
+    // Validate narrowest and widest points are part of the course
+    expect(samplePoints).toContainEqual(narrowestPoint);
+    expect(samplePoints).toContainEqual(widestPoint);
+
+    // Validate widths are reasonable
+    expect(narrowestWidth).toBeGreaterThan(0);
+    expect(widestWidth).toBeGreaterThan(narrowestWidth);
+  });
 });
