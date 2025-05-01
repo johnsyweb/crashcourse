@@ -7,15 +7,14 @@
 - Disused code must be removed immediately
 - All of our checks must pass at every step
 - Each change must be committed to git with a meaningful, semantic message
-- Every user input must be controllable from the keyboard
+- Every single user input must be controllable from the keyboard
+- We should have a clean, consistent, accessible user interface
 
 ## To do list
 
-- [x] Remove the Reset Simulation button
-- [ ] Stop the GPXFile tests polluting the console with error messages
-- [ ] Allow the user to control the speed in the simulator (default 60x)
 - [ ] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
 - [ ] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
+- [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
 - [ ] Support Google Earth (KML) files for course specification
 - [ ] Model course width:
   - The lines from the source file form the left edge.
