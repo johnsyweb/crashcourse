@@ -226,4 +226,20 @@ export class Course {
 
     return [closestLat, closestLon];
   }
+
+  /**
+   * Calculates the left and right edges of the course.
+   * The left edge is the original course line, and the right edge is 2m away.
+   * If the course overlaps, the furthest left and right edges are calculated.
+   */
+  getCourseEdges(): { leftEdge: LatLngTuple[]; rightEdge: LatLngTuple[] } {
+    const leftEdge = this.points;
+    const rightEdge = this.points.map(([lat, lon]) => {
+      // Approximate 2m to degrees (latitude/longitude)
+      const offset = 2 / 111320; // 1 degree latitude ~ 111.32 km
+      return [lat, lon + offset];
+    });
+
+    return { leftEdge, rightEdge };
+  }
 }

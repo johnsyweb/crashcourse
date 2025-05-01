@@ -18,7 +18,7 @@
 
 - [x] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
 - [x] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
-- [ ] Optimise the layout of Simulator Controls to remove the scrollbars
+- [x] Optimise the layout of Simulator Controls to remove the scrollbars
 - [ ] Model course width:
   - The lines from the source file form the left edge.
   - Assume the right edge is 2m away.

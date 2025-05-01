@@ -120,4 +120,19 @@ describe('Course', () => {
     expect(course.startPoint).toEqual(samplePoints[0]);
     expect(course.getPoints()[0]).toEqual(samplePoints[0]);
   });
+
+  it('should calculate the left and right edges of the course', () => {
+    const course = new Course(samplePoints);
+    const { leftEdge, rightEdge } = course.getCourseEdges();
+
+    // Validate left edge matches the original points
+    expect(leftEdge).toEqual(samplePoints);
+
+    // Validate right edge is offset by approximately 2m in longitude
+    const offset = 2 / 111320; // 1 degree latitude ~ 111.32 km
+    rightEdge.forEach(([lat, lon], index) => {
+      expect(lat).toBeCloseTo(samplePoints[index][0], 5);
+      expect(lon).toBeCloseTo(samplePoints[index][1] + offset, 5);
+    });
+  });
 });
