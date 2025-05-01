@@ -47,28 +47,34 @@ const mockUpdatedParticipants = [{ id: 'mock-participant' }];
 // Mock the Simulator component with all update functionalities
 jest.mock('../Simulator', () => ({
   __esModule: true,
-  default: jest.fn(({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => (
-    <div data-testid="mock-simulator">
-      <button
-        data-testid="update-participants-button"
-        onClick={() => onParticipantUpdate(mockUpdatedParticipants)}
-      >
-        Update Participants
-      </button>
-      <button
-        data-testid="change-participant-count-button"
-        onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
-      >
-        Change Participant Count
-      </button>
-      <button
-        data-testid="change-pace-range-button"
-        onClick={() => onPaceRangeChange && onPaceRangeChange('10:00', '3:30')}
-      >
-        Change Pace Range
-      </button>
-    </div>
-  )),
+  default: jest.fn(
+    ({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => (
+      <div data-testid="mock-simulator">
+        <button
+          data-testid="update-participants-button"
+          onClick={() => onParticipantUpdate(mockUpdatedParticipants)}
+        >
+          Update Participants
+        </button>
+        <button
+          data-testid="change-participant-count-button"
+          onClick={() =>
+            onParticipantCountChange && onParticipantCountChange(5)
+          }
+        >
+          Change Participant Count
+        </button>
+        <button
+          data-testid="change-pace-range-button"
+          onClick={() =>
+            onPaceRangeChange && onPaceRangeChange('10:00', '3:30')
+          }
+        >
+          Change Pace Range
+        </button>
+      </div>
+    ),
+  ),
 }));
 
 describe('CourseSimulation', () => {
@@ -130,12 +136,12 @@ describe('CourseSimulation', () => {
 
     // We should create two participants by default
     expect(Participant).toHaveBeenCalledTimes(2);
-    
+
     // Don't check exact parameters since pace is random
     expect(Participant).toHaveBeenCalledWith(
       mockCoursePoints,
       expect.any(Number),
-      expect.stringMatching(/^\d+:\d{2}$/)
+      expect.stringMatching(/^\d+:\d{2}$/),
     );
   });
 
@@ -210,7 +216,7 @@ describe('CourseSimulation', () => {
     // Participant should be recreated with the new count (5)
     expect(Participant).toHaveBeenCalledTimes(7); // 2 initial + 5 new
   });
-  
+
   it('recreates participants when pace range changes', () => {
     // Reset mock counts
     (Participant as jest.Mock).mockClear();
@@ -234,11 +240,11 @@ describe('CourseSimulation', () => {
     // Participants should be recreated with the new pace range
     expect(Participant).toHaveBeenCalledTimes(4); // 2 initial + 2 new
   });
-  
+
   it('assigns random paces to participants within the pace range', () => {
     // Clear the mock implementation and provide a spy implementation
     (Participant as jest.Mock).mockClear();
-    
+
     // Render the component
     render(
       <CourseSimulation
@@ -246,13 +252,13 @@ describe('CourseSimulation', () => {
         onReset={mockOnReset}
       />,
     );
-    
+
     // Check that Participant constructor was called with a pace argument
     const callArgs = (Participant as jest.Mock).mock.calls;
-    
+
     // Each participant should be created with coursePoints, 0 for elapsed time, and a pace string
     expect(callArgs.length).toBe(2); // 2 participants
-    callArgs.forEach(args => {
+    callArgs.forEach((args) => {
       expect(args[0]).toEqual(mockCoursePoints); // first arg is coursePoints
       expect(args[1]).toBe(0); // second arg is elapsedTime
       expect(typeof args[2]).toBe('string'); // third arg is pace string

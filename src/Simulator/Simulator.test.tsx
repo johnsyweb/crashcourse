@@ -77,18 +77,18 @@ describe('Simulator Component', () => {
     expect(screen.getByText(/5.00/i)).toBeInTheDocument();
     // Use getAllByText and check the first instance for "km" since we have multiple elements with this text now
     expect(screen.getAllByText(/km/i)[0]).toBeInTheDocument();
-    
+
     // Instead of using getByLabelText which is too generic now, use a more specific query
     const inputElement = screen.getByRole('spinbutton', {
       name: /number of participants/i,
     });
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveValue(2);
-    
+
     // Check pace range inputs are rendered
     expect(screen.getByLabelText(/Slowest pace/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Fastest pace/i)).toBeInTheDocument();
-    
+
     // Verify default pace values
     expect(screen.getByLabelText(/Slowest pace/i)).toHaveValue('12:00');
     expect(screen.getByLabelText(/Fastest pace/i)).toHaveValue('2:30');
@@ -168,7 +168,7 @@ describe('Simulator Component', () => {
     // Verify that onParticipantCountChange was called with the minimum value of 1
     expect(mockParticipantCountChange).toHaveBeenCalledWith(1);
   });
-  
+
   it('calls onPaceRangeChange when min pace is changed', () => {
     render(
       <Simulator
@@ -185,11 +185,11 @@ describe('Simulator Component', () => {
       fireEvent.change(minPaceInput, { target: { value: '10:00' } });
     });
 
-    // Verify that onPaceRangeChange was called (don't check specific values as they 
+    // Verify that onPaceRangeChange was called (don't check specific values as they
     // can vary depending on the comparison logic)
     expect(mockPaceRangeChange).toHaveBeenCalled();
   });
-  
+
   it('calls onPaceRangeChange when max pace is changed', () => {
     render(
       <Simulator
@@ -206,11 +206,11 @@ describe('Simulator Component', () => {
       fireEvent.change(maxPaceInput, { target: { value: '3:00' } });
     });
 
-    // Verify that onPaceRangeChange was called (don't check specific values as they 
+    // Verify that onPaceRangeChange was called (don't check specific values as they
     // can vary depending on the comparison logic)
     expect(mockPaceRangeChange).toHaveBeenCalled();
   });
-  
+
   it('formats pace values correctly with leading zeros for seconds', () => {
     render(
       <Simulator
@@ -230,8 +230,60 @@ describe('Simulator Component', () => {
     // Expect that the value will be formatted with a leading zero for seconds
     // Just check that it was called
     expect(mockPaceRangeChange).toHaveBeenCalled();
-    
+
     // Verify the first argument has the proper format with leading zero
     expect(mockPaceRangeChange.mock.calls[0][0]).toBe('8:05');
+  });
+
+  it('shows error message when pace range is invalid (fastest > slowest)', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onPaceRangeChange={mockPaceRangeChange}
+      />,
+    );
+
+    // Try to set the fastest pace slower than the slowest pace
+    const fastestPaceInput = screen.getByLabelText(/Fastest pace/i);
+
+    act(() => {
+      fireEvent.change(fastestPaceInput, { target: { value: '15:00' } });
+    });
+
+    // Should show an error message
+    expect(
+      screen.getByText(/Fastest pace must be less than slowest pace/i),
+    ).toBeInTheDocument();
+
+    // onPaceRangeChange should not be called because the input is invalid
+    expect(mockPaceRangeChange).not.toHaveBeenCalled();
+  });
+
+  it('shows error message when slowest pace is faster than fastest pace', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onPaceRangeChange={mockPaceRangeChange}
+      />,
+    );
+
+    // Try to set the slowest pace faster than the fastest pace
+    const slowestPaceInput = screen.getByLabelText(/Slowest pace/i);
+
+    act(() => {
+      fireEvent.change(slowestPaceInput, { target: { value: '2:00' } });
+    });
+
+    // Should show an error message
+    expect(
+      screen.getByText(/Slowest pace must be greater than fastest pace/i),
+    ).toBeInTheDocument();
+
+    // onPaceRangeChange should not be called because the input is invalid
+    expect(mockPaceRangeChange).not.toHaveBeenCalled();
   });
 });

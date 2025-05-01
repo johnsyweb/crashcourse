@@ -9,7 +9,7 @@ import Simulator from '../Simulator';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
-const DEFAULT_MAX_PACE = '2:30';  // fastest
+const DEFAULT_MAX_PACE = '2:30'; // fastest
 
 interface CourseSimulationProps {
   coursePoints: LatLngTuple[];
@@ -32,19 +32,20 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     // Convert both paces to seconds
     const [minMinutes, minSeconds] = min.split(':').map(Number);
     const [maxMinutes, maxSeconds] = max.split(':').map(Number);
-    
+
     const minTotalSeconds = minMinutes * 60 + minSeconds;
     const maxTotalSeconds = maxMinutes * 60 + maxSeconds;
-    
+
     // Ensure min is always greater than max (slower pace has higher time)
     const adjustedMinSeconds = Math.max(minTotalSeconds, maxTotalSeconds);
     const adjustedMaxSeconds = Math.min(minTotalSeconds, maxTotalSeconds);
-    
+
     // Generate random seconds between adjusted min and max
     const randomSeconds = Math.floor(
-      Math.random() * (adjustedMinSeconds - adjustedMaxSeconds + 1) + adjustedMaxSeconds
+      Math.random() * (adjustedMinSeconds - adjustedMaxSeconds + 1) +
+        adjustedMaxSeconds,
     );
-    
+
     // Convert back to MM:SS format
     const minutes = Math.floor(randomSeconds / 60);
     const seconds = randomSeconds % 60;
@@ -84,7 +85,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   const handleParticipantCountChange = (count: number) => {
     setParticipantCount(count);
   };
-  
+
   const handlePaceRangeChange = (newMinPace: string, newMaxPace: string) => {
     setMinPace(newMinPace);
     setMaxPace(newMaxPace);

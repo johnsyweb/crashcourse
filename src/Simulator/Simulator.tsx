@@ -11,7 +11,8 @@ const DEFAULT_PARTICIPANTS = 2;
 
 // Constants for pace configuration
 const DEFAULT_MIN_PACE = '12:00'; // slowest pace (minutes:seconds per km)
-const DEFAULT_MAX_PACE = '2:30';  // fastest pace (minutes:seconds per km)
+const DEFAULT_MAX_PACE = '2:30'; // fastest pace (minutes:seconds per km)
+const PACE_CHANGE_SECONDS = 30; // amount to increase/decrease pace with keyboard shortcuts
 
 // Helper function to format numbers with locale-specific thousand separators
 const formatNumber = (num: number): string => {
@@ -29,6 +30,13 @@ const formatPaceString = (pace: string): string => {
 const paceToSeconds = (pace: string): number => {
   const [minutes, seconds] = pace.split(':').map(Number);
   return minutes * 60 + seconds;
+};
+
+// Convert seconds to pace string
+const secondsToPace = (totalSeconds: number): string => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
 interface SimulatorProps {
@@ -52,7 +60,8 @@ const Simulator: React.FC<SimulatorProps> = ({
   );
   const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
   const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
-  
+  const [paceError, setPaceError] = useState<string | null>(null);
+
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
 
@@ -112,23 +121,96 @@ const Simulator: React.FC<SimulatorProps> = ({
     });
   }, [onParticipantCountChange]);
 
+  // Validate the pace range and ensure fastest < slowest
+  const validatePaceRange = (slow: string, fast: string): boolean => {
+    const slowSeconds = paceToSeconds(slow);
+    const fastSeconds = paceToSeconds(fast);
+
+    // Both must be valid pace strings and fastSeconds must be less than slowSeconds
+    // (since a faster pace means fewer seconds per km)
+    return slowSeconds > 0 && fastSeconds > 0 && fastSeconds < slowSeconds;
+  };
+
+  // Functions for increasing and decreasing pace values
+  const increasePace = useCallback((paceType: 'min' | 'max') => {
+    const currentPace = paceType === 'min' ? minPace : maxPace;
+    const seconds = paceToSeconds(currentPace);
+    
+    // Increase pace (which means decreasing the seconds, as faster pace = less time)
+    const newSeconds = Math.max(30, seconds - PACE_CHANGE_SECONDS); // Ensure at least 30 seconds
+    const newPace = secondsToPace(newSeconds);
+    
+    if (paceType === 'min') {
+      setMinPace(newPace);
+      if (validatePaceRange(newPace, maxPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(newPace, maxPace);
+        }
+      } else {
+        setPaceError('Slowest pace must be greater than fastest pace');
+      }
+    } else if (paceType === 'max') {
+      setMaxPace(newPace);
+      if (validatePaceRange(minPace, newPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(minPace, newPace);
+        }
+      } else {
+        setPaceError('Fastest pace must be less than slowest pace');
+      }
+    }
+  }, [minPace, maxPace, onPaceRangeChange]);
+  
+  const decreasePace = useCallback((paceType: 'min' | 'max') => {
+    const currentPace = paceType === 'min' ? minPace : maxPace;
+    const seconds = paceToSeconds(currentPace);
+    
+    // Decrease pace (which means increasing the seconds, as slower pace = more time)
+    const newSeconds = seconds + PACE_CHANGE_SECONDS;
+    const newPace = secondsToPace(newSeconds);
+    
+    if (paceType === 'min') {
+      setMinPace(newPace);
+      if (validatePaceRange(newPace, maxPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(newPace, maxPace);
+        }
+      } else {
+        setPaceError('Slowest pace must be greater than fastest pace');
+      }
+    } else if (paceType === 'max') {
+      setMaxPace(newPace);
+      if (validatePaceRange(minPace, newPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(minPace, newPace);
+        }
+      } else {
+        setPaceError('Fastest pace must be less than slowest pace');
+      }
+    }
+  }, [minPace, maxPace, onPaceRangeChange]);
+
   // Handle pace changes and ensure min <= max
   const handleMinPaceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMinPace = e.target.value;
     const formattedMinPace = formatPaceString(newMinPace);
-    
+
     // Ensure min pace is slower than or equal to max pace
-    if (paceToSeconds(formattedMinPace) >= paceToSeconds(maxPace)) {
+    if (/^\d+:\d{1,2}$/.test(newMinPace)) {
       setMinPace(formattedMinPace);
-      
-      if (onPaceRangeChange) {
-        onPaceRangeChange(formattedMinPace, formattedMinPace);
-      }
-    } else {
-      setMinPace(formattedMinPace);
-      
-      if (onPaceRangeChange) {
-        onPaceRangeChange(formattedMinPace, maxPace);
+
+      // Validate the pace range
+      if (validatePaceRange(formattedMinPace, maxPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(formattedMinPace, maxPace);
+        }
+      } else {
+        setPaceError('Slowest pace must be greater than fastest pace');
       }
     }
   };
@@ -136,24 +218,24 @@ const Simulator: React.FC<SimulatorProps> = ({
   const handleMaxPaceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMaxPace = e.target.value;
     const formattedMaxPace = formatPaceString(newMaxPace);
-    
+
     // Ensure max pace is faster than or equal to min pace
-    if (paceToSeconds(formattedMaxPace) <= paceToSeconds(minPace)) {
+    if (/^\d+:\d{1,2}$/.test(newMaxPace)) {
       setMaxPace(formattedMaxPace);
-      
-      if (onPaceRangeChange) {
-        onPaceRangeChange(formattedMaxPace, formattedMaxPace);
-      }
-    } else {
-      setMaxPace(formattedMaxPace);
-      
-      if (onPaceRangeChange) {
-        onPaceRangeChange(minPace, formattedMaxPace);
+
+      // Validate the pace range
+      if (validatePaceRange(minPace, formattedMaxPace)) {
+        setPaceError(null);
+        if (onPaceRangeChange) {
+          onPaceRangeChange(minPace, formattedMaxPace);
+        }
+      } else {
+        setPaceError('Fastest pace must be less than slowest pace');
       }
     }
   };
 
-  // Handle keyboard events for participant count
+  // Handle keyboard events for participant count and pace adjustments
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Avoid triggering when typing in input fields
@@ -164,10 +246,25 @@ const Simulator: React.FC<SimulatorProps> = ({
         return;
       }
 
+      // Participant count shortcuts
       if (event.key === '[' || event.key === '{') {
         decreaseParticipantCount();
       } else if (event.key === ']' || event.key === '}') {
         increaseParticipantCount();
+      }
+      
+      // Pace adjustment shortcuts for slowest pace
+      else if (event.key === 'q' || event.key === 'Q') {
+        decreasePace('min'); // Make slowest pace even slower (+30s)
+      } else if (event.key === 'w' || event.key === 'W') {
+        increasePace('min'); // Make slowest pace faster (-30s)
+      }
+      
+      // Pace adjustment shortcuts for fastest pace
+      else if (event.key === 'a' || event.key === 'A') {
+        decreasePace('max'); // Make fastest pace slower (+30s)
+      } else if (event.key === 's' || event.key === 'S') {
+        increasePace('max'); // Make fastest pace even faster (-30s)
       }
     };
 
@@ -176,7 +273,7 @@ const Simulator: React.FC<SimulatorProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [increaseParticipantCount, decreaseParticipantCount]);
+  }, [increaseParticipantCount, decreaseParticipantCount, increasePace, decreasePace]);
 
   const handleParticipantCountChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -270,10 +367,12 @@ const Simulator: React.FC<SimulatorProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Pace Range Controls */}
               <div className={styles.controlItem}>
-                <label className={styles.controlLabel}>Participant Pace Range</label>
+                <label className={styles.controlLabel}>
+                  Participant Pace Range
+                </label>
                 <div className={styles.paceControlGroup}>
                   <div className={styles.paceControl}>
                     <label htmlFor="minPace" className={styles.paceLabel}>
@@ -310,8 +409,12 @@ const Simulator: React.FC<SimulatorProps> = ({
                     <span className={styles.paceUnit}>/km</span>
                   </div>
                 </div>
+                {paceError && (
+                  <div className={styles.errorMessage}>{paceError}</div>
+                )}
                 <div className={styles.paceInfo}>
-                  Participants will be assigned random paces between these values.
+                  Participants will be assigned random paces between these
+                  values.
                 </div>
               </div>
             </div>
@@ -361,6 +464,21 @@ const Simulator: React.FC<SimulatorProps> = ({
               </div>
               <div className={styles.shortcut}>
                 <kbd>+</kbd> <span>Increase</span>
+              </div>
+            </div>
+            <div className={styles.shortcutGroup}>
+              <div className={styles.shortcutGroupTitle}>Pace</div>
+              <div className={styles.shortcut}>
+                <kbd>q</kbd> <span>Slower slowest pace (+30s)</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>w</kbd> <span>Faster slowest pace (-30s)</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>a</kbd> <span>Slower fastest pace (+30s)</span>
+              </div>
+              <div className={styles.shortcut}>
+                <kbd>s</kbd> <span>Faster fastest pace (-30s)</span>
               </div>
             </div>
           </div>
