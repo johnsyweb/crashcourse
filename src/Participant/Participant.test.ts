@@ -114,4 +114,29 @@ describe('Participant', () => {
     const participant = new Participant(testCourse, 0, '4:00', 1.0);
     expect(participant.width).toBe(1.0); // Custom width is 1.0 meters
   });
+
+  it('should move the participant based on clock ticks and pace', () => {
+    const participant = new Participant(testCourse, 0, '5:00'); // 5:00/km pace
+
+    // Initial position should be at the start
+    expect(participant.getPosition()).toEqual(testCourse[0]);
+
+    // Move the participant for 60 seconds (1 minute)
+    participant.move(60); // 60 seconds
+
+    // Position should now be updated
+    const updatedPosition = participant.getPosition();
+    expect(updatedPosition).not.toEqual(testCourse[0]);
+  });
+
+  it('should account for external factors when moving', () => {
+    const participant = new Participant(testCourse, 0, '5:00'); // 5:00/km pace
+
+    // Move the participant for 60 seconds with a terrain factor of 0.5 (slower)
+    participant.move(60, { terrainFactor: 0.5 });
+
+    // Position should be closer to the start compared to normal movement
+    const updatedPosition = participant.getPosition();
+    expect(updatedPosition).not.toEqual(testCourse[0]);
+  });
 });

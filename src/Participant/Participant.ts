@@ -74,4 +74,20 @@ export class Participant {
     this.position = this.course.startPoint;
     this.cumulativeDistance = 0;
   }
+
+  /**
+   * Updates the participant's position based on clock ticks and external factors.
+   * @param tickDuration - Duration of the clock tick in seconds.
+   * @param externalFactors - Optional external factors affecting movement (e.g., terrain).
+   */
+  public move(tickDuration: number, externalFactors: { terrainFactor?: number } = {}): void {
+    const terrainFactor = externalFactors.terrainFactor || 1; // Default terrain factor is 1 (no effect)
+
+    // Calculate distance covered during this tick
+    const distanceCovered = (tickDuration / this.pace) * 1000 * terrainFactor; // Distance in meters
+    this.cumulativeDistance += distanceCovered;
+
+    // Update position based on the new cumulative distance
+    this.position = this.course.getPositionAtDistance(this.cumulativeDistance);
+  }
 }
