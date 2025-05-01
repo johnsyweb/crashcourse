@@ -17,9 +17,7 @@
 ## To do list
 
 - [x] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
-- [ ] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
-- [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
-- [ ] Support Google Earth (KML) files for course specification
+- [x] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
 - [ ] Model course width:
   - The lines from the source file form the left edge.
   - Assume the right edge is 2m away.
@@ -32,7 +30,14 @@
   - They must allow a participant to pass them
   - They are constrained by the pace of the paticipant in front
   - They must stop if they are going to collide with a participant and proceed only when there is room
+- [ ] Publish app to GitHub Pages
 - [ ] Model participant sentiment
 - [ ] Format the elapsed time as HH:MM:SS
   - a 7-segment display theme would be a bonus.
-- [ ] Publish app to GitHub Pages
+- [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
+- [ ] Support Google Earth (KML) files for course specification
+- [ ] Automatically analyse and report on congestion points on the course
+- [ ] Automatically analyse and report upon participant sentiment
+- [ ] Simulate random members of the public on the course and analyse their sentiment
+- [ ] Recommend marshal points on the course to ease congestion and prevent conflict with the public
+- [ ] Allow folks to view imperial measurements, if they desire

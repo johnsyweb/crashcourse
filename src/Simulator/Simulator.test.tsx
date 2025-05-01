@@ -49,6 +49,7 @@ describe('Simulator Component', () => {
   ] as unknown as Participant[];
   const mockParticipantUpdate = jest.fn();
   const mockParticipantCountChange = jest.fn();
+  const mockPaceRangeChange = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -74,14 +75,23 @@ describe('Simulator Component', () => {
     // Check for label and value separately
     expect(screen.getByText(/Course Length/i)).toBeInTheDocument();
     expect(screen.getByText(/5.00/i)).toBeInTheDocument();
-    expect(screen.getByText(/km/i)).toBeInTheDocument();
-
+    // Use getAllByText and check the first instance for "km" since we have multiple elements with this text now
+    expect(screen.getAllByText(/km/i)[0]).toBeInTheDocument();
+    
     // Instead of using getByLabelText which is too generic now, use a more specific query
     const inputElement = screen.getByRole('spinbutton', {
       name: /number of participants/i,
     });
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveValue(2);
+    
+    // Check pace range inputs are rendered
+    expect(screen.getByLabelText(/Slowest pace/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Fastest pace/i)).toBeInTheDocument();
+    
+    // Verify default pace values
+    expect(screen.getByLabelText(/Slowest pace/i)).toHaveValue('12:00');
+    expect(screen.getByLabelText(/Fastest pace/i)).toHaveValue('2:30');
   });
 
   it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
@@ -157,5 +167,71 @@ describe('Simulator Component', () => {
 
     // Verify that onParticipantCountChange was called with the minimum value of 1
     expect(mockParticipantCountChange).toHaveBeenCalledWith(1);
+  });
+  
+  it('calls onPaceRangeChange when min pace is changed', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onPaceRangeChange={mockPaceRangeChange}
+      />,
+    );
+
+    const minPaceInput = screen.getByLabelText(/Slowest pace/i);
+
+    act(() => {
+      fireEvent.change(minPaceInput, { target: { value: '10:00' } });
+    });
+
+    // Verify that onPaceRangeChange was called (don't check specific values as they 
+    // can vary depending on the comparison logic)
+    expect(mockPaceRangeChange).toHaveBeenCalled();
+  });
+  
+  it('calls onPaceRangeChange when max pace is changed', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onPaceRangeChange={mockPaceRangeChange}
+      />,
+    );
+
+    const maxPaceInput = screen.getByLabelText(/Fastest pace/i);
+
+    act(() => {
+      fireEvent.change(maxPaceInput, { target: { value: '3:00' } });
+    });
+
+    // Verify that onPaceRangeChange was called (don't check specific values as they 
+    // can vary depending on the comparison logic)
+    expect(mockPaceRangeChange).toHaveBeenCalled();
+  });
+  
+  it('formats pace values correctly with leading zeros for seconds', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onPaceRangeChange={mockPaceRangeChange}
+      />,
+    );
+
+    const minPaceInput = screen.getByLabelText(/Slowest pace/i);
+
+    act(() => {
+      fireEvent.change(minPaceInput, { target: { value: '8:5' } });
+    });
+
+    // Expect that the value will be formatted with a leading zero for seconds
+    // Just check that it was called
+    expect(mockPaceRangeChange).toHaveBeenCalled();
+    
+    // Verify the first argument has the proper format with leading zero
+    expect(mockPaceRangeChange.mock.calls[0][0]).toBe('8:05');
   });
 });

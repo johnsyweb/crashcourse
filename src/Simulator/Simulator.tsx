@@ -9,9 +9,26 @@ const MIN_PARTICIPANTS = 1;
 const MAX_PARTICIPANTS = 2000;
 const DEFAULT_PARTICIPANTS = 2;
 
+// Constants for pace configuration
+const DEFAULT_MIN_PACE = '12:00'; // slowest pace (minutes:seconds per km)
+const DEFAULT_MAX_PACE = '2:30';  // fastest pace (minutes:seconds per km)
+
 // Helper function to format numbers with locale-specific thousand separators
 const formatNumber = (num: number): string => {
   return num.toLocaleString('en-AU');
+};
+
+// Helper for pace validation and formatting
+const formatPaceString = (pace: string): string => {
+  const [minutes, seconds] = pace.split(':').map(Number);
+  const formattedSeconds = seconds.toString().padStart(2, '0');
+  return `${minutes}:${formattedSeconds}`;
+};
+
+// Convert pace string to seconds for comparison
+const paceToSeconds = (pace: string): number => {
+  const [minutes, seconds] = pace.split(':').map(Number);
+  return minutes * 60 + seconds;
 };
 
 interface SimulatorProps {
@@ -19,6 +36,7 @@ interface SimulatorProps {
   participants?: Participant[];
   onParticipantUpdate?: (participants: Participant[]) => void;
   onParticipantCountChange?: (count: number) => void;
+  onPaceRangeChange?: (minPace: string, maxPace: string) => void;
 }
 
 const Simulator: React.FC<SimulatorProps> = ({
@@ -26,11 +44,15 @@ const Simulator: React.FC<SimulatorProps> = ({
   participants = [],
   onParticipantUpdate,
   onParticipantCountChange,
+  onPaceRangeChange,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = useState(
     participants.length || DEFAULT_PARTICIPANTS,
   );
+  const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
+  const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
+  
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
 
@@ -89,6 +111,47 @@ const Simulator: React.FC<SimulatorProps> = ({
       return newCount;
     });
   }, [onParticipantCountChange]);
+
+  // Handle pace changes and ensure min <= max
+  const handleMinPaceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMinPace = e.target.value;
+    const formattedMinPace = formatPaceString(newMinPace);
+    
+    // Ensure min pace is slower than or equal to max pace
+    if (paceToSeconds(formattedMinPace) >= paceToSeconds(maxPace)) {
+      setMinPace(formattedMinPace);
+      
+      if (onPaceRangeChange) {
+        onPaceRangeChange(formattedMinPace, formattedMinPace);
+      }
+    } else {
+      setMinPace(formattedMinPace);
+      
+      if (onPaceRangeChange) {
+        onPaceRangeChange(formattedMinPace, maxPace);
+      }
+    }
+  };
+
+  const handleMaxPaceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMaxPace = e.target.value;
+    const formattedMaxPace = formatPaceString(newMaxPace);
+    
+    // Ensure max pace is faster than or equal to min pace
+    if (paceToSeconds(formattedMaxPace) <= paceToSeconds(minPace)) {
+      setMaxPace(formattedMaxPace);
+      
+      if (onPaceRangeChange) {
+        onPaceRangeChange(formattedMaxPace, formattedMaxPace);
+      }
+    } else {
+      setMaxPace(formattedMaxPace);
+      
+      if (onPaceRangeChange) {
+        onPaceRangeChange(minPace, formattedMaxPace);
+      }
+    }
+  };
 
   // Handle keyboard events for participant count
   useEffect(() => {
@@ -205,6 +268,50 @@ const Simulator: React.FC<SimulatorProps> = ({
                     <span>{formatNumber(MIN_PARTICIPANTS)}</span>
                     <span>{formatNumber(MAX_PARTICIPANTS)}</span>
                   </div>
+                </div>
+              </div>
+              
+              {/* Pace Range Controls */}
+              <div className={styles.controlItem}>
+                <label className={styles.controlLabel}>Participant Pace Range</label>
+                <div className={styles.paceControlGroup}>
+                  <div className={styles.paceControl}>
+                    <label htmlFor="minPace" className={styles.paceLabel}>
+                      Slowest Pace:
+                    </label>
+                    <input
+                      id="minPace"
+                      type="text"
+                      pattern="[0-9]+:[0-5][0-9]"
+                      value={minPace}
+                      onChange={handleMinPaceChange}
+                      className={styles.paceInput}
+                      placeholder="MM:SS"
+                      title="Slowest pace in minutes:seconds format (e.g., 12:00)"
+                      aria-label="Slowest pace in minutes and seconds per kilometer"
+                    />
+                    <span className={styles.paceUnit}>/km</span>
+                  </div>
+                  <div className={styles.paceControl}>
+                    <label htmlFor="maxPace" className={styles.paceLabel}>
+                      Fastest Pace:
+                    </label>
+                    <input
+                      id="maxPace"
+                      type="text"
+                      pattern="[0-9]+:[0-5][0-9]"
+                      value={maxPace}
+                      onChange={handleMaxPaceChange}
+                      className={styles.paceInput}
+                      placeholder="MM:SS"
+                      title="Fastest pace in minutes:seconds format (e.g., 2:30)"
+                      aria-label="Fastest pace in minutes and seconds per kilometer"
+                    />
+                    <span className={styles.paceUnit}>/km</span>
+                  </div>
+                </div>
+                <div className={styles.paceInfo}>
+                  Participants will be assigned random paces between these values.
                 </div>
               </div>
             </div>

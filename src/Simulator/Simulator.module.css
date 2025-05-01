@@ -251,3 +251,47 @@
 .shortcut span {
   color: #555;
 }
+
+/* Pace controls styling */
+.paceControlGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.paceControl {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.paceLabel {
+  font-weight: 500;
+  color: #555;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.paceInput {
+  width: 4.5rem;
+  height: 2rem;
+  padding: 0.25rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.paceUnit {
+  margin-left: 0.25rem;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.paceInfo {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
