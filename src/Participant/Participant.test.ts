@@ -104,4 +104,14 @@ describe('Participant', () => {
     const props = participant.getProperties();
     expect(props.totalDistance).toBe(6000);
   });
+
+  it('should set the default width of a participant', () => {
+    const participant = new Participant(testCourse);
+    expect(participant.width).toBe(0.5); // Default width is 0.5 meters
+  });
+
+  it('should allow setting a custom width for a participant', () => {
+    const participant = new Participant(testCourse, 0, '4:00', 1.0);
+    expect(participant.width).toBe(1.0); // Custom width is 1.0 meters
+  });
 });
