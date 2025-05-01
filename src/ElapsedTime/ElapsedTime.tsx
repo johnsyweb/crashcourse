@@ -143,7 +143,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 
       <div className={styles.controlRow}>
         <div className={styles.speedControls}>
-          <label htmlFor="speedSelect" className={styles.controlLabel}>Speed:</label>
+          <label htmlFor="speedSelect" className={styles.controlLabel}>
+            Speed:
+          </label>
           <div className={styles.controlInputGroup}>
             <button
               className={styles.controlButton}
@@ -168,7 +170,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
             <button
               className={styles.controlButton}
               onClick={increaseSpeed}
-              disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
+              disabled={
+                speedMultiplier === speedOptions[speedOptions.length - 1]
+              }
               aria-label="Increase simulation speed"
             >
               +

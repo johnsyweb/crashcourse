@@ -9,14 +9,14 @@
 - All of our checks must pass at every step (`pnpm check`)
 - Each change must be committed to git with a meaningful, semantic message
 - Every single user input must be controllable from the keyboard
-- We must have a clean, consistent, accessible user interface
+- We must have a clean, consistent, accessible and professional user interface
 - The README must remain up-to-date at all times
 - Prefer dedicated functions or named variables over explanatory comments
 - Use Australian English for user-interface text
 
 ## To do list
 
-- [ ] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
+- [x] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
 - [ ] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
 - [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
 - [ ] Support Google Earth (KML) files for course specification

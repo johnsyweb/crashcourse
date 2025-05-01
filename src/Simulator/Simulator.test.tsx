@@ -69,7 +69,7 @@ describe('Simulator Component', () => {
     );
 
     expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
-    
+
     // In our new UI structure, the course length is displayed differently
     // Check for label and value separately
     expect(screen.getByText(/Course Length/i)).toBeInTheDocument();

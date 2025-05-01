@@ -4,7 +4,9 @@
   border-radius: 8px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
 }
 
 .simulatorControls {
@@ -121,10 +123,11 @@
 .controlButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background-color: #f0f0f0;
 }
 
 .controlInput {
-  width: 3rem;
+  width: 5rem;  /* Increased from 3rem to handle larger formatted numbers */
   height: 2rem;
   padding: 0.25rem;
   text-align: center;
@@ -132,6 +135,58 @@
   border-radius: 4px;
   margin: 0 0.5rem;
   font-size: 0.9rem;
+}
+
+/* Range slider styling */
+.rangeIndicator {
+  margin-top: 0.75rem;
+}
+
+.rangeSlider {
+  width: 100%;
+  height: 5px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e0e0e0;
+  outline: none;
+  border-radius: 5px;
+  margin-bottom: 0.4rem;
+}
+
+.rangeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #3366cc;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.rangeSlider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: none;
+  border-radius: 50%;
+  background: #3366cc;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out;
+}
+
+.rangeSlider::-webkit-slider-thumb:hover {
+  background: #2850a1;
+}
+
+.rangeSlider::-moz-range-thumb:hover {
+  background: #2850a1;
+}
+
+.rangeLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #777;
 }
 
 /* Keyboard shortcuts section */
