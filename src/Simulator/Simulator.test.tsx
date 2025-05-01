@@ -48,6 +48,7 @@ describe('Simulator Component', () => {
     new Participant([]),
   ] as unknown as Participant[];
   const mockParticipantUpdate = jest.fn();
+  const mockParticipantCountChange = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -69,7 +70,11 @@ describe('Simulator Component', () => {
 
     expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
     expect(screen.getByText(/Course Length: 5.00 km/i)).toBeInTheDocument();
-    expect(screen.getByText(/Participants: 2/i)).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Number of participants/i),
+    ).toBeInTheDocument();
+    // Fix the type issue - we're comparing a number to a number, so don't use a string for the expected value
+    expect(screen.getByLabelText(/Number of participants/i)).toHaveValue(2);
   });
 
   it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
@@ -97,5 +102,51 @@ describe('Simulator Component', () => {
     mockParticipants.forEach((participant) => {
       expect(participant.updateElapsedTime).toHaveBeenCalledWith(10);
     });
+  });
+
+  it('calls onParticipantCountChange when the participant count is changed', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onParticipantCountChange={mockParticipantCountChange}
+      />,
+    );
+
+    const participantCountInput = screen.getByLabelText(
+      /Number of participants/i,
+    );
+
+    // Change the participant count
+    act(() => {
+      fireEvent.change(participantCountInput, { target: { value: '5' } });
+    });
+
+    // Verify that onParticipantCountChange was called with the new count
+    expect(mockParticipantCountChange).toHaveBeenCalledWith(5);
+  });
+
+  it('enforces a minimum participant count of 1', () => {
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onParticipantCountChange={mockParticipantCountChange}
+      />,
+    );
+
+    const participantCountInput = screen.getByLabelText(
+      /Number of participants/i,
+    );
+
+    // Try to set an invalid participant count
+    act(() => {
+      fireEvent.change(participantCountInput, { target: { value: '0' } });
+    });
+
+    // Verify that onParticipantCountChange was called with the minimum value of 1
+    expect(mockParticipantCountChange).toHaveBeenCalledWith(1);
   });
 });

@@ -23,6 +23,22 @@
   font-weight: 500;
 }
 
+.participantControl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.participantCountInput {
+  width: 3rem;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
 .resetButton {
   background-color: #ff6347;
   color: white;

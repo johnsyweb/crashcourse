@@ -44,15 +44,22 @@ jest.mock('../Map', () => ({
 // Create a mock updated participants array to use in tests
 const mockUpdatedParticipants = [{ id: 'mock-participant' }];
 
+// Mock the Simulator component with both update functionality
 jest.mock('../Simulator', () => ({
   __esModule: true,
-  default: jest.fn(({ onParticipantUpdate }) => (
+  default: jest.fn(({ onParticipantUpdate, onParticipantCountChange }) => (
     <div data-testid="mock-simulator">
       <button
         data-testid="update-participants-button"
         onClick={() => onParticipantUpdate(mockUpdatedParticipants)}
       >
         Update Participants
+      </button>
+      <button
+        data-testid="change-participant-count-button"
+        onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
+      >
+        Change Participant Count
       </button>
     </div>
   )),
@@ -107,7 +114,7 @@ describe('CourseSimulation', () => {
     expect(Course).toHaveBeenCalledWith(mockCoursePoints);
   });
 
-  it('creates a Participant when course is created', () => {
+  it('creates two Participants by default when course is created', () => {
     render(
       <CourseSimulation
         coursePoints={mockCoursePoints}
@@ -115,6 +122,8 @@ describe('CourseSimulation', () => {
       />,
     );
 
+    // We should create two participants by default
+    expect(Participant).toHaveBeenCalledTimes(2);
     expect(Participant).toHaveBeenCalledWith(mockCoursePoints);
   });
 
@@ -164,5 +173,29 @@ describe('CourseSimulation', () => {
 
     // Verify that participants were updated to the mock values
     expect(updatedSimulatorProps.participants).toEqual(mockUpdatedParticipants);
+  });
+
+  it('recreates participants when participant count changes', () => {
+    // Reset mock counts
+    (Participant as jest.Mock).mockClear();
+
+    // Render the component
+    render(
+      <CourseSimulation
+        coursePoints={mockCoursePoints}
+        onReset={mockOnReset}
+      />,
+    );
+
+    // Initial participants should be created (2 by default)
+    expect(Participant).toHaveBeenCalledTimes(2);
+
+    // Trigger participant count change
+    act(() => {
+      screen.getByTestId('change-participant-count-button').click();
+    });
+
+    // Participant should be recreated with the new count (5)
+    expect(Participant).toHaveBeenCalledTimes(7); // 2 initial + 5 new
   });
 });

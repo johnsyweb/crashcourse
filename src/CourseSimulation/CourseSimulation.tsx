@@ -19,6 +19,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
+  const [participantCount, setParticipantCount] = useState(2); // Default to 2 participants
 
   // Initialize the course from GPS points
   useEffect(() => {
@@ -35,14 +36,21 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   // Initialize participants
   useEffect(() => {
     if (course) {
-      // Initialize a participant with the default pace
-      const newParticipant = new Participant(coursePoints);
-      setParticipants([newParticipant]);
+      // Create multiple participants based on participantCount
+      const newParticipants: Participant[] = [];
+      for (let i = 0; i < participantCount; i++) {
+        newParticipants.push(new Participant(coursePoints));
+      }
+      setParticipants(newParticipants);
     }
-  }, [course, coursePoints]);
+  }, [course, coursePoints, participantCount]);
 
   const handleParticipantUpdate = (updatedParticipants: Participant[]) => {
     setParticipants([...updatedParticipants]);
+  };
+
+  const handleParticipantCountChange = (count: number) => {
+    setParticipantCount(count);
   };
 
   return (
@@ -60,6 +68,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         course={course}
         participants={participants}
         onParticipantUpdate={handleParticipantUpdate}
+        onParticipantCountChange={handleParticipantCountChange}
       />
 
       <div className={styles.mapContainer}>

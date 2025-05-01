@@ -2,13 +2,17 @@
 
 ## Rules
 
-- Each change must be made atomically.
+- Each change must be made atomically
+- Tests must not pollute the console
 - We must follow the current code layout with each component having a single responsibility and having tests
 - Disused code must be removed immediately
-- All of our checks must pass at every step (`pno)
+- All of our checks must pass at every step (`pnpm check`)
 - Each change must be committed to git with a meaningful, semantic message
 - Every single user input must be controllable from the keyboard
-- We should have a clean, consistent, accessible user interface
+- We must have a clean, consistent, accessible user interface
+- The README must remain up-to-date at all times
+- Prefer dedicated functions or named variables over explanatory comments
+- Use Australian English for user-interface text
 
 ## To do list
 
