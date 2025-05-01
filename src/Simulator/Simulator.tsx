@@ -4,6 +4,16 @@ import { Participant } from '../Participant';
 import ElapsedTime from '../ElapsedTime';
 import styles from './Simulator.module.css';
 
+// Constants for participant configuration
+const MIN_PARTICIPANTS = 1;
+const MAX_PARTICIPANTS = 2000;
+const DEFAULT_PARTICIPANTS = 2;
+
+// Helper function to format numbers with locale-specific thousand separators
+const formatNumber = (num: number): string => {
+  return num.toLocaleString('en-AU');
+};
+
 interface SimulatorProps {
   course: Course | null;
   participants?: Participant[];
@@ -19,7 +29,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = useState(
-    participants.length || 2,
+    participants.length || DEFAULT_PARTICIPANTS,
   );
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
@@ -61,7 +71,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Function to increase participant count
   const increaseParticipantCount = useCallback(() => {
     setParticipantCount((prevCount) => {
-      const newCount = prevCount + 1;
+      const newCount = Math.min(MAX_PARTICIPANTS, prevCount + 1);
       if (onParticipantCountChange) {
         onParticipantCountChange(newCount);
       }
@@ -72,7 +82,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Function to decrease participant count
   const decreaseParticipantCount = useCallback(() => {
     setParticipantCount((prevCount) => {
-      const newCount = Math.max(1, prevCount - 1);
+      const newCount = Math.max(MIN_PARTICIPANTS, prevCount - 1);
       if (onParticipantCountChange) {
         onParticipantCountChange(newCount);
       }
@@ -108,7 +118,11 @@ const Simulator: React.FC<SimulatorProps> = ({
   const handleParticipantCountChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const count = Math.max(1, parseInt(e.target.value, 10) || 1);
+    const rawValue = parseInt(e.target.value, 10) || MIN_PARTICIPANTS;
+    const count = Math.max(
+      MIN_PARTICIPANTS,
+      Math.min(MAX_PARTICIPANTS, rawValue),
+    );
     setParticipantCount(count);
     if (onParticipantCountChange) {
       onParticipantCountChange(count);
@@ -119,15 +133,17 @@ const Simulator: React.FC<SimulatorProps> = ({
     <div className={styles.simulatorContainer}>
       <div className={styles.simulatorControls}>
         <h3 className={styles.sectionTitle}>Simulator Controls</h3>
-        
+
         {/* Course Information */}
         <div className={styles.infoSection}>
           <div className={styles.infoItem}>
             <span className={styles.infoLabel}>Course Length:</span>
-            <span className={styles.infoValue}>{course ? (course.length / 1000).toFixed(2) : 0} km</span>
+            <span className={styles.infoValue}>
+              {course ? (course.length / 1000).toFixed(2) : 0} km
+            </span>
           </div>
         </div>
-        
+
         {/* Control Sections */}
         <div className={styles.controlSections}>
           {/* Participant Control Section */}
@@ -135,12 +151,18 @@ const Simulator: React.FC<SimulatorProps> = ({
             <div className={styles.controlHeader}>Participants</div>
             <div className={styles.controlContent}>
               <div className={styles.controlItem}>
-                <label htmlFor="participantCount" className={styles.controlLabel}>Count:</label>
+                <label
+                  htmlFor="participantCount"
+                  className={styles.controlLabel}
+                >
+                  Count: ({formatNumber(MIN_PARTICIPANTS)}-
+                  {formatNumber(MAX_PARTICIPANTS)})
+                </label>
                 <div className={styles.controlInputGroup}>
                   <button
                     className={styles.controlButton}
                     onClick={decreaseParticipantCount}
-                    disabled={participantCount <= 1}
+                    disabled={participantCount <= MIN_PARTICIPANTS}
                     title="Decrease Participants"
                     aria-label="Decrease number of participants"
                   >
@@ -149,25 +171,45 @@ const Simulator: React.FC<SimulatorProps> = ({
                   <input
                     id="participantCount"
                     type="number"
-                    min="1"
+                    min={MIN_PARTICIPANTS}
+                    max={MAX_PARTICIPANTS}
                     value={participantCount}
                     onChange={handleParticipantCountChange}
                     aria-label="Number of participants"
+                    title="Number of participants between 1 and 2,000"
                     className={styles.controlInput}
+                    placeholder="Enter participant count"
                   />
                   <button
                     className={styles.controlButton}
                     onClick={increaseParticipantCount}
+                    disabled={participantCount >= MAX_PARTICIPANTS}
                     title="Increase Participants"
                     aria-label="Increase number of participants"
                   >
                     +
                   </button>
                 </div>
+                <div className={styles.rangeIndicator}>
+                  <input
+                    type="range"
+                    min={MIN_PARTICIPANTS}
+                    max={MAX_PARTICIPANTS}
+                    value={participantCount}
+                    onChange={handleParticipantCountChange}
+                    className={styles.rangeSlider}
+                    aria-label="Adjust number of participants"
+                    title="Slide to adjust number of participants"
+                  />
+                  <div className={styles.rangeLabels}>
+                    <span>{formatNumber(MIN_PARTICIPANTS)}</span>
+                    <span>{formatNumber(MAX_PARTICIPANTS)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          
+
           {/* Timer Control Section - Use the existing ElapsedTime component */}
           <div className={styles.controlSection}>
             <div className={styles.controlHeader}>Simulation Time</div>
@@ -179,7 +221,7 @@ const Simulator: React.FC<SimulatorProps> = ({
             </div>
           </div>
         </div>
-        
+
         {/* Unified Keyboard Shortcuts */}
         <div className={styles.keyboardShortcuts}>
           <div className={styles.shortcutsHeader}>Keyboard Shortcuts</div>
