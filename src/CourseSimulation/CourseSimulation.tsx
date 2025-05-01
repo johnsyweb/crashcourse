@@ -102,25 +102,29 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         </button>
       </div>
 
-      <Simulator
-        course={course}
-        participants={participants}
-        onParticipantUpdate={handleParticipantUpdate}
-        onParticipantCountChange={handleParticipantCountChange}
-        onPaceRangeChange={handlePaceRangeChange}
-      />
+      <div className={styles.contentContainer}>
+        <div className={styles.controlsContainer}>
+          <Simulator
+            course={course}
+            participants={participants}
+            onParticipantUpdate={handleParticipantUpdate}
+            onParticipantCountChange={handleParticipantCountChange}
+            onPaceRangeChange={handlePaceRangeChange}
+          />
+        </div>
 
-      <div className={styles.mapContainer}>
-        <Map gpsPoints={coursePoints}>
-          {course && (
-            <>
-              <CourseDisplay course={course} />
-              {participants.map((participant, index) => (
-                <ParticipantDisplay key={index} participant={participant} />
-              ))}
-            </>
-          )}
-        </Map>
+        <div className={styles.mapContainer}>
+          <Map gpsPoints={coursePoints}>
+            {course && (
+              <>
+                <CourseDisplay course={course} />
+                {participants.map((participant, index) => (
+                  <ParticipantDisplay key={index} participant={participant} />
+                ))}
+              </>
+            )}
+          </Map>
+        </div>
       </div>
     </div>
   );

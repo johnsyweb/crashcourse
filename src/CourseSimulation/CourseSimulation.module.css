@@ -7,6 +7,33 @@
   gap: 1.5rem;
 }
 
+.contentContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 992px) {
+  .contentContainer {
+    flex-direction: column;
+  }
+}
+
+.controlsContainer {
+  flex: 0 0 400px;
+  min-width: 350px;
+}
+
+/* On small screens, controls take full width */
+@media (max-width: 992px) {
+  .controlsContainer {
+    flex: 1;
+    width: 100%;
+  }
+}
+
 .simulationControls {
   display: flex;
   justify-content: space-between;
@@ -42,11 +69,19 @@
 }
 
 .mapContainer {
-  height: 500px;
-  width: 100%;
+  flex: 1;
+  height: 900px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* On small screens, map takes full width */
+@media (max-width: 992px) {
+  .mapContainer {
+    height: 700px;
+    width: 100%;
+  }
 }
 
 .errorMessage {
