@@ -132,67 +132,73 @@ const Simulator: React.FC<SimulatorProps> = ({
   };
 
   // Functions for increasing and decreasing pace values
-  const increasePace = useCallback((paceType: 'min' | 'max') => {
-    const currentPace = paceType === 'min' ? minPace : maxPace;
-    const seconds = paceToSeconds(currentPace);
-    
-    // Increase pace (which means decreasing the seconds, as faster pace = less time)
-    const newSeconds = Math.max(30, seconds - PACE_CHANGE_SECONDS); // Ensure at least 30 seconds
-    const newPace = secondsToPace(newSeconds);
-    
-    if (paceType === 'min') {
-      setMinPace(newPace);
-      if (validatePaceRange(newPace, maxPace)) {
-        setPaceError(null);
-        if (onPaceRangeChange) {
-          onPaceRangeChange(newPace, maxPace);
+  const increasePace = useCallback(
+    (paceType: 'min' | 'max') => {
+      const currentPace = paceType === 'min' ? minPace : maxPace;
+      const seconds = paceToSeconds(currentPace);
+
+      // Increase pace (which means decreasing the seconds, as faster pace = less time)
+      const newSeconds = Math.max(30, seconds - PACE_CHANGE_SECONDS); // Ensure at least 30 seconds
+      const newPace = secondsToPace(newSeconds);
+
+      if (paceType === 'min') {
+        setMinPace(newPace);
+        if (validatePaceRange(newPace, maxPace)) {
+          setPaceError(null);
+          if (onPaceRangeChange) {
+            onPaceRangeChange(newPace, maxPace);
+          }
+        } else {
+          setPaceError('Slowest pace must be greater than fastest pace');
         }
-      } else {
-        setPaceError('Slowest pace must be greater than fastest pace');
-      }
-    } else if (paceType === 'max') {
-      setMaxPace(newPace);
-      if (validatePaceRange(minPace, newPace)) {
-        setPaceError(null);
-        if (onPaceRangeChange) {
-          onPaceRangeChange(minPace, newPace);
+      } else if (paceType === 'max') {
+        setMaxPace(newPace);
+        if (validatePaceRange(minPace, newPace)) {
+          setPaceError(null);
+          if (onPaceRangeChange) {
+            onPaceRangeChange(minPace, newPace);
+          }
+        } else {
+          setPaceError('Fastest pace must be less than slowest pace');
         }
-      } else {
-        setPaceError('Fastest pace must be less than slowest pace');
       }
-    }
-  }, [minPace, maxPace, onPaceRangeChange]);
-  
-  const decreasePace = useCallback((paceType: 'min' | 'max') => {
-    const currentPace = paceType === 'min' ? minPace : maxPace;
-    const seconds = paceToSeconds(currentPace);
-    
-    // Decrease pace (which means increasing the seconds, as slower pace = more time)
-    const newSeconds = seconds + PACE_CHANGE_SECONDS;
-    const newPace = secondsToPace(newSeconds);
-    
-    if (paceType === 'min') {
-      setMinPace(newPace);
-      if (validatePaceRange(newPace, maxPace)) {
-        setPaceError(null);
-        if (onPaceRangeChange) {
-          onPaceRangeChange(newPace, maxPace);
+    },
+    [minPace, maxPace, onPaceRangeChange],
+  );
+
+  const decreasePace = useCallback(
+    (paceType: 'min' | 'max') => {
+      const currentPace = paceType === 'min' ? minPace : maxPace;
+      const seconds = paceToSeconds(currentPace);
+
+      // Decrease pace (which means increasing the seconds, as slower pace = more time)
+      const newSeconds = seconds + PACE_CHANGE_SECONDS;
+      const newPace = secondsToPace(newSeconds);
+
+      if (paceType === 'min') {
+        setMinPace(newPace);
+        if (validatePaceRange(newPace, maxPace)) {
+          setPaceError(null);
+          if (onPaceRangeChange) {
+            onPaceRangeChange(newPace, maxPace);
+          }
+        } else {
+          setPaceError('Slowest pace must be greater than fastest pace');
         }
-      } else {
-        setPaceError('Slowest pace must be greater than fastest pace');
-      }
-    } else if (paceType === 'max') {
-      setMaxPace(newPace);
-      if (validatePaceRange(minPace, newPace)) {
-        setPaceError(null);
-        if (onPaceRangeChange) {
-          onPaceRangeChange(minPace, newPace);
+      } else if (paceType === 'max') {
+        setMaxPace(newPace);
+        if (validatePaceRange(minPace, newPace)) {
+          setPaceError(null);
+          if (onPaceRangeChange) {
+            onPaceRangeChange(minPace, newPace);
+          }
+        } else {
+          setPaceError('Fastest pace must be less than slowest pace');
         }
-      } else {
-        setPaceError('Fastest pace must be less than slowest pace');
       }
-    }
-  }, [minPace, maxPace, onPaceRangeChange]);
+    },
+    [minPace, maxPace, onPaceRangeChange],
+  );
 
   // Handle pace changes and ensure min <= max
   const handleMinPaceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,14 +258,14 @@ const Simulator: React.FC<SimulatorProps> = ({
       } else if (event.key === ']' || event.key === '}') {
         increaseParticipantCount();
       }
-      
+
       // Pace adjustment shortcuts for slowest pace
       else if (event.key === 'q' || event.key === 'Q') {
         decreasePace('min'); // Make slowest pace even slower (+30s)
       } else if (event.key === 'w' || event.key === 'W') {
         increasePace('min'); // Make slowest pace faster (-30s)
       }
-      
+
       // Pace adjustment shortcuts for fastest pace
       else if (event.key === 'a' || event.key === 'A') {
         decreasePace('max'); // Make fastest pace slower (+30s)
@@ -273,7 +279,12 @@ const Simulator: React.FC<SimulatorProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [increaseParticipantCount, decreaseParticipantCount, increasePace, decreasePace]);
+  }, [
+    increaseParticipantCount,
+    decreaseParticipantCount,
+    increasePace,
+    decreasePace,
+  ]);
 
   const handleParticipantCountChange = (
     e: React.ChangeEvent<HTMLInputElement>,
