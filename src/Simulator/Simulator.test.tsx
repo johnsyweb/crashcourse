@@ -70,11 +70,13 @@ describe('Simulator Component', () => {
 
     expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
     expect(screen.getByText(/Course Length: 5.00 km/i)).toBeInTheDocument();
-    expect(
-      screen.getByLabelText(/Number of participants/i),
-    ).toBeInTheDocument();
-    // Fix the type issue - we're comparing a number to a number, so don't use a string for the expected value
-    expect(screen.getByLabelText(/Number of participants/i)).toHaveValue(2);
+
+    // Instead of using getByLabelText which is too generic now, use a more specific query
+    const inputElement = screen.getByRole('spinbutton', {
+      name: /number of participants/i,
+    });
+    expect(inputElement).toBeInTheDocument();
+    expect(inputElement).toHaveValue(2);
   });
 
   it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
@@ -114,9 +116,10 @@ describe('Simulator Component', () => {
       />,
     );
 
-    const participantCountInput = screen.getByLabelText(
-      /Number of participants/i,
-    );
+    // Use a more specific role-based selector for the number input
+    const participantCountInput = screen.getByRole('spinbutton', {
+      name: /number of participants/i,
+    });
 
     // Change the participant count
     act(() => {
@@ -137,9 +140,10 @@ describe('Simulator Component', () => {
       />,
     );
 
-    const participantCountInput = screen.getByLabelText(
-      /Number of participants/i,
-    );
+    // Use a more specific role-based selector for the number input
+    const participantCountInput = screen.getByRole('spinbutton', {
+      name: /number of participants/i,
+    });
 
     // Try to set an invalid participant count
     act(() => {
