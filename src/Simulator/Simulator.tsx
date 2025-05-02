@@ -56,7 +56,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = useState(
-    participants.length || DEFAULT_PARTICIPANTS,
+    participants.length || DEFAULT_PARTICIPANTS
   );
   const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
   const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
@@ -83,7 +83,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         onParticipantUpdate([...participants]);
       }
     },
-    [participants, onParticipantUpdate],
+    [participants, onParticipantUpdate]
   );
 
   // Handle elapsed time changes
@@ -163,7 +163,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         }
       }
     },
-    [minPace, maxPace, onPaceRangeChange],
+    [minPace, maxPace, onPaceRangeChange]
   );
 
   const decreasePace = useCallback(
@@ -197,7 +197,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         }
       }
     },
-    [minPace, maxPace, onPaceRangeChange],
+    [minPace, maxPace, onPaceRangeChange]
   );
 
   // Handle pace changes and ensure min <= max
@@ -245,10 +245,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Avoid triggering when typing in input fields
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
-      ) {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -279,21 +276,11 @@ const Simulator: React.FC<SimulatorProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [
-    increaseParticipantCount,
-    decreaseParticipantCount,
-    increasePace,
-    decreasePace,
-  ]);
+  }, [increaseParticipantCount, decreaseParticipantCount, increasePace, decreasePace]);
 
-  const handleParticipantCountChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleParticipantCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = parseInt(e.target.value, 10) || MIN_PARTICIPANTS;
-    const count = Math.max(
-      MIN_PARTICIPANTS,
-      Math.min(MAX_PARTICIPANTS, rawValue),
-    );
+    const count = Math.max(MIN_PARTICIPANTS, Math.min(MAX_PARTICIPANTS, rawValue));
     setParticipantCount(count);
     if (onParticipantCountChange) {
       onParticipantCountChange(count);
@@ -313,6 +300,22 @@ const Simulator: React.FC<SimulatorProps> = ({
               {course ? (course.length / 1000).toFixed(2) : 0} km
             </span>
           </div>
+          {course && (
+            <>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Narrowest Width:</span>
+                <span className={styles.infoValue}>
+                  {course.getCourseWidthInfo().narrowestWidth.toFixed(1)} m
+                </span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Widest Width:</span>
+                <span className={styles.infoValue}>
+                  {course.getCourseWidthInfo().widestWidth.toFixed(1)} m
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Control Sections */}
@@ -322,12 +325,8 @@ const Simulator: React.FC<SimulatorProps> = ({
             <div className={styles.controlHeader}>Participants</div>
             <div className={styles.controlContent}>
               <div className={styles.controlItem}>
-                <label
-                  htmlFor="participantCount"
-                  className={styles.controlLabel}
-                >
-                  Count: ({formatNumber(MIN_PARTICIPANTS)}-
-                  {formatNumber(MAX_PARTICIPANTS)})
+                <label htmlFor="participantCount" className={styles.controlLabel}>
+                  Count: ({formatNumber(MIN_PARTICIPANTS)}-{formatNumber(MAX_PARTICIPANTS)})
                 </label>
                 <div className={styles.controlInputGroup}>
                   <button
@@ -381,9 +380,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 
               {/* Pace Range Controls */}
               <div className={styles.controlItem}>
-                <label className={styles.controlLabel}>
-                  Participant Pace Range
-                </label>
+                <label className={styles.controlLabel}>Participant Pace Range</label>
                 <div className={styles.paceControlGroup}>
                   <div className={styles.paceControl}>
                     <label htmlFor="minPace" className={styles.paceLabel}>
@@ -420,12 +417,9 @@ const Simulator: React.FC<SimulatorProps> = ({
                     <span className={styles.paceUnit}>/km</span>
                   </div>
                 </div>
-                {paceError && (
-                  <div className={styles.errorMessage}>{paceError}</div>
-                )}
+                {paceError && <div className={styles.errorMessage}>{paceError}</div>}
                 <div className={styles.paceInfo}>
-                  Participants will be assigned random paces between these
-                  values.
+                  Participants will be assigned random paces between these values.
                 </div>
               </div>
             </div>
@@ -435,10 +429,7 @@ const Simulator: React.FC<SimulatorProps> = ({
           <div className={styles.controlSection}>
             <div className={styles.controlHeader}>Simulation Time</div>
             <div className={styles.controlContent}>
-              <ElapsedTime
-                onElapsedTimeChange={handleElapsedTimeChange}
-                initialElapsedTime={0}
-              />
+              <ElapsedTime onElapsedTimeChange={handleElapsedTimeChange} initialElapsedTime={0} />
             </div>
           </div>
         </div>

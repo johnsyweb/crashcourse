@@ -8,9 +8,7 @@ interface CourseDataImporterProps {
   onCourseDataImported: (points: LatLngTuple[]) => void;
 }
 
-const CourseDataImporter: React.FC<CourseDataImporterProps> = ({
-  onCourseDataImported,
-}) => {
+const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImported }) => {
   const [file, setFile] = useState<File | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
@@ -26,10 +24,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({
   const handleGPXDataParsed = (data: GPXData) => {
     if (data.isValid && data.points.length > 0) {
       // Convert GPXPoint array to LatLngTuple array
-      const points: LatLngTuple[] = data.points.map((point) => [
-        point.lat,
-        point.lon,
-      ]);
+      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
 
       if (points.length < 2) {
         setImportError('Course must contain at least 2 GPS points.');

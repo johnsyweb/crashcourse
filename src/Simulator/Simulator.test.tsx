@@ -6,9 +6,14 @@ import '@testing-library/jest-dom';
 
 // Mock the Course and Participant classes
 jest.mock('../Course', () => ({
-  Course: jest.fn().mockImplementation((points) => ({
-    length: 5000, // 5km course
-    points,
+  Course: jest.fn().mockImplementation(() => ({
+    length: 1000,
+    getPositionAtDistance: jest.fn().mockReturnValue([0, 0]),
+    getWidthAt: jest.fn().mockReturnValue(2),
+    getCourseWidthInfo: jest.fn().mockReturnValue({
+      narrowestWidth: 2,
+      widestWidth: 4,
+    }),
   })),
 }));
 
@@ -43,10 +48,7 @@ jest.mock('../ElapsedTime', () => {
 
 describe('Simulator Component', () => {
   const mockCourse = new Course([]) as unknown as Course;
-  const mockParticipants = [
-    new Participant([]),
-    new Participant([]),
-  ] as unknown as Participant[];
+  const mockParticipants = [new Participant([]), new Participant([])] as unknown as Participant[];
   const mockParticipantUpdate = jest.fn();
   const mockParticipantCountChange = jest.fn();
   const mockPaceRangeChange = jest.fn();
@@ -66,7 +68,7 @@ describe('Simulator Component', () => {
         course={mockCourse}
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
-      />,
+      />
     );
 
     expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
@@ -74,7 +76,7 @@ describe('Simulator Component', () => {
     // In our new UI structure, the course length is displayed differently
     // Check for label and value separately
     expect(screen.getByText(/Course Length/i)).toBeInTheDocument();
-    expect(screen.getByText(/5.00/i)).toBeInTheDocument();
+    expect(screen.getByText(/1.00/i)).toBeInTheDocument();
     // Use getAllByText and check the first instance for "km" since we have multiple elements with this text now
     expect(screen.getAllByText(/km/i)[0]).toBeInTheDocument();
 
@@ -100,7 +102,7 @@ describe('Simulator Component', () => {
         course={mockCourse}
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
-      />,
+      />
     );
 
     // Use our mocked elapsed time control
@@ -128,7 +130,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onParticipantCountChange={mockParticipantCountChange}
-      />,
+      />
     );
 
     // Use a more specific role-based selector for the number input
@@ -152,7 +154,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onParticipantCountChange={mockParticipantCountChange}
-      />,
+      />
     );
 
     // Use a more specific role-based selector for the number input
@@ -176,7 +178,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onPaceRangeChange={mockPaceRangeChange}
-      />,
+      />
     );
 
     const minPaceInput = screen.getByLabelText(/Slowest pace/i);
@@ -197,7 +199,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onPaceRangeChange={mockPaceRangeChange}
-      />,
+      />
     );
 
     const maxPaceInput = screen.getByLabelText(/Fastest pace/i);
@@ -218,7 +220,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onPaceRangeChange={mockPaceRangeChange}
-      />,
+      />
     );
 
     const minPaceInput = screen.getByLabelText(/Slowest pace/i);
@@ -242,7 +244,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onPaceRangeChange={mockPaceRangeChange}
-      />,
+      />
     );
 
     // Try to set the fastest pace slower than the slowest pace
@@ -253,9 +255,7 @@ describe('Simulator Component', () => {
     });
 
     // Should show an error message
-    expect(
-      screen.getByText(/Fastest pace must be less than slowest pace/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Fastest pace must be less than slowest pace/i)).toBeInTheDocument();
 
     // onPaceRangeChange should not be called because the input is invalid
     expect(mockPaceRangeChange).not.toHaveBeenCalled();
@@ -268,7 +268,7 @@ describe('Simulator Component', () => {
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
         onPaceRangeChange={mockPaceRangeChange}
-      />,
+      />
     );
 
     // Try to set the slowest pace faster than the fastest pace
@@ -279,9 +279,7 @@ describe('Simulator Component', () => {
     });
 
     // Should show an error message
-    expect(
-      screen.getByText(/Slowest pace must be greater than fastest pace/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Slowest pace must be greater than fastest pace/i)).toBeInTheDocument();
 
     // onPaceRangeChange should not be called because the input is invalid
     expect(mockPaceRangeChange).not.toHaveBeenCalled();

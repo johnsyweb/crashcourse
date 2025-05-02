@@ -17,12 +17,10 @@ export class Participant {
     courseOrPoints: LatLngTuple[] | Course,
     elapsedTime: number = 0,
     pace: string = '4:00',
-    width: number = 0.5,
+    width: number = 0.5
   ) {
     // Create course from points or use provided course
-    this.course = Array.isArray(courseOrPoints)
-      ? new Course(courseOrPoints)
-      : courseOrPoints;
+    this.course = Array.isArray(courseOrPoints) ? new Course(courseOrPoints) : courseOrPoints;
 
     this.elapsedTime = elapsedTime;
     this.pace = this.parsePace(pace);

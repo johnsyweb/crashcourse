@@ -16,10 +16,7 @@ interface CourseSimulationProps {
   onReset: () => void;
 }
 
-const CourseSimulation: React.FC<CourseSimulationProps> = ({
-  coursePoints,
-  onReset,
-}) => {
+const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onReset }) => {
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
@@ -42,8 +39,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
 
     // Generate random seconds between adjusted min and max
     const randomSeconds = Math.floor(
-      Math.random() * (adjustedMinSeconds - adjustedMaxSeconds + 1) +
-        adjustedMaxSeconds,
+      Math.random() * (adjustedMinSeconds - adjustedMaxSeconds + 1) + adjustedMaxSeconds
     );
 
     // Convert back to MM:SS format

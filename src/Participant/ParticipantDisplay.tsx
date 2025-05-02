@@ -15,9 +15,7 @@ interface ParticipantDisplayProps {
   participant: Participant;
 }
 
-const ParticipantDisplay: React.FC<ParticipantDisplayProps> = ({
-  participant,
-}) => {
+const ParticipantDisplay: React.FC<ParticipantDisplayProps> = ({ participant }) => {
   const position = participant.getPosition();
   const properties = participant.getProperties();
 

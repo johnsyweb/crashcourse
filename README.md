@@ -73,7 +73,7 @@ Handles the importing and processing of GPS course data. It manages the file sel
 
 ### CourseSimulation
 
-Manages the visualization and interactive simulation of the course. It coordinates between the Map, Course, and Simulator components to provide a coherent simulation experience.
+Manages the visualisation and interactive simulation of the course. It coordinates between the Map, Course, and Simulator components to provide a coherent simulation experience.
 
 ### FileUploadSection
 
@@ -92,21 +92,23 @@ A specialized component that handles parsing and processing of GPX files. Featur
 
 A model representing an event course, defined by a series of geographical points. Features include:
 
-- Calculating the total course length using the Haversine formula
+- Calculating the total course length using turf.js for accurate geodesic calculations
 - Providing access to start and finish points
 - Finding coordinates at any specific distance along the course
 - Determining the distance of a given position relative to the course
 - Calculating the left and right edges of the course
 - Identifying the narrowest and widest parts of the course and their widths
+- Modeling course width based on parallel paths and intersections
+- Supporting dynamic width calculations at any point along the course
 
 ### CourseDisplay
 
-A visualization component for rendering a course on a map. Features include:
+A visualisation component for rendering a course on a map. Features include:
 
 - Rendering the course path as a polyline
 - Displaying start and finish markers
-- Optional kilometer markers along the course
-- Customizable line styling
+- Optional kilometre markers along the course
+- Customisable line styling
 - Marking the narrowest and widest points of the course with annotations
 
 ### Map
@@ -124,8 +126,9 @@ Controls the simulation of participants' movement along a course. Features inclu
 
 - Start/stop/reset controls for the simulation
 - Dynamic updating of participant positions based on elapsed time
-- Real-time feedback on course length and participant count
+- Real-time feedback on course length, width information, and participant count
 - Integration with ElapsedTime for timing control
+- Display of course width statistics (narrowest and widest points)
 
 ### ElapsedTime
 
@@ -140,8 +143,8 @@ A reusable timer component that displays and controls elapsed time. Features inc
 A model representing a participant in the simulation. Features include:
 
 - Tracking position along a course based on elapsed time and pace
-- Calculating cumulative distance traveled
-- Supporting different paces (specified as minutes:seconds per kilometer)
+- Calculating cumulative distance travelled
+- Supporting different paces (specified as minutes:seconds per kilometre)
 - Reset capability to return to starting position
 - Built to work directly with the Course class for efficient distance calculations and position determination
 

@@ -1,19 +1,20 @@
 import { LatLngTuple } from 'leaflet';
-
-interface CourseWidthInfo {
-  narrowestPoint: LatLngTuple;
-  narrowestWidth: number;
-  widestPoint: LatLngTuple;
-  widestWidth: number;
-}
+import * as turf from '@turf/turf';
+import type { Feature, LineString } from 'geojson';
 
 /**
  * Represents a course for an event, defined by a series of GPS points.
  */
 export class Course {
+  // Width-related constants
+  private static readonly DEFAULT_WIDTH = 2; // metres
+  private static readonly MAX_WIDTH = Course.DEFAULT_WIDTH * 2; // metres
+  private static readonly MAX_WIDTH_PLUS_TOLERANCE = Course.MAX_WIDTH * 1.01; // Add 1% for floating point precision
+
   private points: LatLngTuple[];
   private cumulativeDistances: number[] = [];
-  private totalLength: number = 0;
+  private totalLength: number;
+  private lineString: Feature<LineString>;
 
   /**
    * Creates a new Course instance from an array of GPS points.
@@ -21,32 +22,33 @@ export class Course {
    */
   constructor(points: LatLngTuple[]) {
     if (points.length < 2) {
-      throw new Error('A course must have at least two points');
+      throw new Error('Course must have at least two points');
     }
-
-    this.points = [...points]; // Create a copy to avoid external mutations
+    this.points = points;
+    this.lineString = turf.lineString(points.map(([lat, lon]) => [lon, lat]));
+    this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
   }
 
   /**
-   * Gets the start point of the course.
+   * Get the total length of the course in meters
+   */
+  get length(): number {
+    return this.totalLength;
+  }
+
+  /**
+   * Get the starting point of the course
    */
   get startPoint(): LatLngTuple {
     return this.points[0];
   }
 
   /**
-   * Gets the finish point of the course.
+   * Get the finish point of the course
    */
   get finishPoint(): LatLngTuple {
     return this.points[this.points.length - 1];
-  }
-
-  /**
-   * Gets the total length of the course in meters.
-   */
-  get length(): number {
-    return this.totalLength;
   }
 
   /**
@@ -57,42 +59,19 @@ export class Course {
   }
 
   /**
-   * Finds the coordinates at a specified distance from the start.
-   * @param distance - Distance in meters from the start
-   * @returns The coordinates (latitude, longitude) at the specified distance
+   * Get the position at a specific distance along the course
+   * @param distance Distance in meters from the start
+   * @returns [lat, lon] tuple
    */
   getPositionAtDistance(distance: number): LatLngTuple {
-    if (distance <= 0) {
-      return this.startPoint;
+    if (distance < 0 || distance > this.totalLength) {
+      throw new Error('Distance is out of bounds');
     }
 
-    if (distance >= this.totalLength) {
-      return this.finishPoint;
-    }
-
-    // Find the segment containing the target distance
-    let segmentIndex = 0;
-    while (
-      segmentIndex < this.cumulativeDistances.length - 1 &&
-      this.cumulativeDistances[segmentIndex + 1] < distance
-    ) {
-      segmentIndex++;
-    }
-
-    // Calculate how far along the segment the target distance is
-    const segmentStart = this.cumulativeDistances[segmentIndex];
-    const segmentEnd = this.cumulativeDistances[segmentIndex + 1];
-    const segmentProgress =
-      (distance - segmentStart) / (segmentEnd - segmentStart);
-
-    // Interpolate between the points
-    const [lat1, lon1] = this.points[segmentIndex];
-    const [lat2, lon2] = this.points[segmentIndex + 1];
-
-    const latitude = lat1 + segmentProgress * (lat2 - lat1);
-    const longitude = lon1 + segmentProgress * (lon2 - lon1);
-
-    return [latitude, longitude];
+    // Use turf.along to find the point at the specified distance
+    const point = turf.along(this.lineString, distance / 1000, { units: 'kilometers' });
+    const [lon, lat] = point.geometry.coordinates;
+    return [lat, lon];
   }
 
   /**
@@ -110,37 +89,132 @@ export class Course {
       const [lat1, lon1] = this.points[i];
       const [lat2, lon2] = this.points[i + 1];
 
-      const closestPoint = this.findClosestPointOnSegment(
-        targetLat,
-        targetLon,
-        lat1,
-        lon1,
-        lat2,
-        lon2,
-      );
+      // Create a line string for this segment
+      const segment = turf.lineString([
+        [lon1, lat1],
+        [lon2, lat2],
+      ]);
 
-      const distToClosest = this.haversineDistance(
-        targetLat,
-        targetLon,
-        closestPoint[0],
-        closestPoint[1],
-      );
+      // Find the nearest point on this segment
+      const nearestPoint = turf.nearestPointOnLine(segment, [targetLon, targetLat]);
+      const distToClosest = nearestPoint.properties.dist;
 
       if (distToClosest < minDistance) {
         minDistance = distToClosest;
 
         // Calculate distance along the course to this point
-        const distAlongSegment = this.haversineDistance(
-          lat1,
-          lon1,
-          closestPoint[0],
-          closestPoint[1],
-        );
+        const distAlongSegment = turf.distance([lon1, lat1], nearestPoint.geometry.coordinates, {
+          units: 'meters',
+        });
         closestSegmentDistance = this.cumulativeDistances[i] + distAlongSegment;
       }
     }
 
     return closestSegmentDistance;
+  }
+
+  private normalizeBearing(bearing: number): number {
+    return ((bearing % 360) + 360) % 360;
+  }
+
+  private isOppositeBearing(bearing1: number, bearing2: number): boolean {
+    const bearingDiff = Math.abs(bearing1 - bearing2);
+    const normalizedDiff = bearingDiff > 180 ? 360 - bearingDiff : bearingDiff;
+    return Math.abs(normalizedDiff - 180) <= 20;
+  }
+
+  private findClosestParallelPath(position: LatLngTuple, bearing: number): number | null {
+    const [lat, lon] = position;
+    const point = turf.point([lon, lat]);
+    const normalizedBearing = this.normalizeBearing(bearing);
+
+    // Get the current segment we're on
+    const currentDistance = this.getDistanceAtPosition(position);
+    let currentSegmentIndex = 0;
+    for (let i = 0; i < this.cumulativeDistances.length - 1; i++) {
+      if (
+        currentDistance >= this.cumulativeDistances[i] &&
+        currentDistance < this.cumulativeDistances[i + 1]
+      ) {
+        currentSegmentIndex = i;
+        break;
+      }
+    }
+
+    // Look for segments with opposite bearings
+    const segments = this.points
+      .slice(0, -1)
+      .map((startPoint, i) => {
+        // Skip the current segment
+        if (i === currentSegmentIndex) return null;
+
+        const [lat1, lon1] = startPoint;
+        const [lat2, lon2] = this.points[i + 1];
+
+        // Calculate the bearing of this segment and normalize it
+        const segmentBearing = this.normalizeBearing(turf.bearing([lon1, lat1], [lon2, lat2]));
+
+        // Only consider segments that have an opposite bearing
+        if (this.isOppositeBearing(segmentBearing, normalizedBearing)) {
+          // Create a line string for this segment
+          const segment = turf.lineString([
+            [lon1, lat1],
+            [lon2, lat2],
+          ]);
+
+          // Find nearest point on the segment
+          const nearestPoint = turf.nearestPointOnLine(segment, point);
+
+          // Calculate the distance using turf.js
+          const distance = turf.distance(point, nearestPoint, { units: 'meters' });
+
+          // Only consider segments within MAX_WIDTH_PLUS_TOLERANCE
+          if (distance <= Course.MAX_WIDTH_PLUS_TOLERANCE) {
+            return { index: i, distance, segment };
+          }
+        }
+
+        return null;
+      })
+      .filter(
+        (s): s is { index: number; distance: number; segment: Feature<LineString> } => s !== null
+      );
+
+    if (segments.length === 0) return null;
+
+    // Select the closest one
+    const closestSegment = segments.reduce((min, current) =>
+      current.distance < min.distance ? current : min
+    );
+
+    // Round the distance to the nearest meter
+    return Math.round(closestSegment.distance);
+  }
+
+  /**
+   * Gets the width of the course at a specific distance
+   * @param distance Distance in meters from the start
+   * @returns Width in meters
+   */
+  public getWidthAt(distance: number): number {
+    if (distance < 0 || distance > this.totalLength) {
+      throw new Error('Distance is out of bounds');
+    }
+
+    // Get the position and bearing at this distance
+    const position = this.getPositionAtDistance(distance);
+    const bearing = this.getBearingAtDistance(distance);
+
+    // Find the closest parallel path with an opposite bearing
+    const parallelPathDistance = this.findClosestParallelPath(position, bearing);
+
+    // If no parallel path found within MAX_WIDTH_PLUS_TOLERANCE, return default width
+    if (parallelPathDistance === null || parallelPathDistance > Course.MAX_WIDTH_PLUS_TOLERANCE) {
+      return Course.DEFAULT_WIDTH;
+    }
+
+    // Return the distance to the parallel path
+    return parallelPathDistance;
   }
 
   /**
@@ -155,7 +229,11 @@ export class Course {
       const [lat1, lon1] = this.points[i - 1];
       const [lat2, lon2] = this.points[i];
 
-      totalDistance += this.haversineDistance(lat1, lon1, lat2, lon2);
+      const from = turf.point([lon1, lat1]);
+      const to = turf.point([lon2, lat2]);
+      const segmentDistance = turf.distance(from, to, { units: 'meters' });
+
+      totalDistance += segmentDistance;
       this.cumulativeDistances.push(totalDistance);
     }
 
@@ -163,88 +241,27 @@ export class Course {
   }
 
   /**
-   * Calculates the distance between two points using the Haversine formula.
-   * @param lat1 - Latitude of the first point
-   * @param lon1 - Longitude of the first point
-   * @param lat2 - Latitude of the second point
-   * @param lon2 - Longitude of the second point
-   * @returns Distance in meters
-   */
-  private haversineDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
-    const R = 6371e3; // Earth's radius in meters
-    const phi1 = (lat1 * Math.PI) / 180;
-    const phi2 = (lat2 * Math.PI) / 180;
-    const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
-    const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-      Math.cos(phi1) *
-        Math.cos(phi2) *
-        Math.sin(deltaLambda / 2) *
-        Math.sin(deltaLambda / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
-  }
-
-  /**
-   * Finds the closest point on a line segment to a target point.
-   */
-  private findClosestPointOnSegment(
-    targetLat: number,
-    targetLon: number,
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): LatLngTuple {
-    // Convert to Cartesian coordinates for simpler calculations
-    const x = targetLon;
-    const y = targetLat;
-    const x1 = lon1;
-    const y1 = lat1;
-    const x2 = lon2;
-    const y2 = lat2;
-
-    // Calculate the squared length of the segment
-    const segmentLengthSquared = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-
-    // If segment is just a point, return the segment start
-    if (segmentLengthSquared === 0) return [lat1, lon1];
-
-    // Calculate the projection scalar
-    const t = Math.max(
-      0,
-      Math.min(
-        1,
-        ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / segmentLengthSquared,
-      ),
-    );
-
-    // Calculate the closest point
-    const closestLon = x1 + t * (x2 - x1);
-    const closestLat = y1 + t * (y2 - y1);
-
-    return [closestLat, closestLon];
-  }
-
-  /**
    * Calculates the left and right edges of the course.
-   * The left edge is the original course line, and the right edge is 2m away.
-   * If the course overlaps, the furthest left and right edges are calculated.
+   * The left edge is the original course line, and the right edge is 2m away orthogonal to path direction.
    */
   getCourseEdges(): { leftEdge: LatLngTuple[]; rightEdge: LatLngTuple[] } {
     const leftEdge = this.points;
-    const rightEdge = this.points.map(([lat, lon]): LatLngTuple => {
-      // Approximate 2m to degrees (latitude/longitude)
-      const offset = 2 / 111320; // 1 degree latitude ~ 111.32 km
-      return [lat, lon + offset] as LatLngTuple;
+    const rightEdge = this.points.map((point, idx): LatLngTuple => {
+      const [lat, lon] = point;
+
+      // Determine bearing along path at this point
+      let bearing: number;
+      if (idx < this.points.length - 1) {
+        const [lat2, lon2] = this.points[idx + 1];
+        bearing = turf.bearing([lon, lat], [lon2, lat2]);
+      } else {
+        const [lat0, lon0] = this.points[idx - 1];
+        bearing = turf.bearing([lon0, lat0], [lon, lat]);
+      }
+
+      // Calculate point 2m to the right
+      const dest = turf.destination([lon, lat], 0.002, bearing + 90, { units: 'kilometers' });
+      return [dest.geometry.coordinates[1], dest.geometry.coordinates[0]];
     });
 
     return { leftEdge, rightEdge };
@@ -253,35 +270,44 @@ export class Course {
   /**
    * Finds the narrowest and widest parts of the course and their widths.
    */
-  getCourseWidthInfo(): CourseWidthInfo {
-    let narrowestWidth = Infinity;
-    let widestWidth = 0;
-    let narrowestPoint: LatLngTuple = this.points[0];
-    let widestPoint: LatLngTuple = this.points[0];
+  getCourseWidthInfo(): { narrowestWidth: number; widestWidth: number } {
+    const widths: number[] = [];
+    const step = 10; // Sample every 10 meters
 
-    for (let i = 0; i < this.points.length; i++) {
-      const [lat, lon] = this.points[i];
-      const offset = 2 / 111320; // 2m in degrees longitude
-      const rightLon = lon + offset;
-
-      const width = this.haversineDistance(lat, lon, lat, rightLon);
-
-      if (width < narrowestWidth) {
-        narrowestWidth = width;
-        narrowestPoint = [lat, lon];
-      }
-
-      if (width > widestWidth) {
-        widestWidth = width;
-        widestPoint = [lat, lon];
-      }
+    for (let distance = 0; distance <= this.totalLength; distance += step) {
+      widths.push(this.getWidthAt(distance));
     }
 
     return {
-      narrowestPoint,
-      narrowestWidth,
-      widestPoint,
-      widestWidth,
+      narrowestWidth: Math.min(...widths),
+      widestWidth: Math.max(...widths),
     };
+  }
+
+  /**
+   * Gets the bearing at a specific distance along the course.
+   * @param distance Distance in meters from the start
+   * @returns Bearing in degrees (0-360)
+   */
+  public getBearingAtDistance(distance: number): number {
+    if (distance < 0 || distance > this.totalLength) {
+      throw new Error('Distance is out of bounds');
+    }
+
+    // Find the segment containing this distance
+    let segmentIndex = 0;
+    for (let i = 0; i < this.cumulativeDistances.length - 1; i++) {
+      if (distance >= this.cumulativeDistances[i] && distance < this.cumulativeDistances[i + 1]) {
+        segmentIndex = i;
+        break;
+      }
+    }
+
+    // Get the points for this segment
+    const [lat1, lon1] = this.points[segmentIndex];
+    const [lat2, lon2] = this.points[segmentIndex + 1];
+
+    // Calculate bearing using turf.js format [lon, lat]
+    return turf.bearing([lon1, lat1], [lon2, lat2]);
   }
 }

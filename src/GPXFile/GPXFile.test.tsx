@@ -64,12 +64,8 @@ describe('GPXFile Component', () => {
     Object.defineProperty(global, 'FileReader', {
       writable: true,
       value: class MockFileReader extends FileReader {
-        onload:
-          | ((this: FileReader, ev: ProgressEvent<FileReader>) => void)
-          | null = null;
-        onerror:
-          | ((this: FileReader, ev: ProgressEvent<FileReader>) => void)
-          | null = null;
+        onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
+        onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
 
         readAsText(file: Blob) {
           setTimeout(() => {
@@ -155,9 +151,7 @@ describe('GPXFile Component', () => {
     Object.defineProperty(global, 'FileReader', {
       writable: true,
       value: class SlowMockFileReader {
-        onload:
-          | ((this: FileReader, ev: ProgressEvent<FileReader>) => void)
-          | null = null;
+        onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => void) | null = null;
 
         readAsText() {
           // Don't call onload to keep the loading state visible

@@ -6,10 +6,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Crashcourse</h1>
-        <p>
-          Simulate and analyse your event course for accessibility and
-          enjoyment.
-        </p>
+        <p>Simulate and analyse your event course for accessibility and enjoyment.</p>
       </header>
 
       <main>

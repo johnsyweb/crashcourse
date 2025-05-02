@@ -76,10 +76,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
       const key = event.key.toLowerCase();
 
       // Avoid triggering when typing in input fields
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement
-      ) {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -170,9 +167,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
             <button
               className={styles.controlButton}
               onClick={increaseSpeed}
-              disabled={
-                speedMultiplier === speedOptions[speedOptions.length - 1]
-              }
+              disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
               aria-label="Increase simulation speed"
             >
               +

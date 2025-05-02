@@ -22,19 +22,13 @@ const Map: React.FC<MapProps> = ({
 }) => {
   return (
     <div className={`${styles.mapWrapper} ${className || ''}`}>
-      <MapContainer
-        center={initialCenter}
-        zoom={initialZoom}
-        className={styles.mapContainer}
-      >
+      <MapContainer center={initialCenter} zoom={initialZoom} className={styles.mapContainer}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
         />
         {children}
-        {gpsPoints && gpsPoints.length > 0 && (
-          <FitBounds gpsPoints={gpsPoints} />
-        )}
+        {gpsPoints && gpsPoints.length > 0 && <FitBounds gpsPoints={gpsPoints} />}
       </MapContainer>
     </div>
   );

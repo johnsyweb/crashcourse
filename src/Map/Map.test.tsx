@@ -53,11 +53,7 @@ jest.mock('react-leaflet', () => ({
     </div>
   ),
   TileLayer: ({ url, attribution }: TileLayerProps) => (
-    <div
-      data-testid="tile-layer"
-      data-url={url}
-      data-attribution={attribution}
-    />
+    <div data-testid="tile-layer" data-url={url} data-attribution={attribution} />
   ),
   // Mock useMap hook that FitBounds uses
   useMap: () => ({
@@ -94,7 +90,7 @@ describe('Map Component', () => {
     expect(tileLayer).toBeInTheDocument();
     expect(tileLayer).toHaveAttribute(
       'data-url',
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
     );
   });
 
@@ -102,19 +98,10 @@ describe('Map Component', () => {
     const customCenter: [number, number] = [51.505, -0.09];
     const customZoom = 13;
 
-    render(
-      <Map
-        initialCenter={customCenter}
-        initialZoom={customZoom}
-        className="custom-map"
-      />,
-    );
+    render(<Map initialCenter={customCenter} initialZoom={customZoom} className="custom-map" />);
 
     const mapContainer = screen.getByTestId('map-container');
-    expect(mapContainer).toHaveAttribute(
-      'data-center',
-      JSON.stringify(customCenter),
-    );
+    expect(mapContainer).toHaveAttribute('data-center', JSON.stringify(customCenter));
     expect(mapContainer).toHaveAttribute('data-zoom', customZoom.toString());
 
     const mapWrapper = mapContainer.parentElement;
@@ -125,7 +112,7 @@ describe('Map Component', () => {
     render(
       <Map>
         <div data-testid="child-component">Test Child</div>
-      </Map>,
+      </Map>
     );
 
     const childComponent = screen.getByTestId('child-component');
@@ -149,10 +136,7 @@ describe('Map Component', () => {
 
     const fitBounds = document.querySelector('[data-testid="fit-bounds"]');
     expect(fitBounds).not.toBeNull();
-    expect(fitBounds).toHaveAttribute(
-      'data-points',
-      JSON.stringify(testPoints),
-    );
+    expect(fitBounds).toHaveAttribute('data-points', JSON.stringify(testPoints));
   });
 
   it('does not render FitBounds when no gpsPoints are provided', () => {

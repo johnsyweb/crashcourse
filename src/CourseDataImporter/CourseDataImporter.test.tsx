@@ -76,9 +76,7 @@ describe('CourseDataImporter', () => {
   });
 
   it('renders correctly with initial state', () => {
-    render(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
-    );
+    render(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
     expect(screen.getByText(/Import Course Data/i)).toBeInTheDocument();
     expect(screen.getByTestId('mock-file-upload-section')).toBeInTheDocument();
@@ -87,7 +85,7 @@ describe('CourseDataImporter', () => {
 
   it('shows GPXFile component after file is selected', async () => {
     const { rerender } = render(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
+      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />
     );
 
     // Simulate file selection with act
@@ -95,17 +93,13 @@ describe('CourseDataImporter', () => {
       screen.getByTestId('upload-button').click();
     });
 
-    rerender(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
-    );
+    rerender(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
     expect(screen.getByTestId('mock-gpx-file')).toBeInTheDocument();
   });
 
   it('calls onCourseDataImported when valid GPX data is parsed', async () => {
-    render(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
-    );
+    render(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
     // Simulate file selection
     act(() => {
@@ -126,7 +120,7 @@ describe('CourseDataImporter', () => {
     (GPXFile as jest.Mock).mockImplementation(errorGPXMock);
 
     const { rerender } = render(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
+      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />
     );
 
     // Reset the mock first
@@ -137,9 +131,7 @@ describe('CourseDataImporter', () => {
       screen.getByTestId('upload-button').click();
     });
 
-    rerender(
-      <CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />,
-    );
+    rerender(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
     // Wait for the error message to appear
     await waitFor(() => {

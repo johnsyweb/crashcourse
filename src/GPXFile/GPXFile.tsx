@@ -61,9 +61,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
       }
 
       // Handle both single track and multiple tracks
-      const track = Array.isArray(result.gpx.trk)
-        ? result.gpx.trk[0]
-        : result.gpx.trk;
+      const track = Array.isArray(result.gpx.trk) ? result.gpx.trk[0] : result.gpx.trk;
 
       if (!track?.trkseg?.trkpt) {
         throw new Error('Invalid GPX format: missing track points');
@@ -80,14 +78,13 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
           lon: parseFloat(point.lon),
           ele: point.ele ? parseFloat(point.ele) : undefined,
           time: point.time || undefined,
-        }),
+        })
       );
 
       console.log('GPXFile: Converted track points to GPXPoint format', points);
 
       // Get track name with safe navigation
-      const trackName =
-        track.name || track.n || file.name.replace(/\.[^/.]+$/, '');
+      const trackName = track.name || track.n || file.name.replace(/\.[^/.]+$/, '');
       console.log('GPXFile: Track name determined', trackName);
 
       const gpxData: GPXData = {
@@ -101,8 +98,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
       console.log('GPXFile: GPX data parsed successfully', gpxData);
       onDataParsed(gpxData);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to parse GPX file';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to parse GPX file';
       console.error('GPXFile: Error while parsing GPX file', errorMessage);
       setError(errorMessage);
 
@@ -126,9 +122,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
 
   return (
     <div className={styles.gpxFile}>
-      {isLoading && (
-        <div className={styles.loadingIndicator}>Parsing GPX file...</div>
-      )}
+      {isLoading && <div className={styles.loadingIndicator}>Parsing GPX file...</div>}
       {error && <div className={styles.errorMessage}>Error: {error}</div>}
     </div>
   );

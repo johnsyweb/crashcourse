@@ -50,8 +50,9 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
     iconSize: [25, 25],
   });
 
-  const { narrowestPoint, narrowestWidth, widestPoint, widestWidth } =
-    course.getCourseWidthInfo();
+  const { narrowestPoint, narrowestWidth, widestPoint, widestWidth } = course.getCourseWidthInfo();
+  // Compute right edge for visualization
+  const { rightEdge } = course.getCourseEdges();
 
   // Create kilometer markers
   const renderKilometerMarkers = () => {
@@ -68,7 +69,7 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
       markers.push(
         <Marker key={`km-${km}`} position={position} icon={kmMarkerIcon}>
           <Popup>{km} km</Popup>
-        </Marker>,
+        </Marker>
       );
     }
 
@@ -77,11 +78,9 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
 
   return (
     <>
-      <Polyline
-        positions={course.getPoints()}
-        color={lineColor}
-        weight={lineWeight}
-      />
+      <Polyline positions={course.getPoints()} color={lineColor} weight={lineWeight} />
+      {/* Right edge of the course (2m offset) */}
+      <Polyline positions={rightEdge} color="gray" weight={lineWeight} dashArray="8 8" />
 
       {/* Start marker */}
       <Marker position={course.startPoint} icon={startIcon}>

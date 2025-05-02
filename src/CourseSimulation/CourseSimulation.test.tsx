@@ -36,9 +36,7 @@ jest.mock('../Participant/ParticipantDisplay', () => ({
 
 jest.mock('../Map', () => ({
   __esModule: true,
-  default: jest.fn(({ children }) => (
-    <div data-testid="mock-map">{children}</div>
-  )),
+  default: jest.fn(({ children }) => <div data-testid="mock-map">{children}</div>),
 }));
 
 // Create a mock updated participants array to use in tests
@@ -47,34 +45,28 @@ const mockUpdatedParticipants = [{ id: 'mock-participant' }];
 // Mock the Simulator component with all update functionalities
 jest.mock('../Simulator', () => ({
   __esModule: true,
-  default: jest.fn(
-    ({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => (
-      <div data-testid="mock-simulator">
-        <button
-          data-testid="update-participants-button"
-          onClick={() => onParticipantUpdate(mockUpdatedParticipants)}
-        >
-          Update Participants
-        </button>
-        <button
-          data-testid="change-participant-count-button"
-          onClick={() =>
-            onParticipantCountChange && onParticipantCountChange(5)
-          }
-        >
-          Change Participant Count
-        </button>
-        <button
-          data-testid="change-pace-range-button"
-          onClick={() =>
-            onPaceRangeChange && onPaceRangeChange('10:00', '3:30')
-          }
-        >
-          Change Pace Range
-        </button>
-      </div>
-    ),
-  ),
+  default: jest.fn(({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => (
+    <div data-testid="mock-simulator">
+      <button
+        data-testid="update-participants-button"
+        onClick={() => onParticipantUpdate(mockUpdatedParticipants)}
+      >
+        Update Participants
+      </button>
+      <button
+        data-testid="change-participant-count-button"
+        onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
+      >
+        Change Participant Count
+      </button>
+      <button
+        data-testid="change-pace-range-button"
+        onClick={() => onPaceRangeChange && onPaceRangeChange('10:00', '3:30')}
+      >
+        Change Pace Range
+      </button>
+    </div>
+  )),
 }));
 
 describe('CourseSimulation', () => {
@@ -90,12 +82,7 @@ describe('CourseSimulation', () => {
   });
 
   it('renders correctly with course points', () => {
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     expect(screen.getByText(/Course Simulation/i)).toBeInTheDocument();
     expect(screen.getByText(/Import Different Course/i)).toBeInTheDocument();
@@ -104,35 +91,20 @@ describe('CourseSimulation', () => {
   });
 
   it('calls onReset when reset button is clicked', () => {
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     fireEvent.click(screen.getByText(/Import Different Course/i));
     expect(mockOnReset).toHaveBeenCalledTimes(1);
   });
 
   it('creates a Course from the provided course points', () => {
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     expect(Course).toHaveBeenCalledWith(mockCoursePoints);
   });
 
   it('creates two Participants by default when course is created', () => {
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     // We should create two participants by default
     expect(Participant).toHaveBeenCalledTimes(2);
@@ -141,7 +113,7 @@ describe('CourseSimulation', () => {
     expect(Participant).toHaveBeenCalledWith(
       mockCoursePoints,
       expect.any(Number),
-      expect.stringMatching(/^\d+:\d{2}$/),
+      expect.stringMatching(/^\d+:\d{2}$/)
     );
   });
 
@@ -151,12 +123,7 @@ describe('CourseSimulation', () => {
       throw new Error('Course creation failed');
     });
 
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     expect(screen.getByText('Course creation failed')).toBeInTheDocument();
   });
@@ -164,10 +131,7 @@ describe('CourseSimulation', () => {
   it('updates participants when simulator triggers update', () => {
     // Render the component
     const { rerender } = render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
+      <CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />
     );
 
     // Get the onParticipantUpdate callback and simulate updating participants
@@ -176,18 +140,11 @@ describe('CourseSimulation', () => {
     });
 
     // Re-render to capture the state update
-    rerender(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    rerender(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     // The next render should have the updated participants
     const nextCallIndex = (Simulator as jest.Mock).mock.calls.length - 1;
-    const updatedSimulatorProps = (Simulator as jest.Mock).mock.calls[
-      nextCallIndex
-    ][0];
+    const updatedSimulatorProps = (Simulator as jest.Mock).mock.calls[nextCallIndex][0];
 
     // Verify that participants were updated to the mock values
     expect(updatedSimulatorProps.participants).toEqual(mockUpdatedParticipants);
@@ -198,12 +155,7 @@ describe('CourseSimulation', () => {
     (Participant as jest.Mock).mockClear();
 
     // Render the component
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     // Initial participants should be created (2 by default)
     expect(Participant).toHaveBeenCalledTimes(2);
@@ -222,12 +174,7 @@ describe('CourseSimulation', () => {
     (Participant as jest.Mock).mockClear();
 
     // Render the component
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     // Initial participants should be created (2 by default)
     expect(Participant).toHaveBeenCalledTimes(2);
@@ -246,12 +193,7 @@ describe('CourseSimulation', () => {
     (Participant as jest.Mock).mockClear();
 
     // Render the component
-    render(
-      <CourseSimulation
-        coursePoints={mockCoursePoints}
-        onReset={mockOnReset}
-      />,
-    );
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
 
     // Check that Participant constructor was called with a pace argument
     const callArgs = (Participant as jest.Mock).mock.calls;

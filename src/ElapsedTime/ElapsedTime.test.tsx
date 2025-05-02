@@ -229,12 +229,7 @@ describe('ElapsedTime Component', () => {
 
   it('always resets to 0, ignoring initialElapsedTime', () => {
     const mockCallback = jest.fn();
-    render(
-      <ElapsedTime
-        initialElapsedTime={10}
-        onElapsedTimeChange={mockCallback}
-      />,
-    );
+    render(<ElapsedTime initialElapsedTime={10} onElapsedTimeChange={mockCallback} />);
 
     const startButton = screen.getByRole('button', { name: /start timer/i });
     fireEvent.click(startButton);
