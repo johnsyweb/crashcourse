@@ -118,7 +118,7 @@ describe('CourseSimulation', () => {
   });
 
   it('should show error message when course creation fails', () => {
-    ((Course as unknown) as jest.Mock).mockImplementationOnce(() => {
+    (Course as unknown as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Course creation failed');
     });
     render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);

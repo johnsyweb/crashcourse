@@ -13,12 +13,7 @@ export class Participant {
    */
   width: number;
 
-  constructor(
-    course: Course,
-    elapsedTime: number = 0,
-    pace: string = '4:00',
-    width: number = 0.5
-  ) {
+  constructor(course: Course, elapsedTime: number = 0, pace: string = '4:00', width: number = 0.5) {
     this.course = course;
     this.elapsedTime = elapsedTime;
     this.pace = this.parsePace(pace);
@@ -84,7 +79,10 @@ export class Participant {
     // Calculate distance covered during this tick
     const distanceCovered = (tickDuration / this.pace) * 1000 * terrainFactor; // Distance in meters
     // Cap the cumulative distance at the course length
-    this.cumulativeDistance = Math.min(this.cumulativeDistance + distanceCovered, this.course.length);
+    this.cumulativeDistance = Math.min(
+      this.cumulativeDistance + distanceCovered,
+      this.course.length
+    );
 
     // Update position based on the new cumulative distance
     this.position = this.course.getPositionAtDistance(this.cumulativeDistance);

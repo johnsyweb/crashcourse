@@ -1,14 +1,12 @@
 import { render } from '@testing-library/react';
+import { LatLngBounds, Map } from 'leaflet';
 import { FitBounds } from './FitBounds';
-import { LatLngBounds } from 'leaflet';
+import { useMap } from 'react-leaflet';
 import '@testing-library/jest-dom';
 
-// Mock MapContainer and useMap
+// Mock the useMap hook
 jest.mock('react-leaflet', () => ({
-  MapContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  useMap: () => ({
-    fitBounds: jest.fn(),
-  }),
+  useMap: jest.fn(),
 }));
 
 describe('FitBounds Component', () => {
@@ -20,9 +18,9 @@ describe('FitBounds Component', () => {
 
   it('calls map.fitBounds with the provided GPS points', () => {
     const mockFitBounds = jest.fn();
-    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+    (useMap as jest.Mock).mockReturnValue({
       fitBounds: mockFitBounds,
-    });
+    } as unknown as Map);
 
     render(<FitBounds gpsPoints={testPoints} />);
 
@@ -40,9 +38,9 @@ describe('FitBounds Component', () => {
 
   it('does not call map.fitBounds when given an empty array of points', () => {
     const mockFitBounds = jest.fn();
-    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+    (useMap as jest.Mock).mockReturnValue({
       fitBounds: mockFitBounds,
-    });
+    } as unknown as Map);
 
     render(<FitBounds gpsPoints={[]} />);
 
@@ -51,9 +49,9 @@ describe('FitBounds Component', () => {
 
   it('calls map.fitBounds when points are updated via re-render', () => {
     const mockFitBounds = jest.fn();
-    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+    (useMap as jest.Mock).mockReturnValue({
       fitBounds: mockFitBounds,
-    });
+    } as unknown as Map);
 
     const initialPoints = [[51.505, -0.09]] as [number, number][];
     const { rerender } = render(<FitBounds gpsPoints={initialPoints} />);

@@ -53,14 +53,14 @@ export class Course {
    */
   private calculateAndCacheWidth(distance: number): number {
     const startTime = performance.now();
-    
+
     // Get position and bearing at this distance
     const position = this.getPositionAtDistance(distance);
     const bearing = this.getBearingAtDistance(distance);
 
     // Find parallel path
     const parallelPathDistance = this.findClosestParallelPath(position, bearing);
-    
+
     // Calculate width
     let width = Course.DEFAULT_WIDTH;
     if (parallelPathDistance !== null && parallelPathDistance <= Course.MAX_WIDTH_PLUS_TOLERANCE) {
@@ -87,8 +87,9 @@ export class Course {
     }
 
     // Round to nearest cache interval
-    const cachedDistance = Math.round(distance / Course.WIDTH_CACHE_INTERVAL) * Course.WIDTH_CACHE_INTERVAL;
-    
+    const cachedDistance =
+      Math.round(distance / Course.WIDTH_CACHE_INTERVAL) * Course.WIDTH_CACHE_INTERVAL;
+
     // Check cache
     const cachedWidth = this.widthCache.get(cachedDistance);
     if (cachedWidth !== undefined) {
@@ -213,11 +214,19 @@ export class Course {
 
     // Get the current segment we're on
     const currentDistance = this.getDistanceAtPosition(position);
-    let currentSegmentIndex = this.findSegmentIndex(currentDistance);
+    const currentSegmentIndex = this.findSegmentIndex(currentDistance);
 
     // Define search window
-    const searchStart = Math.max(0, currentSegmentIndex - Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength()));
-    const searchEnd = Math.min(this.points.length - 1, currentSegmentIndex + Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength()));
+    const searchStart = Math.max(
+      0,
+      currentSegmentIndex -
+        Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength())
+    );
+    const searchEnd = Math.min(
+      this.points.length - 1,
+      currentSegmentIndex +
+        Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength())
+    );
 
     // Look for segments with opposite bearings within the search window
     const segments = this.points
@@ -283,7 +292,10 @@ export class Course {
 
     while (left < right) {
       const mid = Math.floor((left + right) / 2);
-      if (this.cumulativeDistances[mid] <= distance && this.cumulativeDistances[mid + 1] > distance) {
+      if (
+        this.cumulativeDistances[mid] <= distance &&
+        this.cumulativeDistances[mid + 1] > distance
+      ) {
         this.segmentCache.set(distance, mid);
         return mid;
       }
@@ -355,8 +367,8 @@ export class Course {
   /**
    * Finds the narrowest and widest parts of the course and their widths.
    */
-  public getCourseWidthInfo(): { 
-    narrowestWidth: number; 
+  public getCourseWidthInfo(): {
+    narrowestWidth: number;
     widestWidth: number;
     narrowestPoint: LatLngTuple;
     widestPoint: LatLngTuple;

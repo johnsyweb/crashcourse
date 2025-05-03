@@ -20,7 +20,8 @@ describe('Course', () => {
 
   it('should find the narrowest and widest parts of the course', () => {
     const course = new Course(samplePoints);
-    const { narrowestWidth, widestWidth, narrowestPoint, widestPoint } = course.getCourseWidthInfo();
+    const { narrowestWidth, widestWidth, narrowestPoint, widestPoint } =
+      course.getCourseWidthInfo();
 
     expect(narrowestWidth).toBe(2);
     expect(widestWidth).toBe(2);
@@ -43,7 +44,9 @@ describe('Course', () => {
   it('should throw an error for out-of-bounds distance', () => {
     const course = new Course(samplePoints);
     expect(() => course.getPositionAtDistance(-1)).toThrow('Distance is out of bounds');
-    expect(() => course.getPositionAtDistance(course.length + 1)).toThrow('Distance is out of bounds');
+    expect(() => course.getPositionAtDistance(course.length + 1)).toThrow(
+      'Distance is out of bounds'
+    );
   });
 
   it('should get the width at a given distance', () => {
