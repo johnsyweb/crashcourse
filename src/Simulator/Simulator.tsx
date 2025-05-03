@@ -86,12 +86,10 @@ const Simulator: React.FC<SimulatorProps> = ({
         // Advance each participant by the tick duration
         participants.forEach((participant) => participant.move(tickDuration));
 
-        console.log('Before sorting:', participants.map(p => p.getCumulativeDistance()));
         // Sort participants by ascending cumulative distance (back to front)
         const sorted = [...participants].sort(
           (a, b) => a.getCumulativeDistance() - b.getCumulativeDistance()
         );
-        console.log('After sorting:', sorted.map(p => p.getCumulativeDistance()));
 
         // Iterate from the first participant to check against the one in front
         for (let i = 0; i < sorted.length - 1; i++) {
@@ -99,16 +97,12 @@ const Simulator: React.FC<SimulatorProps> = ({
           const front = sorted[i + 1];
           const behindDist = behind.getCumulativeDistance();
           const frontDist = front.getCumulativeDistance();
-          
-          console.log(`Checking participants: front=${frontDist}, behind=${behindDist}`);
+
           // Check if the behind participant has caught up to or passed the front participant
           if (behindDist >= frontDist) {
-            console.log('Behind participant caught up, checking width');
             // Attempt to overtake: check course width at this distance
             const widthAtPoint = course!.getWidthAt(behindDist);
-            console.log(`Width at ${behindDist}m: ${widthAtPoint}m, needed: ${behind.getWidth() + front.getWidth()}m`);
             if (widthAtPoint < behind.getWidth() + front.getWidth()) {
-              console.log(`Not enough room, holding back to ${frontDist}m`);
               // Not enough room: hold the behind participant at front distance
               behind.setCumulativeDistance(frontDist);
             }

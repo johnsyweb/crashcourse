@@ -306,8 +306,8 @@ describe('Simulator Component', () => {
 
   it('should enforce collision and overtaking rules on a straight course', () => {
     const mockCourse = new Course([]) as unknown as Course;
-    let participant1Distance = 120;  // Leading participant
-    let participant2Distance = 100;  // Following participant
+    let participant1Distance = 120; // Leading participant
+    let participant2Distance = 100; // Following participant
 
     // Create mock participants with proper state tracking
     const mockParticipant1 = {
@@ -324,7 +324,6 @@ describe('Simulator Component', () => {
       getWidth: jest.fn().mockReturnValue(1),
       setCumulativeDistance: jest.fn().mockImplementation((distance) => {
         participant1Distance = distance;
-        console.log(`Setting participant 1 distance to: ${distance}`);
       }),
     };
 
@@ -342,13 +341,12 @@ describe('Simulator Component', () => {
       getWidth: jest.fn().mockReturnValue(1),
       setCumulativeDistance: jest.fn().mockImplementation((distance) => {
         participant2Distance = distance;
-        console.log(`Setting participant 2 distance to: ${distance}`);
       }),
     };
 
     const mockParticipants = [
-      mockParticipant1,  // Leading participant
-      mockParticipant2,  // Following participant
+      mockParticipant1, // Leading participant
+      mockParticipant2, // Following participant
     ] as unknown as Participant[];
     const mockParticipantUpdate = jest.fn();
 
@@ -369,14 +367,10 @@ describe('Simulator Component', () => {
       jest.runAllTimers();
     });
 
-    // Log the current state
-    console.log('After update:');
-    console.log('Leading participant distance:', mockParticipants[0].getCumulativeDistance());
-    console.log('Following participant distance:', mockParticipants[1].getCumulativeDistance());
-    console.log('Course width at position:', mockCourse.getWidthAt(120));
-    console.log('Total width needed:', mockParticipants[0].getWidth() + mockParticipants[1].getWidth());
-
-    // Verify that the following participant was held back
-    expect(mockParticipants[1].getCumulativeDistance()).toBe(100);
+    // Verify the state after update
+    expect(mockParticipants[0].getCumulativeDistance()).toBe(120); // Leading participant
+    expect(mockParticipants[1].getCumulativeDistance()).toBe(100); // Following participant
+    expect(mockParticipants[0].getWidth() + mockParticipants[1].getWidth()).toBe(2); // Total width needed
+    expect(mockCourse.getWidthAt(100)).toBe(1.5); // Course width at position
   });
 });

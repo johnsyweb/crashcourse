@@ -16,7 +16,6 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
-    console.log('File selected:', selectedFile.name);
     setFile(selectedFile);
     setImportError(null);
   };
