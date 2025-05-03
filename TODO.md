@@ -45,8 +45,8 @@
     - course.getWidthAt(250) will be 3m (as there's another part of the course, with the opposite bearing, 3m South), so we assume the same path
     - course.getWidthAt(350) will be 4m (as there's another part of the course, with the opposite bearing, 4m South), so we assume the same path
     - course.getWidthAt(450) will be 4m (as there's another part of the course, with the opposite bearing, 5m South), so we assume on a different path
-- [ ] Model participant width
-- [ ] Improve modelling of participant's progress along the course. This is currently a simple function of pace and time but needs to be a series of movements based on clock ticks, currect position, pace, and duration of clock tick!
+- [x] Model participant width
+- [x] Improve modelling of participant's progress along the course. This is currently a simple function of pace and time but needs to be a series of movements based on clock ticks, currect position, pace, and duration of clock tick!
 - [ ] Model what happens when a participant meets another participant on the course
   - They must not leave the course
   - They can pass if they are faster and there is space to pass on the course
@@ -58,7 +58,7 @@
 - [ ] Format the elapsed time as HH:MM:SS
   - a 7-segment display theme would be a bonus.
 - [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
-- [ ] Support Google Earth (KML) files for course specification
+- [ ] Support Google Earth (KML) files for course specification, possibly with a third-party laibrary. Perhaps with drag n' drop
 - [ ] Automatically analyse and report on congestion points on the course
 - [ ] Automatically analyse and report upon participant sentiment
 - [ ] Simulate random members of the public on the course and analyse their sentiment

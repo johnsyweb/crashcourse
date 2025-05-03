@@ -20,18 +20,25 @@ jest.mock('../Course', () => ({
 }));
 
 jest.mock('../Participant', () => ({
-  Participant: jest.fn().mockImplementation((course) => ({
-    getPosition: jest.fn().mockReturnValue([0, 0]),
-    getProperties: jest.fn().mockReturnValue({
-      pace: '4:00',
-      elapsedTime: 0,
-      cumulativeDistance: 0,
-      totalDistance: course.length,
-    }),
-    updateElapsedTime: jest.fn(),
-    reset: jest.fn(),
-    move: jest.fn(),
-  })),
+  Participant: jest.fn().mockImplementation((course) => {
+    let cumulativeDistance = 0;
+    return {
+      getPosition: jest.fn().mockReturnValue([0, 0]),
+      getProperties: jest.fn().mockReturnValue({
+        pace: '4:00',
+        elapsedTime: 0,
+        cumulativeDistance: 0,
+        totalDistance: course.length,
+      }),
+      reset: jest.fn(),
+      move: jest.fn(),
+      getCumulativeDistance: jest.fn().mockImplementation(() => cumulativeDistance),
+      getWidth: jest.fn().mockReturnValue(1),
+      setCumulativeDistance: jest.fn().mockImplementation((distance) => {
+        cumulativeDistance = distance;
+      }),
+    };
+  }),
 }));
 
 // Mock the ElapsedTime component to directly call onElapsedTimeChange
@@ -295,5 +302,81 @@ describe('Simulator Component', () => {
 
     // onPaceRangeChange should not be called because the input is invalid
     expect(mockPaceRangeChange).not.toHaveBeenCalled();
+  });
+
+  it('should enforce collision and overtaking rules on a straight course', () => {
+    const mockCourse = new Course([]) as unknown as Course;
+    let participant1Distance = 120;  // Leading participant
+    let participant2Distance = 100;  // Following participant
+
+    // Create mock participants with proper state tracking
+    const mockParticipant1 = {
+      getPosition: jest.fn().mockReturnValue([0, 0]),
+      getProperties: jest.fn().mockReturnValue({
+        pace: '4:00',
+        elapsedTime: 0,
+        cumulativeDistance: participant1Distance,
+        totalDistance: mockCourse.length,
+      }),
+      reset: jest.fn(),
+      move: jest.fn(),
+      getCumulativeDistance: jest.fn().mockImplementation(() => participant1Distance),
+      getWidth: jest.fn().mockReturnValue(1),
+      setCumulativeDistance: jest.fn().mockImplementation((distance) => {
+        participant1Distance = distance;
+        console.log(`Setting participant 1 distance to: ${distance}`);
+      }),
+    };
+
+    const mockParticipant2 = {
+      getPosition: jest.fn().mockReturnValue([0, 0]),
+      getProperties: jest.fn().mockReturnValue({
+        pace: '4:00',
+        elapsedTime: 0,
+        cumulativeDistance: participant2Distance,
+        totalDistance: mockCourse.length,
+      }),
+      reset: jest.fn(),
+      move: jest.fn(),
+      getCumulativeDistance: jest.fn().mockImplementation(() => participant2Distance),
+      getWidth: jest.fn().mockReturnValue(1),
+      setCumulativeDistance: jest.fn().mockImplementation((distance) => {
+        participant2Distance = distance;
+        console.log(`Setting participant 2 distance to: ${distance}`);
+      }),
+    };
+
+    const mockParticipants = [
+      mockParticipant1,  // Leading participant
+      mockParticipant2,  // Following participant
+    ] as unknown as Participant[];
+    const mockParticipantUpdate = jest.fn();
+
+    // Set up the mock course to have a width of 1.5m at the relevant distance
+    (mockCourse.getWidthAt as jest.Mock).mockReturnValue(1.5);
+
+    render(
+      <Simulator
+        course={mockCourse}
+        participants={mockParticipants}
+        onParticipantUpdate={mockParticipantUpdate}
+      />
+    );
+
+    // Trigger an elapsed time change to update participants
+    act(() => {
+      screen.getByTestId('elapsed-time-control').click();
+      jest.runAllTimers();
+    });
+
+    // Log the current state
+    console.log('After update:');
+    console.log('Leading participant distance:', mockParticipants[0].getCumulativeDistance());
+    console.log('Following participant distance:', mockParticipants[1].getCumulativeDistance());
+    console.log('Course width at position:', mockCourse.getWidthAt(120));
+    console.log('Total width needed:', mockParticipants[0].getWidth() + mockParticipants[1].getWidth());
+
+    // Verify that the following participant was held back
+    expect(mockParticipants[1].getCumulativeDistance()).toBe(100);
   });
 });

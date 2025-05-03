@@ -72,4 +72,17 @@ export class Participant {
     // Update position based on the new cumulative distance
     this.position = this.course.getPositionAtDistance(this.cumulativeDistance);
   }
+
+  public getCumulativeDistance(): number {
+    return this.cumulativeDistance;
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public setCumulativeDistance(distance: number): void {
+    this.cumulativeDistance = distance;
+    this.position = this.course.getPositionAtDistance(distance);
+  }
 }
