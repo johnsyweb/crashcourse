@@ -14,18 +14,16 @@ export class Participant {
   width: number;
 
   constructor(
-    courseOrPoints: LatLngTuple[] | Course,
+    course: Course,
     elapsedTime: number = 0,
     pace: string = '4:00',
     width: number = 0.5
   ) {
-    // Create course from points or use provided course
-    this.course = Array.isArray(courseOrPoints) ? new Course(courseOrPoints) : courseOrPoints;
-
+    this.course = course;
     this.elapsedTime = elapsedTime;
     this.pace = this.parsePace(pace);
-    this.position = this.calculatePosition();
-    this.width = width; // Default width is 0.5 meters
+    this.width = width;
+    this.position = course.startPoint;
   }
 
   private parsePace(pace: string): number {

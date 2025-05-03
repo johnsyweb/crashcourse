@@ -2,38 +2,43 @@
 
 .courseSimulation {
   width: 100%;
+  height: calc(100vh - 100px); /* Adjust for header/footer */
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .contentContainer {
+  flex: 1;
   display: flex;
-  flex-direction: row;
-  gap: 1.5rem;
-  width: 100%;
-  height: 100%;
-  /* Match the height of the parent container */
+  gap: 1rem;
+  min-height: 0; /* Important for nested flex containers */
 }
 
 /* Media query for mobile devices */
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .contentContainer {
     flex-direction: column;
+  }
+
+  .mapContainer {
+    height: 60vh;
+  }
+
+  .controlsContainer {
+    width: 100%;
+    height: auto;
   }
 }
 
 .controlsContainer {
-  flex: 0 0 400px;
-  min-width: 350px;
-}
-
-/* On small screens, controls take full width */
-@media (max-width: 992px) {
-  .controlsContainer {
-    flex: 1;
-    width: 100%;
-  }
+  width: 350px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .simulationControls {
@@ -57,43 +62,27 @@
   color: #1565c0;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease-in-out,
-    transform 0.1s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .resetButton:hover {
   background-color: #bbdefb;
 }
 
-.resetButton:active {
-  transform: scale(0.97);
-}
-
 .mapContainer {
-  height: 100%;
-  /* Match the height of the parent container */
-  display: flex;
   flex: 1;
+  min-width: 0; /* Important for preventing overflow */
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* On small screens, map takes full width */
-@media (max-width: 992px) {
-  .mapContainer {
-    height: 700px;
-    width: 100%;
-  }
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .errorMessage {
-  padding: 0.75rem 1rem;
+  padding: 1rem;
+  margin: 1rem;
   background-color: #ffebee;
   color: #c62828;
   border-radius: 4px;
-  font-size: 0.9rem;
-  margin: 0 1rem;
   border-left: 4px solid #ef5350;
 }

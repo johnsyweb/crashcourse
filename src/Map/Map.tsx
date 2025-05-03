@@ -17,15 +17,20 @@ const Map: React.FC<MapProps> = ({
   children,
   gpsPoints,
   initialCenter = [0, 0],
-  initialZoom = 2,
+  initialZoom = 13,
   className,
 }) => {
   return (
     <div className={`${styles.mapWrapper} ${className || ''}`}>
-      <MapContainer center={initialCenter} zoom={initialZoom} className={styles.mapContainer}>
+      <MapContainer
+        center={initialCenter}
+        zoom={initialZoom}
+        className={styles.mapContainer}
+        scrollWheelZoom={true}
+      >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {children}
         {gpsPoints && gpsPoints.length > 0 && <FitBounds gpsPoints={gpsPoints} />}

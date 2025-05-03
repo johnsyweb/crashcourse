@@ -83,7 +83,7 @@ describe('Map Component', () => {
 
     // Check default center and zoom values
     expect(mapContainer).toHaveAttribute('data-center', JSON.stringify([0, 0]));
-    expect(mapContainer).toHaveAttribute('data-zoom', '2');
+    expect(mapContainer).toHaveAttribute('data-zoom', '13');
 
     // Check if tile layer is rendered
     const tileLayer = screen.getByTestId('tile-layer');
@@ -96,7 +96,7 @@ describe('Map Component', () => {
 
   it('renders the map container with custom props', () => {
     const customCenter: [number, number] = [51.505, -0.09];
-    const customZoom = 13;
+    const customZoom = 15;
 
     render(<Map initialCenter={customCenter} initialZoom={customZoom} className="custom-map" />);
 

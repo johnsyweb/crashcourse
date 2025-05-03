@@ -10,11 +10,19 @@ export class Course {
   private static readonly DEFAULT_WIDTH = 2; // metres
   private static readonly MAX_WIDTH = Course.DEFAULT_WIDTH * 2; // metres
   private static readonly MAX_WIDTH_PLUS_TOLERANCE = Course.MAX_WIDTH * 1.01; // Add 1% for floating point precision
+  private static readonly WIDTH_CACHE_INTERVAL = 10; // Cache width values every 10 meters (increased from 1)
+  private static readonly PARALLEL_PATH_SEARCH_WINDOW = 500; // Only search for parallel paths within 500m
 
   private points: LatLngTuple[];
   private cumulativeDistances: number[] = [];
   private totalLength: number;
   private lineString: Feature<LineString>;
+  private widthCache: Map<number, number> = new Map();
+  private segmentCache: Map<number, number> = new Map(); // Cache for current segment lookups
+  private cacheHits: number = 0;
+  private cacheMisses: number = 0;
+  private totalWidthCalculations: number = 0;
+  private totalCalculationTime: number = 0;
 
   /**
    * Creates a new Course instance from an array of GPS points.
@@ -28,6 +36,81 @@ export class Course {
     this.lineString = turf.lineString(points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
+    this.precalculateWidths();
+  }
+
+  /**
+   * Pre-calculates widths at regular intervals along the course
+   */
+  private precalculateWidths(): void {
+    for (let distance = 0; distance <= this.totalLength; distance += Course.WIDTH_CACHE_INTERVAL) {
+      this.calculateAndCacheWidth(distance);
+    }
+  }
+
+  /**
+   * Calculates and caches the width at a specific distance
+   */
+  private calculateAndCacheWidth(distance: number): number {
+    const startTime = performance.now();
+    
+    // Get position and bearing at this distance
+    const position = this.getPositionAtDistance(distance);
+    const bearing = this.getBearingAtDistance(distance);
+
+    // Find parallel path
+    const parallelPathDistance = this.findClosestParallelPath(position, bearing);
+    
+    // Calculate width
+    let width = Course.DEFAULT_WIDTH;
+    if (parallelPathDistance !== null && parallelPathDistance <= Course.MAX_WIDTH_PLUS_TOLERANCE) {
+      width = parallelPathDistance;
+    }
+
+    // Update performance metrics
+    this.totalCalculationTime += performance.now() - startTime;
+    this.totalWidthCalculations++;
+
+    // Cache the result
+    this.widthCache.set(distance, width);
+    return width;
+  }
+
+  /**
+   * Gets the width of the course at a specific distance
+   * @param distance Distance in meters from the start
+   * @returns Width in meters
+   */
+  public getWidthAt(distance: number): number {
+    if (distance < 0 || distance > this.totalLength) {
+      throw new Error('Distance is out of bounds');
+    }
+
+    // Round to nearest cache interval
+    const cachedDistance = Math.round(distance / Course.WIDTH_CACHE_INTERVAL) * Course.WIDTH_CACHE_INTERVAL;
+    
+    // Check cache
+    const cachedWidth = this.widthCache.get(cachedDistance);
+    if (cachedWidth !== undefined) {
+      this.cacheHits++;
+      return cachedWidth;
+    }
+
+    // Cache miss - calculate and cache the width
+    this.cacheMisses++;
+    return this.calculateAndCacheWidth(cachedDistance);
+  }
+
+  /**
+   * Gets performance statistics for width calculations
+   */
+  public getPerformanceStats() {
+    return {
+      cacheHits: this.cacheHits,
+      cacheMisses: this.cacheMisses,
+      totalWidthCalculations: this.totalWidthCalculations,
+      totalCalculationTime: this.totalCalculationTime,
+    };
   }
 
   /**
@@ -130,26 +213,22 @@ export class Course {
 
     // Get the current segment we're on
     const currentDistance = this.getDistanceAtPosition(position);
-    let currentSegmentIndex = 0;
-    for (let i = 0; i < this.cumulativeDistances.length - 1; i++) {
-      if (
-        currentDistance >= this.cumulativeDistances[i] &&
-        currentDistance < this.cumulativeDistances[i + 1]
-      ) {
-        currentSegmentIndex = i;
-        break;
-      }
-    }
+    let currentSegmentIndex = this.findSegmentIndex(currentDistance);
 
-    // Look for segments with opposite bearings
+    // Define search window
+    const searchStart = Math.max(0, currentSegmentIndex - Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength()));
+    const searchEnd = Math.min(this.points.length - 1, currentSegmentIndex + Math.floor(Course.PARALLEL_PATH_SEARCH_WINDOW / this.getAverageSegmentLength()));
+
+    // Look for segments with opposite bearings within the search window
     const segments = this.points
-      .slice(0, -1)
+      .slice(searchStart, searchEnd)
       .map((startPoint, i) => {
+        const absoluteIndex = i + searchStart;
         // Skip the current segment
-        if (i === currentSegmentIndex) return null;
+        if (absoluteIndex === currentSegmentIndex) return null;
 
         const [lat1, lon1] = startPoint;
-        const [lat2, lon2] = this.points[i + 1];
+        const [lat2, lon2] = this.points[absoluteIndex + 1];
 
         // Calculate the bearing of this segment and normalize it
         const segmentBearing = this.normalizeBearing(turf.bearing([lon1, lat1], [lon2, lat2]));
@@ -170,7 +249,7 @@ export class Course {
 
           // Only consider segments within MAX_WIDTH_PLUS_TOLERANCE
           if (distance <= Course.MAX_WIDTH_PLUS_TOLERANCE) {
-            return { index: i, distance, segment };
+            return { index: absoluteIndex, distance, segment };
           }
         }
 
@@ -191,30 +270,36 @@ export class Course {
     return Math.round(closestSegment.distance);
   }
 
-  /**
-   * Gets the width of the course at a specific distance
-   * @param distance Distance in meters from the start
-   * @returns Width in meters
-   */
-  public getWidthAt(distance: number): number {
-    if (distance < 0 || distance > this.totalLength) {
-      throw new Error('Distance is out of bounds');
+  private findSegmentIndex(distance: number): number {
+    // Check cache first
+    const cachedIndex = this.segmentCache.get(distance);
+    if (cachedIndex !== undefined) {
+      return cachedIndex;
     }
 
-    // Get the position and bearing at this distance
-    const position = this.getPositionAtDistance(distance);
-    const bearing = this.getBearingAtDistance(distance);
+    // Binary search for the segment
+    let left = 0;
+    let right = this.cumulativeDistances.length - 1;
 
-    // Find the closest parallel path with an opposite bearing
-    const parallelPathDistance = this.findClosestParallelPath(position, bearing);
-
-    // If no parallel path found within MAX_WIDTH_PLUS_TOLERANCE, return default width
-    if (parallelPathDistance === null || parallelPathDistance > Course.MAX_WIDTH_PLUS_TOLERANCE) {
-      return Course.DEFAULT_WIDTH;
+    while (left < right) {
+      const mid = Math.floor((left + right) / 2);
+      if (this.cumulativeDistances[mid] <= distance && this.cumulativeDistances[mid + 1] > distance) {
+        this.segmentCache.set(distance, mid);
+        return mid;
+      }
+      if (this.cumulativeDistances[mid] > distance) {
+        right = mid;
+      } else {
+        left = mid + 1;
+      }
     }
 
-    // Return the distance to the parallel path
-    return parallelPathDistance;
+    this.segmentCache.set(distance, left);
+    return left;
+  }
+
+  private getAverageSegmentLength(): number {
+    return this.totalLength / (this.points.length - 1);
   }
 
   /**
@@ -270,17 +355,52 @@ export class Course {
   /**
    * Finds the narrowest and widest parts of the course and their widths.
    */
-  getCourseWidthInfo(): { narrowestWidth: number; widestWidth: number } {
-    const widths: number[] = [];
-    const step = 10; // Sample every 10 meters
+  public getCourseWidthInfo(): { 
+    narrowestWidth: number; 
+    widestWidth: number;
+    narrowestPoint: LatLngTuple;
+    widestPoint: LatLngTuple;
+  } {
+    // Use cached values instead of recalculating
+    let narrowestWidth = Infinity;
+    let widestWidth = -Infinity;
+    let narrowestPoint = this.startPoint;
+    let widestPoint = this.startPoint;
 
-    for (let distance = 0; distance <= this.totalLength; distance += step) {
-      widths.push(this.getWidthAt(distance));
+    // Only check cached values
+    this.widthCache.forEach((width, distance) => {
+      if (width < narrowestWidth) {
+        narrowestWidth = width;
+        narrowestPoint = this.getPositionAtDistance(distance);
+      }
+      if (width > widestWidth) {
+        widestWidth = width;
+        widestPoint = this.getPositionAtDistance(distance);
+      }
+    });
+
+    // If no cached values, calculate a minimal set
+    if (narrowestWidth === Infinity || widestWidth === -Infinity) {
+      const step = Course.WIDTH_CACHE_INTERVAL;
+      for (let distance = 0; distance <= this.totalLength; distance += step) {
+        const width = this.getWidthAt(distance);
+        const position = this.getPositionAtDistance(distance);
+        if (width < narrowestWidth) {
+          narrowestWidth = width;
+          narrowestPoint = position;
+        }
+        if (width > widestWidth) {
+          widestWidth = width;
+          widestPoint = position;
+        }
+      }
     }
 
     return {
-      narrowestWidth: Math.min(...widths),
-      widestWidth: Math.max(...widths),
+      narrowestWidth,
+      widestWidth,
+      narrowestPoint,
+      widestPoint,
     };
   }
 

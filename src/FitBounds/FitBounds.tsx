@@ -1,4 +1,4 @@
-import { LatLngTuple } from 'leaflet';
+import { LatLngTuple, LatLngBounds } from 'leaflet';
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 
@@ -7,8 +7,12 @@ export const FitBounds = ({ gpsPoints }: { gpsPoints: LatLngTuple[] }) => {
 
   useEffect(() => {
     if (gpsPoints.length > 0) {
-      const bounds: LatLngTuple[] = gpsPoints.map(([lat, lon]) => [lat, lon]);
-      map.fitBounds(bounds);
+      const bounds = new LatLngBounds(gpsPoints);
+      map.fitBounds(bounds, {
+        padding: [50, 50], // Add 50px padding
+        maxZoom: 16, // Limit max zoom level
+        animate: true,
+      });
     }
   }, [gpsPoints, map]);
 

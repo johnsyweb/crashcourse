@@ -13,15 +13,24 @@ jest.mock('../Course', () => ({
     getCourseWidthInfo: jest.fn().mockReturnValue({
       narrowestWidth: 2,
       widestWidth: 4,
+      narrowestPoint: [0, 0],
+      widestPoint: [1, 1],
     }),
   })),
 }));
 
 jest.mock('../Participant', () => ({
-  Participant: jest.fn().mockImplementation(() => ({
-    updateElapsedTime: jest.fn(),
+  Participant: jest.fn().mockImplementation((course) => ({
     getPosition: jest.fn().mockReturnValue([0, 0]),
-    getProperties: jest.fn().mockReturnValue({}),
+    getProperties: jest.fn().mockReturnValue({
+      pace: '4:00',
+      elapsedTime: 0,
+      cumulativeDistance: 0,
+      totalDistance: course.length,
+    }),
+    updateElapsedTime: jest.fn(),
+    reset: jest.fn(),
+    move: jest.fn(),
   })),
 }));
 
@@ -48,7 +57,10 @@ jest.mock('../ElapsedTime', () => {
 
 describe('Simulator Component', () => {
   const mockCourse = new Course([]) as unknown as Course;
-  const mockParticipants = [new Participant([]), new Participant([])] as unknown as Participant[];
+  const mockParticipants = [
+    new Participant(mockCourse),
+    new Participant(mockCourse),
+  ] as unknown as Participant[];
   const mockParticipantUpdate = jest.fn();
   const mockParticipantCountChange = jest.fn();
   const mockPaceRangeChange = jest.fn();

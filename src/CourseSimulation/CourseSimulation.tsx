@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulation.module.css';
 import { Participant } from '../Participant/Participant';
 import ParticipantDisplay from '../Participant/ParticipantDisplay';
-import { Course, CourseDisplay } from '../Course';
+import { Course } from '../Course';
+import CourseDisplay from '../Course/CourseDisplay';
 import Map from '../Map';
 import Simulator from '../Simulator';
 
@@ -19,107 +20,118 @@ interface CourseSimulationProps {
 const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onReset }) => {
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [course, setCourse] = useState<Course | null>(null);
-  const [participantCount, setParticipantCount] = useState(2); // Default to 2 participants
-  const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
-  const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
 
-  // Helper to generate a random pace between min and max
-  const getRandomPace = (min: string, max: string): string => {
-    // Convert both paces to seconds
-    const [minMinutes, minSeconds] = min.split(':').map(Number);
-    const [maxMinutes, maxSeconds] = max.split(':').map(Number);
-
-    const minTotalSeconds = minMinutes * 60 + minSeconds;
-    const maxTotalSeconds = maxMinutes * 60 + maxSeconds;
-
-    // Ensure min is always greater than max (slower pace has higher time)
-    const adjustedMinSeconds = Math.max(minTotalSeconds, maxTotalSeconds);
-    const adjustedMaxSeconds = Math.min(minTotalSeconds, maxTotalSeconds);
-
-    // Generate random seconds between adjusted min and max
-    const randomSeconds = Math.floor(
-      Math.random() * (adjustedMinSeconds - adjustedMaxSeconds + 1) + adjustedMaxSeconds
-    );
-
-    // Convert back to MM:SS format
-    const minutes = Math.floor(randomSeconds / 60);
-    const seconds = randomSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  // Initialize the course from GPS points
-  useEffect(() => {
+  // Memoize course creation to prevent unnecessary recalculation
+  const course = useMemo(() => {
     try {
-      const newCourse = new Course(coursePoints);
-      setCourse(newCourse);
-      setError(null);
+      return new Course(coursePoints);
     } catch (err) {
-      console.error('Error creating course:', err);
       setError(err instanceof Error ? err.message : 'Failed to create course');
+      return null;
     }
   }, [coursePoints]);
 
-  // Initialize participants
+  // Initialize default participants
   useEffect(() => {
-    if (course) {
-      // Create multiple participants based on participantCount
-      const newParticipants: Participant[] = [];
-      for (let i = 0; i < participantCount; i++) {
-        // Assign random pace to each participant within the min/max range
-        const randomPace = getRandomPace(minPace, maxPace);
-        newParticipants.push(new Participant(coursePoints, 0, randomPace));
-      }
-      setParticipants(newParticipants);
+    if (!course) return;
+
+    try {
+      // Create two default participants with random paces
+      const defaultParticipants = Array(2)
+        .fill(null)
+        .map(() => {
+          const randomPace = getRandomPace(DEFAULT_MIN_PACE, DEFAULT_MAX_PACE);
+          return new Participant(course, 0, randomPace);
+        });
+
+      setParticipants(defaultParticipants);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create participants');
     }
-  }, [course, coursePoints, participantCount, minPace, maxPace]);
+  }, [course]);
 
-  const handleParticipantUpdate = (updatedParticipants: Participant[]) => {
-    setParticipants([...updatedParticipants]);
-  };
+  // Memoize helper functions
+  const getRandomPace = useCallback((minPace: string, maxPace: string): string => {
+    const minSeconds = parsePaceToSeconds(minPace);
+    const maxSeconds = parsePaceToSeconds(maxPace);
+    const randomSeconds = Math.floor(
+      Math.random() * (minSeconds - maxSeconds + 1) + maxSeconds
+    );
+    return formatSecondsAsPace(randomSeconds);
+  }, []);
 
-  const handleParticipantCountChange = (count: number) => {
-    setParticipantCount(count);
-  };
+  const parsePaceToSeconds = useCallback((pace: string): number => {
+    const [minutes, seconds] = pace.split(':').map(Number);
+    return minutes * 60 + seconds;
+  }, []);
 
-  const handlePaceRangeChange = (newMinPace: string, newMaxPace: string) => {
-    setMinPace(newMinPace);
-    setMaxPace(newMaxPace);
-  };
+  const formatSecondsAsPace = useCallback((totalSeconds: number): string => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }, []);
+
+  // Memoize event handlers
+  const handleParticipantCountChange = useCallback((count: number) => {
+    if (!course) return;
+
+    const newParticipants = Array(count)
+      .fill(null)
+      .map(() => {
+        const randomPace = getRandomPace(DEFAULT_MIN_PACE, DEFAULT_MAX_PACE);
+        return new Participant(course, 0, randomPace);
+      });
+
+    setParticipants(newParticipants);
+  }, [course, getRandomPace]);
+
+  const handlePaceRangeChange = useCallback((minPace: string, maxPace: string) => {
+    if (!course) return;
+
+    const newParticipants = participants.map(() => {
+      const randomPace = getRandomPace(minPace, maxPace);
+      return new Participant(course, 0, randomPace);
+    });
+
+    setParticipants(newParticipants);
+  }, [course, getRandomPace, participants]);
+
+  if (error) {
+    return <div className={styles.errorMessage}>{error}</div>;
+  }
+
+  if (!course) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={styles.courseSimulation}>
-      {error && <div className={styles.errorMessage}>{error}</div>}
-
       <div className={styles.simulationControls}>
         <h2 className={styles.title}>Course Simulation</h2>
-        <button onClick={onReset} className={styles.resetButton}>
+        <button className={styles.resetButton} onClick={onReset}>
           Import Different Course
         </button>
       </div>
 
       <div className={styles.contentContainer}>
+        <div className={styles.mapContainer}>
+          <Map gpsPoints={coursePoints}>
+            <CourseDisplay course={course} />
+            {participants.map((participant, index) => (
+              <ParticipantDisplay key={index} participant={participant} />
+            ))}
+          </Map>
+        </div>
+
         <div className={styles.controlsContainer}>
           <Simulator
             course={course}
             participants={participants}
-            onParticipantUpdate={handleParticipantUpdate}
+            onParticipantUpdate={setParticipants}
             onParticipantCountChange={handleParticipantCountChange}
             onPaceRangeChange={handlePaceRangeChange}
           />
-        </div>
-
-        <div className={styles.mapContainer}>
-          <Map gpsPoints={coursePoints}>
-            {course && (
-              <>
-                <CourseDisplay course={course} />
-                {participants.map((participant, index) => (
-                  <ParticipantDisplay key={index} participant={participant} />
-                ))}
-              </>
-            )}
-          </Map>
         </div>
       </div>
     </div>

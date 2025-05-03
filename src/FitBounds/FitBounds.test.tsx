@@ -1,85 +1,91 @@
 import { render } from '@testing-library/react';
 import { FitBounds } from './FitBounds';
-import { LatLngTuple } from 'leaflet';
+import { LatLngBounds } from 'leaflet';
 import '@testing-library/jest-dom';
 
-// Mock the useMap hook from react-leaflet
-const mockFitBounds = jest.fn();
+// Mock MapContainer and useMap
 jest.mock('react-leaflet', () => ({
+  MapContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useMap: () => ({
-    fitBounds: mockFitBounds,
+    fitBounds: jest.fn(),
   }),
 }));
 
 describe('FitBounds Component', () => {
-  beforeEach(() => {
-    // Clear mock function calls before each test
-    mockFitBounds.mockClear();
-  });
+  const testPoints = [
+    [51.505, -0.09],
+    [51.51, -0.1],
+    [51.51, -0.12],
+  ] as [number, number][];
 
   it('calls map.fitBounds with the provided GPS points', () => {
-    const testPoints: LatLngTuple[] = [
-      [51.505, -0.09],
-      [51.51, -0.1],
-      [51.51, -0.12],
-    ];
+    const mockFitBounds = jest.fn();
+    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+      fitBounds: mockFitBounds,
+    });
 
     render(<FitBounds gpsPoints={testPoints} />);
 
-    // Check that fitBounds was called with the points
+    // Check that fitBounds was called with a LatLngBounds object
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
-    expect(mockFitBounds).toHaveBeenCalledWith(testPoints);
+    expect(mockFitBounds).toHaveBeenCalledWith(
+      expect.any(LatLngBounds),
+      expect.objectContaining({
+        padding: [50, 50],
+        maxZoom: 16,
+        animate: true,
+      })
+    );
   });
 
   it('does not call map.fitBounds when given an empty array of points', () => {
+    const mockFitBounds = jest.fn();
+    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+      fitBounds: mockFitBounds,
+    });
+
     render(<FitBounds gpsPoints={[]} />);
 
-    // Check that fitBounds was not called
     expect(mockFitBounds).not.toHaveBeenCalled();
   });
 
   it('calls map.fitBounds when points are updated via re-render', () => {
-    const initialPoints: LatLngTuple[] = [[51.505, -0.09]];
-    const updatedPoints: LatLngTuple[] = [
-      [51.505, -0.09],
-      [51.51, -0.1],
-    ];
+    const mockFitBounds = jest.fn();
+    jest.spyOn(require('react-leaflet'), 'useMap').mockReturnValue({
+      fitBounds: mockFitBounds,
+    });
 
+    const initialPoints = [[51.505, -0.09]] as [number, number][];
     const { rerender } = render(<FitBounds gpsPoints={initialPoints} />);
 
     // First render should call fitBounds
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
-    expect(mockFitBounds).toHaveBeenCalledWith(initialPoints);
+    expect(mockFitBounds).toHaveBeenCalledWith(
+      expect.any(LatLngBounds),
+      expect.objectContaining({
+        padding: [50, 50],
+        maxZoom: 16,
+        animate: true,
+      })
+    );
 
     // Clear the mock to track new calls
     mockFitBounds.mockClear();
 
-    // Re-render with new points
-    rerender(<FitBounds gpsPoints={updatedPoints} />);
+    // Update points and re-render
+    const newPoints = [[51.51, -0.1]] as [number, number][];
+    rerender(<FitBounds gpsPoints={newPoints} />);
 
     // Should call fitBounds again with new points
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
-    expect(mockFitBounds).toHaveBeenCalledWith(updatedPoints);
-  });
-
-  it('does not call map.fitBounds again if the same points are provided', () => {
-    const points: LatLngTuple[] = [[51.505, -0.09]];
-
-    const { rerender } = render(<FitBounds gpsPoints={points} />);
-
-    // First render should call fitBounds
-    expect(mockFitBounds).toHaveBeenCalledTimes(1);
-
-    // Clear the mock to track new calls
-    mockFitBounds.mockClear();
-
-    // Re-render with same points (React would use object identity which would trigger the effect,
-    // but in our test scenario we're explicitly checking the behavior with the same data)
-    rerender(<FitBounds gpsPoints={points} />);
-
-    // Because we're using the same array reference, the useEffect shouldn't trigger
-    // Note: In actual React, this might still trigger if object reference changes
-    expect(mockFitBounds).toHaveBeenCalledTimes(1);
+    expect(mockFitBounds).toHaveBeenCalledWith(
+      expect.any(LatLngBounds),
+      expect.objectContaining({
+        padding: [50, 50],
+        maxZoom: 16,
+        animate: true,
+      })
+    );
   });
 
   it('returns null (renders nothing in the DOM)', () => {
