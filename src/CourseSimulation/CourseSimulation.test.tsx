@@ -1,8 +1,10 @@
+import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import CourseSimulation from './CourseSimulation';
 import { Course } from '../Course';
 import { Participant } from '../Participant/Participant';
 import '@testing-library/jest-dom';
+import { LatLngTuple } from 'leaflet';
 
 // Mock the Course class
 const mockGetPositionAtDistance = jest.fn();
@@ -11,38 +13,41 @@ const mockGetCourseWidthInfo = jest.fn();
 
 jest.mock('../Course', () => ({
   Course: jest.fn().mockImplementation(() => ({
-    length: 5000,
-    startPoint: [10, 20],
-    getPositionAtDistance: mockGetPositionAtDistance.mockImplementation((distance: number) => {
-      if (distance <= 0) return [10, 20];
-      if (distance >= 5000) return [12, 22];
-      const ratio = distance / 5000;
-      return [10 + (12 - 10) * ratio, 20 + (22 - 20) * ratio];
-    }),
-    getWidthAt: mockGetWidthAt.mockReturnValue(2),
-    getCourseWidthInfo: mockGetCourseWidthInfo.mockReturnValue({
-      narrowestWidth: 2,
-      widestWidth: 4,
-      narrowestPoint: [10, 20],
-      widestPoint: [12, 22],
-    }),
+    getStartPoint: () => [0, 0],
+    getEndPoint: () => [1, 1],
+    getLength: () => 1000,
+    getPoints: () => [
+      [0, 0],
+      [1, 1],
+    ],
   })),
 }));
 
 // Mock the Participant class
-jest.mock('../Participant/Participant', () => ({
-  Participant: jest.fn().mockImplementation((course, elapsedTime = 0, pace = '4:00') => ({
-    getPosition: () => course.startPoint,
-    getProperties: () => ({
-      pace,
-      elapsedTime,
-      cumulativeDistance: 0,
-      totalDistance: course.length,
-    }),
-    reset: jest.fn(),
-    move: jest.fn(),
-  })),
-}));
+jest.mock('../Participant/Participant', () => {
+  const mockMove = jest.fn();
+  const mockGetProperties = jest.fn().mockReturnValue({
+    position: [0, 0] as LatLngTuple,
+    elapsedTime: 0,
+    pace: '5:00/km',
+    cumulativeDistance: 0,
+    totalDistance: 1000,
+    finished: false,
+  });
+  const mockSetCumulativeDistance = jest.fn();
+
+  return {
+    Participant: jest.fn().mockImplementation(() => ({
+      getProperties: mockGetProperties,
+      move: mockMove,
+      isFinished: jest.fn().mockReturnValue(false),
+      setCumulativeDistance: mockSetCumulativeDistance,
+      getPosition: () => [0, 0] as LatLngTuple,
+      getCumulativeDistance: () => 0,
+      getWidth: () => 0.5,
+    })),
+  };
+});
 
 // Mock child components
 jest.mock('../Map', () => ({
@@ -62,42 +67,60 @@ jest.mock('../Participant/ParticipantDisplay', () => ({
 
 jest.mock('../Simulator', () => ({
   __esModule: true,
-  default: jest.fn(({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => (
-    <div data-testid="mock-simulator">
-      <button
-        data-testid="update-participants-button"
-        onClick={() => onParticipantUpdate([{ id: 'mock-participant' }])}
-      >
-        Update Participants
-      </button>
-      <button
-        data-testid="change-participant-count-button"
-        onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
-      >
-        Change Participant Count
-      </button>
-      <button
-        data-testid="decrease-participant-count-button"
-        onClick={() => onParticipantCountChange && onParticipantCountChange(3)}
-      >
-        Decrease Participant Count
-      </button>
-      <button
-        data-testid="change-pace-range-button"
-        onClick={() => onPaceRangeChange && onPaceRangeChange('10:00', '3:30')}
-      >
-        Change Pace Range
-      </button>
-    </div>
-  )),
+  default: jest.fn(({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => {
+    const mockParticipant = {
+      getProperties: () => ({
+        position: [0, 0] as LatLngTuple,
+        elapsedTime: 0,
+        pace: '5:00/km',
+        cumulativeDistance: 0,
+        totalDistance: 1000,
+        finished: false,
+      }),
+      move: jest.fn(),
+      isFinished: () => false,
+      setCumulativeDistance: jest.fn(),
+      getPosition: () => [0, 0] as LatLngTuple,
+      getCumulativeDistance: () => 0,
+      getWidth: () => 0.5,
+    };
+
+    return (
+      <div data-testid="mock-simulator">
+        <button
+          data-testid="update-participants-button"
+          onClick={() => onParticipantUpdate([mockParticipant])}
+        >
+          Update Participants
+        </button>
+        <button
+          data-testid="change-participant-count-button"
+          onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
+        >
+          Change Participant Count
+        </button>
+        <button
+          data-testid="decrease-participant-count-button"
+          onClick={() => onParticipantCountChange && onParticipantCountChange(3)}
+        >
+          Decrease Participant Count
+        </button>
+        <button
+          data-testid="change-pace-range-button"
+          onClick={() => onPaceRangeChange && onPaceRangeChange('10:00', '3:30')}
+        >
+          Change Pace Range
+        </button>
+      </div>
+    );
+  }),
 }));
 
 describe('CourseSimulation', () => {
-  const mockCoursePoints = [
-    [10, 20],
-    [11, 21],
-    [12, 22],
-  ] as [number, number][];
+  const mockCoursePoints: LatLngTuple[] = [
+    [0, 0],
+    [1, 1],
+  ];
   const mockOnReset = jest.fn();
 
   beforeEach(() => {
@@ -107,18 +130,18 @@ describe('CourseSimulation', () => {
     mockGetCourseWidthInfo.mockClear();
   });
 
-  it('should render without crashing', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
-    expect(screen.getByText(/Course Simulation/i)).toBeInTheDocument();
+  it('renders the course simulation component', () => {
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
+    expect(screen.getByTestId('mock-map')).toBeInTheDocument();
   });
 
   it('should create a Course from the provided course points', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(Course).toHaveBeenCalledWith(mockCoursePoints);
   });
 
   it('should create two Participants by default when course is created', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(Participant).toHaveBeenCalledTimes(2);
   });
 
@@ -126,25 +149,23 @@ describe('CourseSimulation', () => {
     (Course as unknown as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Course creation failed');
     });
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(screen.getByText('Course creation failed')).toBeInTheDocument();
   });
 
   it('should update participants when simulator triggers update', () => {
-    const { rerender } = render(
-      <CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />
-    );
+    const { rerender } = render(<CourseSimulation coursePoints={mockCoursePoints} />);
 
     act(() => {
       screen.getByTestId('update-participants-button').click();
     });
 
-    rerender(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    rerender(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(1);
   });
 
   it('should preserve existing participants when adding new ones', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     (Participant as jest.Mock).mockClear();
 
     // Get initial participants
@@ -162,7 +183,7 @@ describe('CourseSimulation', () => {
   });
 
   it('should remove participants from the end when decreasing count', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     (Participant as jest.Mock).mockClear();
 
     // First increase to 5 participants
@@ -180,7 +201,7 @@ describe('CourseSimulation', () => {
   });
 
   it('should recreate participants when pace range changes', () => {
-    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
     (Participant as jest.Mock).mockClear();
 
     act(() => {
@@ -191,8 +212,23 @@ describe('CourseSimulation', () => {
   });
 
   it('should call onReset when reset button is clicked', () => {
+    const mockOnReset = jest.fn();
     render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
-    fireEvent.click(screen.getByText(/Import Different Course/i));
+    fireEvent.click(screen.getByTestId('reset-button'));
     expect(mockOnReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds a participant when the add button is clicked', () => {
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
+    const addButton = screen.getByTestId('change-participant-count-button');
+    fireEvent.click(addButton);
+    expect(Participant).toHaveBeenCalled();
+  });
+
+  it('updates participants when the update button is clicked', () => {
+    render(<CourseSimulation coursePoints={mockCoursePoints} />);
+    const updateButton = screen.getByTestId('update-participants-button');
+    fireEvent.click(updateButton);
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(1);
   });
 });

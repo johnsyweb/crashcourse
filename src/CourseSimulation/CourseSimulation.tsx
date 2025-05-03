@@ -8,6 +8,7 @@ import CourseDisplay from '../Course/CourseDisplay';
 import Map from '../Map';
 import Simulator from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import Results from '../Results/Results';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -15,12 +16,23 @@ const DEFAULT_MAX_PACE = '2:30'; // fastest
 
 interface CourseSimulationProps {
   coursePoints: LatLngTuple[];
-  onReset: () => void;
+  onReset?: () => void;
+}
+
+interface ParticipantProperties {
+  position: LatLngTuple;
+  elapsedTime: number;
+  pace: string;
+  cumulativeDistance: number;
+  totalDistance: number;
+  finished: boolean;
 }
 
 const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onReset }) => {
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [finishedParticipants, setFinishedParticipants] = useState<Participant[]>([]);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Memoize course creation to prevent unnecessary recalculation
   const course = useMemo(() => {
@@ -118,6 +130,36 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
     [course, getRandomPace, participants]
   );
 
+  const handleParticipantUpdate = useCallback(
+    (updatedParticipants: Participant[]) => {
+      if (!course) return;
+
+      // Separate finished and active participants
+      const activeParticipants: Participant[] = [];
+      const newlyFinished: Participant[] = [];
+
+      updatedParticipants.forEach((participant) => {
+        const props = participant.getProperties() as unknown as ParticipantProperties;
+        if (props.finished) {
+          // Create a new participant with the same properties to preserve the finish state
+          const paceWithoutSuffix = props.pace.replace('/km', '');
+          const finishedParticipant = new Participant(course, elapsedTime, paceWithoutSuffix);
+          finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
+          newlyFinished.push(finishedParticipant);
+        } else {
+          activeParticipants.push(participant);
+        }
+      });
+
+      // Update both states
+      setParticipants(activeParticipants);
+      if (newlyFinished.length > 0) {
+        setFinishedParticipants((prev) => [...prev, ...newlyFinished]);
+      }
+    },
+    [course, elapsedTime]
+  );
+
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
   }
@@ -127,36 +169,37 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
   }
 
   return (
-    <div className={styles.courseSimulation}>
-      <div className={styles.simulationControls}>
-        <h2 className={styles.title}>Course Simulation</h2>
-        <button className={styles.resetButton} onClick={onReset}>
+    <div className={styles.container}>
+      <ErrorBoundary>
+        <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
           Import Different Course
         </button>
-      </div>
+        <div className={styles.mainContent}>
+          <div className={styles.mapContainer}>
+            <Map gpsPoints={coursePoints}>
+              <CourseDisplay course={course} />
+              {participants.map((participant, index) => (
+                <ParticipantDisplay key={index} participant={participant} />
+              ))}
+            </Map>
+          </div>
 
-      <div className={styles.contentContainer}>
-        <div className={styles.mapContainer}>
-          <Map gpsPoints={coursePoints}>
-            <CourseDisplay course={course} />
-            {participants.map((participant, index) => (
-              <ParticipantDisplay key={index} participant={participant} />
-            ))}
-          </Map>
-        </div>
-
-        <div className={styles.controlsContainer}>
-          <ErrorBoundary>
+          <div className={styles.controlsContainer}>
             <Simulator
               course={course}
               participants={participants}
-              onParticipantUpdate={setParticipants}
+              onParticipantUpdate={handleParticipantUpdate}
               onParticipantCountChange={handleParticipantCountChange}
               onPaceRangeChange={handlePaceRangeChange}
+              onElapsedTimeChange={setElapsedTime}
             />
-          </ErrorBoundary>
+          </div>
         </div>
-      </div>
+
+        <div className={styles.resultsContainer}>
+          <Results participants={finishedParticipants} elapsedTime={elapsedTime} />
+        </div>
+      </ErrorBoundary>
     </div>
   );
 };
