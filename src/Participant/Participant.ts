@@ -34,10 +34,11 @@ export class Participant {
   private calculatePosition(): LatLngTuple {
     // Calculate distance covered based on elapsed time and pace
     const distanceCovered = (this.elapsedTime / this.pace) * 1000; // Distance in meters
-    this.cumulativeDistance = distanceCovered;
+    // Cap the cumulative distance at the course length
+    this.cumulativeDistance = Math.min(distanceCovered, this.course.length);
 
     // Use the Course class to find the position at this distance
-    return this.course.getPositionAtDistance(distanceCovered);
+    return this.course.getPositionAtDistance(this.cumulativeDistance);
   }
 
   private formatPace(): string {
@@ -55,13 +56,14 @@ export class Participant {
     return this.position;
   }
 
-  public getProperties(): Record<string, string | number | LatLngTuple> {
+  public getProperties(): Record<string, string | number | LatLngTuple | boolean> {
     return {
       position: this.position,
       elapsedTime: this.elapsedTime,
       pace: this.formatPace(),
       cumulativeDistance: this.cumulativeDistance,
       totalDistance: this.course.length,
+      finished: this.cumulativeDistance >= this.course.length,
     };
   }
 
@@ -81,7 +83,8 @@ export class Participant {
 
     // Calculate distance covered during this tick
     const distanceCovered = (tickDuration / this.pace) * 1000 * terrainFactor; // Distance in meters
-    this.cumulativeDistance += distanceCovered;
+    // Cap the cumulative distance at the course length
+    this.cumulativeDistance = Math.min(this.cumulativeDistance + distanceCovered, this.course.length);
 
     // Update position based on the new cumulative distance
     this.position = this.course.getPositionAtDistance(this.cumulativeDistance);
