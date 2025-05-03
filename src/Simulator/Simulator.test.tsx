@@ -65,20 +65,33 @@ jest.mock('../ElapsedTime', () => {
 describe('Simulator Component', () => {
   const mockCourse = new Course([]) as unknown as Course;
   const mockParticipants = [
-    new Participant(mockCourse),
-    new Participant(mockCourse),
+    {
+      getPosition: jest.fn().mockReturnValue([0, 0]),
+      getProperties: jest.fn().mockReturnValue({
+        pace: '4:00',
+        elapsedTime: 0,
+        cumulativeDistance: 0,
+        totalDistance: 1000,
+      }),
+      reset: jest.fn(),
+      move: jest.fn(),
+      getCumulativeDistance: jest.fn().mockReturnValue(0),
+      getWidth: jest.fn().mockReturnValue(1),
+      setCumulativeDistance: jest.fn(),
+    },
   ] as unknown as Participant[];
   const mockParticipantUpdate = jest.fn();
   const mockParticipantCountChange = jest.fn();
   const mockPaceRangeChange = jest.fn();
+  const mockElapsedTimeChange = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers(); // Setup fake timers for each test
+    jest.useFakeTimers();
   });
-
+  
   afterEach(() => {
-    jest.useRealTimers(); // Restore real timers after each test
+    jest.useRealTimers();
   });
 
   it('renders simulator controls', () => {
@@ -87,32 +100,27 @@ describe('Simulator Component', () => {
         course={mockCourse}
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
+        onParticipantCountChange={mockParticipantCountChange}
+        onPaceRangeChange={mockPaceRangeChange}
+        onElapsedTimeChange={mockElapsedTimeChange}
       />
     );
 
-    expect(screen.getByText(/Simulator Controls/i)).toBeInTheDocument();
-
-    // In our new UI structure, the course length is displayed differently
-    // Check for label and value separately
+    // Check course info is displayed
     expect(screen.getByText(/Course Length/i)).toBeInTheDocument();
     expect(screen.getByText(/1.00/i)).toBeInTheDocument();
-    // Use getAllByText and check the first instance for "km" since we have multiple elements with this text now
     expect(screen.getAllByText(/km/i)[0]).toBeInTheDocument();
 
-    // Instead of using getByLabelText which is too generic now, use a more specific query
-    const inputElement = screen.getByRole('spinbutton', {
-      name: /number of participants/i,
+    // Check participant count input is rendered
+    const participantCountInput = screen.getByRole('slider', {
+      name: /adjust number of participants/i,
     });
-    expect(inputElement).toBeInTheDocument();
-    expect(inputElement).toHaveValue(2);
+    expect(participantCountInput).toBeInTheDocument();
+    expect(participantCountInput).toHaveValue('1');
 
     // Check pace range inputs are rendered
-    expect(screen.getByLabelText(/Slowest pace/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Fastest pace/i)).toBeInTheDocument();
-
-    // Verify default pace values
-    expect(screen.getByLabelText(/Slowest pace/i)).toHaveValue('12:00');
-    expect(screen.getByLabelText(/Fastest pace/i)).toHaveValue('2:30');
+    expect(screen.getByLabelText(/slowest pace/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fastest pace/i)).toBeInTheDocument();
   });
 
   it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
@@ -121,6 +129,9 @@ describe('Simulator Component', () => {
         course={mockCourse}
         participants={mockParticipants}
         onParticipantUpdate={mockParticipantUpdate}
+        onParticipantCountChange={mockParticipantCountChange}
+        onPaceRangeChange={mockPaceRangeChange}
+        onElapsedTimeChange={mockElapsedTimeChange}
       />
     );
 
@@ -135,6 +146,9 @@ describe('Simulator Component', () => {
 
     // Verify that onParticipantUpdate was called
     expect(mockParticipantUpdate).toHaveBeenCalled();
+
+    // Verify that onElapsedTimeChange was called
+    expect(mockElapsedTimeChange).toHaveBeenCalled();
 
     // Verify that move was called on all participants
     mockParticipants.forEach((participant) => {

@@ -45,6 +45,7 @@ interface SimulatorProps {
   onParticipantUpdate?: (participants: Participant[]) => void;
   onParticipantCountChange?: (count: number) => void;
   onPaceRangeChange?: (minPace: string, maxPace: string) => void;
+  onElapsedTimeChange?: (time: number) => void;
 }
 
 const Simulator: React.FC<SimulatorProps> = ({
@@ -53,6 +54,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   onParticipantUpdate,
   onParticipantCountChange,
   onPaceRangeChange,
+  onElapsedTimeChange,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = useState(
@@ -61,6 +63,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
   const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
   const [paceError, setPaceError] = useState<string | null>(null);
+  const [simulationStopped, setSimulationStopped] = useState(false);
 
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
@@ -74,7 +77,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Memoize the participant update function to avoid it changing on every render
   const updateParticipants = useCallback(
     (time: number) => {
-      if (!participants.length) return;
+      if (!participants.length || simulationStopped) return;
 
       const lastElapsedTime = lastElapsedTimeRef.current;
       const tickDuration = Math.max(0, time - lastElapsedTime);
@@ -82,6 +85,7 @@ const Simulator: React.FC<SimulatorProps> = ({
       if (tickDuration === 0 && time === 0) {
         // Timer reset: reset all participants
         participants.forEach((participant) => participant.reset());
+        setSimulationStopped(false);  // Reset stopped state if timer is reset
       } else if (tickDuration > 0) {
         // Advance each participant by the tick duration
         participants.forEach((participant) => participant.move(tickDuration));
@@ -119,8 +123,19 @@ const Simulator: React.FC<SimulatorProps> = ({
       if (onParticipantUpdate) {
         onParticipantUpdate([...participants]);
       }
+      
+      // Check if all participants have finished
+      const allFinished = participants.every((p) => {
+        const props = p.getProperties();
+        return props.finished === true;
+      });
+      
+      if (allFinished && participants.length > 0) {
+        setSimulationStopped(true);
+        console.log('All participants have finished - stopping simulation');
+      }
     },
-    [participants, onParticipantUpdate, course]
+    [participants, onParticipantUpdate, course, simulationStopped]
   );
 
   // Handle elapsed time changes
@@ -131,10 +146,19 @@ const Simulator: React.FC<SimulatorProps> = ({
     }
   }, [elapsedTime, updateParticipants]);
 
-  const handleElapsedTimeChange = (newElapsedTime: number) => {
-    setElapsedTime(newElapsedTime);
-    participantsNeedUpdate.current = true;
-  };
+  const handleElapsedTimeChange = useCallback(
+    (time: number) => {
+      if (simulationStopped && time > elapsedTime) {
+        // Don't advance time if simulation is stopped
+        return;
+      }
+      
+      setElapsedTime(time);
+      onElapsedTimeChange?.(time);
+      updateParticipants(time);
+    },
+    [onElapsedTimeChange, updateParticipants, simulationStopped, elapsedTime]
+  );
 
   // Function to increase participant count
   const increaseParticipantCount = useCallback(() => {

@@ -121,7 +121,6 @@ describe('CourseSimulation', () => {
     [0, 0],
     [1, 1],
   ];
-  const mockOnReset = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();

@@ -142,10 +142,22 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
         const props = participant.getProperties() as unknown as ParticipantProperties;
         if (props.finished) {
           // Create a new participant with the same properties to preserve the finish state
-          const paceWithoutSuffix = props.pace.replace('/km', '');
-          const finishedParticipant = new Participant(course, elapsedTime, paceWithoutSuffix);
-          finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
-          newlyFinished.push(finishedParticipant);
+          try {
+            const paceWithoutSuffix = typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
+            const participantElapsedTime = props.elapsedTime || elapsedTime;
+            const finishedParticipant = new Participant(course, participantElapsedTime, paceWithoutSuffix);
+            
+            // Ensure cumulativeDistance is set correctly to avoid division by zero
+            if (props.cumulativeDistance > 0) {
+              finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
+            } else {
+              finishedParticipant.setCumulativeDistance(course.length);
+            }
+            
+            newlyFinished.push(finishedParticipant);
+          } catch (error) {
+            console.error('Failed to create finished participant:', error);
+          }
         } else {
           activeParticipants.push(participant);
         }
@@ -156,9 +168,20 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
       if (newlyFinished.length > 0) {
         setFinishedParticipants((prev) => [...prev, ...newlyFinished]);
       }
+      
+      // Check if all participants have finished
+      if (activeParticipants.length === 0 && updatedParticipants.length > 0) {
+        // Signal to the Simulator to stop by setting a flag or calling a method
+        // For now, we'll log this - in a real implementation, you'd send a signal to the Simulator
+        console.log('All participants have finished - simulation should stop');
+      }
     },
     [course, elapsedTime]
   );
+
+  const handleResetResults = useCallback(() => {
+    setFinishedParticipants([]);
+  }, []);
 
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
@@ -174,30 +197,42 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
         <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
           Import Different Course
         </button>
-        <div className={styles.mainContent}>
-          <div className={styles.mapContainer}>
-            <Map gpsPoints={coursePoints}>
-              <CourseDisplay course={course} />
-              {participants.map((participant, index) => (
-                <ParticipantDisplay key={index} participant={participant} />
-              ))}
-            </Map>
+        <div className={styles.gridLayout}>
+          <div className={styles.mainContent}>
+            <div className={styles.mapContainer}>
+              {course && (
+                <Map gpsPoints={coursePoints}>
+                  <CourseDisplay course={course} />
+                  {participants.map((participant, index) => (
+                    <ParticipantDisplay key={index} participant={participant} />
+                  ))}
+                </Map>
+              )}
+            </div>
+
+            <div className={styles.controlsContainer}>
+              {course && (
+                <Simulator
+                  course={course}
+                  participants={participants}
+                  onParticipantUpdate={handleParticipantUpdate}
+                  onParticipantCountChange={handleParticipantCountChange}
+                  onPaceRangeChange={handlePaceRangeChange}
+                  onElapsedTimeChange={setElapsedTime}
+                />
+              )}
+            </div>
           </div>
 
-          <div className={styles.controlsContainer}>
-            <Simulator
-              course={course}
-              participants={participants}
-              onParticipantUpdate={handleParticipantUpdate}
-              onParticipantCountChange={handleParticipantCountChange}
-              onPaceRangeChange={handlePaceRangeChange}
-              onElapsedTimeChange={setElapsedTime}
-            />
+          <div className={styles.resultsContainer}>
+            {course && (
+              <Results 
+                participants={finishedParticipants} 
+                elapsedTime={elapsedTime} 
+                onReset={handleResetResults}
+              />
+            )}
           </div>
-        </div>
-
-        <div className={styles.resultsContainer}>
-          <Results participants={finishedParticipants} elapsedTime={elapsedTime} />
         </div>
       </ErrorBoundary>
     </div>
