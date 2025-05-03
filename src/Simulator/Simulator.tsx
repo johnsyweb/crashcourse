@@ -64,6 +64,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
+  const lastElapsedTimeRef = useRef(0);
 
   // Update participant count when participants array changes
   useEffect(() => {
@@ -75,9 +76,18 @@ const Simulator: React.FC<SimulatorProps> = ({
     (time: number) => {
       if (!participants.length) return;
 
-      participants.forEach((participant) => {
-        participant.updateElapsedTime(time);
-      });
+      const lastElapsedTime = lastElapsedTimeRef.current;
+      const tickDuration = Math.max(0, time - lastElapsedTime);
+
+      if (tickDuration === 0 && time === 0) {
+        // Timer reset: reset all participants
+        participants.forEach((participant) => participant.reset());
+      } else if (tickDuration > 0) {
+        // Advance each participant by the tick duration
+        participants.forEach((participant) => participant.move(tickDuration));
+      }
+
+      lastElapsedTimeRef.current = time;
 
       if (onParticipantUpdate) {
         onParticipantUpdate([...participants]);

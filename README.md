@@ -142,7 +142,7 @@ A reusable timer component that displays and controls elapsed time. Features inc
 
 A model representing a participant in the simulation. Features include:
 
-- Tracking position along a course based on elapsed time and pace
+- Tracking position along a course based on clock ticks, pace, and tick duration
 - Calculating cumulative distance travelled
 - Supporting different paces (specified as minutes:seconds per kilometre)
 - Reset capability to return to starting position

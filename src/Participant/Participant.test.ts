@@ -41,7 +41,7 @@ describe('Participant', () => {
 
   it('should update position when elapsed time changes', () => {
     const participant = new Participant(mockCourse);
-    participant.updateElapsedTime(300); // 5 minutes
+    participant.move(300); // Move for 300 seconds (5 minutes)
     expect(mockGetPositionAtDistance).toHaveBeenCalled();
   });
 
@@ -53,7 +53,7 @@ describe('Participant', () => {
 
   it('should reset participant to starting position', () => {
     const participant = new Participant(mockCourse);
-    participant.updateElapsedTime(300); // Move participant
+    participant.move(300); // Move for 300 seconds (5 minutes)
     participant.reset();
     expect(participant.getPosition()).toEqual([10, 20]);
   });

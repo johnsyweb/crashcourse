@@ -25,7 +25,7 @@
 - [x] Allow the user to control the number of participants to control the number of participants in the simulator (default: 2)
 - [x] Allow the user to control the minimum/maximum pace of participants in the simulator (default: 12:00/km / 2:30/km)
 - [x] Optimise the layout of Simulator Controls to remove the scrollbars
-- [ ] Model course width with the following specifications:
+- [x] Model course width with the following specifications:
   - The lines from the source file form the left edge.
   - Assume the right edge is 2m away.
   - If the course passes itself multiple times, the left and right edges are the furthest left and right. Up until twice the default width.
@@ -46,12 +46,12 @@
     - course.getWidthAt(350) will be 4m (as there's another part of the course, with the opposite bearing, 4m South), so we assume the same path
     - course.getWidthAt(450) will be 4m (as there's another part of the course, with the opposite bearing, 5m South), so we assume on a different path
 - [ ] Model participant width
-- [ ] Improve modelling of participant's progress along the course. This is currently a simple function of pace and time but needs to be a series of movements based on clock ticks, currect position, pace, and external factors
+- [ ] Improve modelling of participant's progress along the course. This is currently a simple function of pace and time but needs to be a series of movements based on clock ticks, currect position, pace, and duration of clock tick!
 - [ ] Model what happens when a participant meets another participant on the course
   - They must not leave the course
   - They can pass if they are faster and there is space to pass on the course
-  - They must allow a participant to pass them
-  - They are constrained by the pace of the paticipant in front
+  - They must allow a faster participant to pass them
+  - They are constrained by the pace of the participant in front
   - They must stop if they are going to collide with a participant and proceed only when there is room
 - [ ] Publish app to GitHub Pages
 - [ ] Model participant sentiment

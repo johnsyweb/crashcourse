@@ -39,7 +39,6 @@ jest.mock('../Participant/Participant', () => ({
       cumulativeDistance: 0,
       totalDistance: course.length,
     }),
-    updateElapsedTime: jest.fn(),
     reset: jest.fn(),
     move: jest.fn(),
   })),
@@ -76,6 +75,12 @@ jest.mock('../Simulator', () => ({
         onClick={() => onParticipantCountChange && onParticipantCountChange(5)}
       >
         Change Participant Count
+      </button>
+      <button
+        data-testid="decrease-participant-count-button"
+        onClick={() => onParticipantCountChange && onParticipantCountChange(3)}
+      >
+        Decrease Participant Count
       </button>
       <button
         data-testid="change-pace-range-button"
@@ -138,15 +143,40 @@ describe('CourseSimulation', () => {
     expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(1);
   });
 
-  it('should recreate participants when participant count changes', () => {
+  it('should preserve existing participants when adding new ones', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
     (Participant as jest.Mock).mockClear();
 
+    // Get initial participants
+    const initialParticipants = screen.getAllByTestId('mock-participant-display');
+    expect(initialParticipants).toHaveLength(2);
+
+    // Change participant count to 5
     act(() => {
       screen.getByTestId('change-participant-count-button').click();
     });
 
-    expect(Participant).toHaveBeenCalledTimes(5);
+    // Verify that only 3 new participants were created (5 - 2 existing)
+    expect(Participant).toHaveBeenCalledTimes(3);
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(5);
+  });
+
+  it('should remove participants from the end when decreasing count', () => {
+    render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
+    (Participant as jest.Mock).mockClear();
+
+    // First increase to 5 participants
+    act(() => {
+      screen.getByTestId('change-participant-count-button').click();
+    });
+
+    // Then decrease to 3 participants
+    act(() => {
+      screen.getByTestId('decrease-participant-count-button').click();
+    });
+
+    // Verify that we have 3 participants
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(3);
   });
 
   it('should recreate participants when pace range changes', () => {

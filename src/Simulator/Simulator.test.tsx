@@ -129,9 +129,9 @@ describe('Simulator Component', () => {
     // Verify that onParticipantUpdate was called
     expect(mockParticipantUpdate).toHaveBeenCalled();
 
-    // Verify that updateElapsedTime was called on all participants
+    // Verify that move was called on all participants
     mockParticipants.forEach((participant) => {
-      expect(participant.updateElapsedTime).toHaveBeenCalledWith(10);
+      expect(participant.move).toHaveBeenCalledWith(10);
     });
   });
 

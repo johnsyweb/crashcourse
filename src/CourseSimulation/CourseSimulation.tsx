@@ -79,14 +79,27 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
     (count: number) => {
       if (!course) return;
 
-      const newParticipants = Array(count)
-        .fill(null)
-        .map(() => {
-          const randomPace = getRandomPace(DEFAULT_MIN_PACE, DEFAULT_MAX_PACE);
-          return new Participant(course, 0, randomPace);
-        });
+      setParticipants((prevParticipants) => {
+        const currentCount = prevParticipants.length;
 
-      setParticipants(newParticipants);
+        if (count === currentCount) {
+          return prevParticipants;
+        }
+
+        if (count > currentCount) {
+          // Add new participants
+          const newParticipants = Array(count - currentCount)
+            .fill(null)
+            .map(() => {
+              const randomPace = getRandomPace(DEFAULT_MIN_PACE, DEFAULT_MAX_PACE);
+              return new Participant(course, 0, randomPace);
+            });
+          return [...prevParticipants, ...newParticipants];
+        } else {
+          // Remove participants from the end
+          return prevParticipants.slice(0, count);
+        }
+      });
     },
     [course, getRandomPace]
   );

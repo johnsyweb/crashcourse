@@ -26,25 +26,10 @@ export class Participant {
     return minutes * 60 + seconds; // Convert pace to seconds per kilometer
   }
 
-  private calculatePosition(): LatLngTuple {
-    // Calculate distance covered based on elapsed time and pace
-    const distanceCovered = (this.elapsedTime / this.pace) * 1000; // Distance in meters
-    // Cap the cumulative distance at the course length
-    this.cumulativeDistance = Math.min(distanceCovered, this.course.length);
-
-    // Use the Course class to find the position at this distance
-    return this.course.getPositionAtDistance(this.cumulativeDistance);
-  }
-
   private formatPace(): string {
     const minutes = Math.floor(this.pace / 60);
     const seconds = this.pace % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}/km`;
-  }
-
-  public updateElapsedTime(elapsedTime: number): void {
-    this.elapsedTime = elapsedTime;
-    this.position = this.calculatePosition();
   }
 
   public getPosition(): LatLngTuple {
