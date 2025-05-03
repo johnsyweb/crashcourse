@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -18,4 +18,5 @@ export default defineConfig({
       '@gpx-file': path.resolve(__dirname, './src/GPXFile'),
     },
   },
+  base: '/crashcourse/', // This should match your repository name
 });
