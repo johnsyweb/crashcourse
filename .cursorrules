@@ -1,0 +1,103 @@
+{
+  "rules": [
+    {
+      "name": "Code Quality and Standards",
+      "description": "Enforces code quality standards and development practices",
+      "checks": [
+        {
+          "type": "pre-commit",
+          "commands": [
+            "npm run format",
+            "npm run lint",
+            "npm run type-check",
+            "npm test",
+            "npm run test:coverage"
+          ],
+          "failureMessage": "Code must be formatted, linted, type-checked, and all tests must pass before committing"
+        },
+        {
+          "type": "file-change",
+          "patterns": ["**/*.{ts,tsx}"],
+          "checks": [
+            {
+              "type": "console-log",
+              "action": "warn",
+              "message": "Console.log statements should be removed from production code"
+            },
+            {
+              "type": "test-environment",
+              "action": "error",
+              "message": "Do not check for test environment in production code"
+            },
+            {
+              "type": "cyclomatic-complexity",
+              "threshold": 10,
+              "action": "warn",
+              "message": "Function cyclomatic complexity should be kept low for maintainability"
+            },
+            {
+              "type": "test-coverage",
+              "threshold": 80,
+              "action": "error",
+              "message": "Test coverage must be at least 80%"
+            }
+          ]
+        },
+        {
+          "type": "commit-message",
+          "pattern": "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\(.+\\))?: .+",
+          "message": "Commit messages must follow conventional commits format"
+        },
+        {
+          "type": "accessibility",
+          "patterns": ["**/*.{tsx,jsx}"],
+          "checks": [
+            {
+              "type": "aria-attributes",
+              "action": "error",
+              "message": "All interactive elements must have appropriate ARIA attributes"
+            },
+            {
+              "type": "color-contrast",
+              "action": "error",
+              "message": "Text must have sufficient color contrast for accessibility"
+            },
+            {
+              "type": "keyboard-navigation",
+              "action": "error",
+              "message": "All interactive elements must be keyboard accessible"
+            }
+          ]
+        },
+        {
+          "type": "language",
+          "patterns": ["**/*.{ts,tsx,md}"],
+          "checks": [
+            {
+              "type": "australian-english",
+              "action": "warn",
+              "message": "Use Australian English spelling (e.g., 'colour' not 'color')",
+              "dictionary": "en-AU"
+            }
+          ]
+        },
+        {
+          "type": "component-structure",
+          "patterns": ["**/*.{tsx,jsx}"],
+          "checks": [
+            {
+              "type": "single-responsibility",
+              "action": "warn",
+              "message": "Components should have a single responsibility"
+            },
+            {
+              "type": "test-file-exists",
+              "action": "error",
+              "message": "Each component must have a corresponding test file"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+} 
