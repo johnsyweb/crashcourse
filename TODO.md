@@ -47,13 +47,13 @@
     - course.getWidthAt(450) will be 4m (as there's another part of the course, with the opposite bearing, 5m South), so we assume on a different path
 - [x] Model participant width
 - [x] Improve modelling of participant's progress along the course. This is currently a simple function of pace and time but needs to be a series of movements based on clock ticks, currect position, pace, and duration of clock tick!
-- [ ] Model what happens when a participant meets another participant on the course
+- [x] Model what happens when a participant meets another participant on the course
   - They must not leave the course
   - They can pass if they are faster and there is space to pass on the course
   - They must allow a faster participant to pass them
   - They are constrained by the pace of the participant in front
   - They must stop if they are going to collide with a participant and proceed only when there is room
-- [ ] Publish app to GitHub Pages
+- [x] Publish app to GitHub Pages
 - [ ] Model participant sentiment
 - [ ] Format the elapsed time as HH:MM:SS
   - a 7-segment display theme would be a bonus.
