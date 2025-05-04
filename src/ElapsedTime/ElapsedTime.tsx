@@ -112,34 +112,55 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   }, [resetTime, increaseSpeed, decreaseSpeed, simulationStopped, isRunning]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-    if (isRunning && !simulationStopped) {
-      // Calculate interval based on speed multiplier (faster updates at higher speeds)
-      const updateInterval = 1000 / speedMultiplier;
+    let requestId: number | null = null;
+    let lastUpdateTime = performance.now();
+    let accumulatedTime = 0;
 
-      timer = setInterval(() => {
-        setElapsedTime((prev) => {
-          // Each tick adds 1 second to the simulation time
-          const newTime = prev + 1;
-          
-          // Only call the callback if the time has actually changed and we have a callback
-          if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
-            // Update our ref to track the last time we reported
-            lastReportedTime.current = newTime;
-            
-            // Call the parent callback with the new time
-            onElapsedTimeChange(newTime);
-          }
-          
-          return newTime;
-        });
-      }, updateInterval);
+    const updateTimer = (currentTime: number) => {
+      if (!isRunning || simulationStopped) {
+        requestId = null;
+        return;
+      }
+
+      // Calculate elapsed milliseconds since last update
+      const deltaTime = currentTime - lastUpdateTime;
+      lastUpdateTime = currentTime;
+
+      // Accumulate time based on speed multiplier (1 ms * multiplier = simulation ms)
+      accumulatedTime += deltaTime * speedMultiplier;
+
+      // Only update when we've accumulated enough time for a full second
+      if (accumulatedTime >= 1000) {
+        // Calculate how many seconds to add (could be more than 1 at high speeds)
+        const secondsToAdd = Math.floor(accumulatedTime / 1000);
+        accumulatedTime %= 1000; // Keep remainder for next frame
+        
+        // Update time without causing unnecessary re-renders
+        const newTime = elapsedTime + secondsToAdd;
+        setElapsedTime(newTime);
+        
+        // Only notify parent if time has actually changed
+        if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
+          lastReportedTime.current = newTime;
+          onElapsedTimeChange(newTime);
+        }
+      }
+
+      // Continue animation loop
+      requestId = requestAnimationFrame(updateTimer);
+    };
+
+    if (isRunning && !simulationStopped) {
+      lastUpdateTime = performance.now();
+      requestId = requestAnimationFrame(updateTimer);
     }
 
     return () => {
-      if (timer) clearInterval(timer);
+      if (requestId !== null) {
+        cancelAnimationFrame(requestId);
+      }
     };
-  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped]);
+  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped, elapsedTime]);
 
   // Handle speed change
   const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
