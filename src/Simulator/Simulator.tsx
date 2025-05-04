@@ -87,9 +87,8 @@ const Simulator: React.FC<SimulatorProps> = ({
       const tickDuration = Math.max(0, time - lastElapsedTime);
       
       // Limit the maximum time delta to prevent huge jumps if the timer gets very far ahead
-      const maxTickDuration = 10; // At most 10 seconds per update to preserve simulation quality
-      // We use this value to match the expected value in tests (hardcoded 10 in the test)
-      // In real usage, this will properly limit large jumps
+      // Use a much smaller value to ensure participants don't move too quickly
+      const maxTickDuration = 1; // Cap at 1 second per update for smoother simulation
       const safeTickDuration = Math.min(tickDuration, maxTickDuration);
 
       if (tickDuration === 0 && time === 0) {
@@ -99,31 +98,47 @@ const Simulator: React.FC<SimulatorProps> = ({
         lastElapsedTimeRef.current = 0;
         return false;
       } else if (tickDuration > 0) {
-        // Advance each participant by the safe tick duration
-        participants.forEach((participant) => participant.move(safeTickDuration));
+        // To handle large time jumps properly, we need to move participants in smaller increments
+        // rather than one big jump, to ensure proper collision detection and realistic movement
 
-        // Sort participants by ascending cumulative distance (back to front)
-        const sorted = [...participants].sort(
-          (a, b) => a.getCumulativeDistance() - b.getCumulativeDistance()
-        );
+        // If the tick duration is large (e.g., greater than our max), break it into smaller steps
+        const remainingTime = tickDuration;
+        let timeProcessed = 0;
+        
+        // Process time in smaller increments to ensure realistic movement
+        while (timeProcessed < remainingTime) {
+          const stepSize = Math.min(maxTickDuration, remainingTime - timeProcessed);
+          
+          // Advance each participant by the smaller step size
+          participants.forEach((participant) => participant.move(stepSize));
+          
+          // Handle collisions after each small step
+          // Sort participants by ascending cumulative distance (back to front)
+          const sorted = [...participants].sort(
+            (a, b) => a.getCumulativeDistance() - b.getCumulativeDistance()
+          );
 
-        // Iterate from the first participant to check against the one in front
-        for (let i = 0; i < sorted.length - 1; i++) {
-          const behind = sorted[i];
-          const front = sorted[i + 1];
-          const behindDist = behind.getCumulativeDistance();
-          const frontDist = front.getCumulativeDistance();
+          // Iterate from the first participant to check against the one in front
+          for (let i = 0; i < sorted.length - 1; i++) {
+            const behind = sorted[i];
+            const front = sorted[i + 1];
+            const behindDist = behind.getCumulativeDistance();
+            const frontDist = front.getCumulativeDistance();
 
-          // Check if the behind participant has caught up to or passed the front participant
-          if (behindDist >= frontDist) {
-            // Attempt to overtake: check course width at this distance
-            const widthAtPoint = course!.getWidthAt(behindDist);
-            if (widthAtPoint < behind.getWidth() + front.getWidth()) {
-              // Not enough room: hold the behind participant at front distance
-              behind.setCumulativeDistance(frontDist);
+            // Check if the behind participant has caught up to or passed the front participant
+            if (behindDist >= frontDist) {
+              // Attempt to overtake: check course width at this distance
+              const widthAtPoint = course!.getWidthAt(behindDist);
+              if (widthAtPoint < behind.getWidth() + front.getWidth()) {
+                // Not enough room: hold the behind participant at front distance
+                behind.setCumulativeDistance(frontDist);
+              }
+              // If enough room, overtaking is allowed (no further action)
             }
-            // If enough room, overtaking is allowed (no further action)
           }
+          
+          // Increment the processed time
+          timeProcessed += stepSize;
         }
 
         // After collision detection, resort participants by distance for consistent ordering
