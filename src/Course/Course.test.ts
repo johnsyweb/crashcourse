@@ -41,11 +41,11 @@ describe('Course', () => {
     expect(position.length).toBe(2);
   });
 
-  it('should throw an error for out-of-bounds distance', () => {
+  it('should clamp disances to the course length', () => {
     const course = new Course(samplePoints);
-    expect(() => course.getPositionAtDistance(-1)).toThrow('Distance is out of bounds');
-    expect(() => course.getPositionAtDistance(course.length + 1)).toThrow(
-      'Distance is out of bounds'
+    expect(course.getPositionAtDistance(-1)).toEqual(course.getPositionAtDistance(0));
+    expect(course.getPositionAtDistance(course.length + 1)).toEqual(
+      course.getPositionAtDistance(course.length)
     );
   });
 

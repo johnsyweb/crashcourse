@@ -148,8 +148,10 @@ export class Course {
    * @returns [lat, lon] tuple
    */
   getPositionAtDistance(distance: number): LatLngTuple {
-    if (distance < 0 || distance > this.totalLength) {
-      throw new Error('Distance is out of bounds');
+    if (distance < 0) {
+      distance = 0;
+    } else if (distance > this.totalLength) {
+      distance = this.totalLength;
     }
 
     // Use turf.along to find the point at the specified distance

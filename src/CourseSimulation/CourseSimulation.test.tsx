@@ -35,13 +35,13 @@ jest.mock('../Participant/Participant', () => {
     id: 'mock-id',
   });
   const mockSetCumulativeDistance = jest.fn();
-  
+
   let idCounter = 0;
 
   return {
     Participant: jest.fn().mockImplementation(() => {
       const participantId = `mock-id-${idCounter++}`;
-      
+
       return {
         getProperties: () => ({
           ...mockGetProperties(),
@@ -80,10 +80,10 @@ jest.mock('../Simulator', () => ({
   DEFAULT_PARTICIPANTS: 200,
   default: jest.fn(({ onParticipantUpdate, onParticipantCountChange, onPaceRangeChange }) => {
     let simIdCounter = 0;
-    
+
     const createMockParticipant = () => {
       const participantId = `sim-mock-id-${simIdCounter++}`;
-      
+
       return {
         getProperties: () => ({
           position: [0, 0] as LatLngTuple,
@@ -185,11 +185,11 @@ describe('CourseSimulation', () => {
   it('should preserve existing participants when adding new ones', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
-    
+
     act(() => {
       screen.getByTestId('change-participant-count-button').click();
     });
-    
+
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
   });
 
@@ -214,11 +214,11 @@ describe('CourseSimulation', () => {
   it('should recreate participants when pace range changes', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
-    
+
     act(() => {
       screen.getByTestId('change-pace-range-button').click();
     });
-    
+
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
   });
 

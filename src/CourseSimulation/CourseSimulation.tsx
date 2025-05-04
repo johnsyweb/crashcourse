@@ -6,7 +6,7 @@ import ParticipantDisplay from '../Participant/ParticipantDisplay';
 import { Course } from '../Course';
 import CourseDisplay from '../Course/CourseDisplay';
 import Map from '../Map';
-import Simulator from '../Simulator';
+import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
 
@@ -72,8 +72,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
     if (!course) return;
 
     try {
-      // Create two default participants with random paces
-      const defaultParticipants = Array(2)
+      // Create default participants with random paces
+      const defaultParticipants = Array(DEFAULT_PARTICIPANTS)
         .fill(null)
         .map(() => {
           const randomPace = getRandomPace(DEFAULT_MIN_PACE, DEFAULT_MAX_PACE);
@@ -219,8 +219,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
               {course && (
                 <Map gpsPoints={coursePoints}>
                   <CourseDisplay course={course} />
-                  {participants.map((participant, index) => (
-                    <ParticipantDisplay key={index} participant={participant} />
+                  {participants.map((participant) => (
+                    <ParticipantDisplay key={participant.getId()} participant={participant} />
                   ))}
                 </Map>
               )}

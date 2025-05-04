@@ -54,10 +54,10 @@
   - They are constrained by the pace of the participant in front
   - They must stop if they are going to collide with a participant and proceed only when there is room
 - [x] Publish app to GitHub Pages
-- [ ] Model participant sentiment
-- [ ] Format the elapsed time as HH:MM:SS
+- [x] Model participant sentiment
+- [x] Format the elapsed time as HH:MM:SS
   - a 7-segment display theme would be a bonus.
-- [ ] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
+- [x] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
 - [ ] Support Google Earth (KML) files for course specification, possibly with a third-party laibrary. Perhaps with drag n' drop
 - [ ] Automatically analyse and report on congestion points on the course
 - [ ] Automatically analyse and report upon participant sentiment

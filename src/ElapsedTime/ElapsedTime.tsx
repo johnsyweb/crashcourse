@@ -164,14 +164,6 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
             Speed:
           </label>
           <div className={styles.controlInputGroup}>
-            <button
-              className={styles.controlButton}
-              onClick={decreaseSpeed}
-              disabled={speedMultiplier === speedOptions[0] || simulationStopped}
-              aria-label="Decrease simulation speed"
-            >
-              −
-            </button>
             <select
               id="speedSelect"
               value={speedMultiplier}
@@ -185,41 +177,31 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
                 </option>
               ))}
             </select>
-            <button
-              className={styles.controlButton}
-              onClick={increaseSpeed}
-              disabled={
-                speedMultiplier === speedOptions[speedOptions.length - 1] || simulationStopped
-              }
-              aria-label="Increase simulation speed"
-            >
-              +
-            </button>
           </div>
         </div>
-      </div>
 
-      <div className={styles.simulationControls}>
-        <button
-          className={`${styles.simulationButton} ${
-            isRunning ? styles.pauseButton : styles.playButton
-          } ${simulationStopped && !isRunning ? styles.simulationButtonDisabled : ''}`}
-          onClick={() => setIsRunning((prev) => !prev)}
-          disabled={simulationStopped && !isRunning}
-          aria-label={isRunning ? 'Pause timer' : 'Start timer'}
-          title={
-            simulationStopped ? 'Simulation complete' : isRunning ? 'Pause timer' : 'Start timer'
-          }
-        >
-          {isRunning ? '⏸️' : '▶️'}
-        </button>
-        <button
-          className={`${styles.simulationButton} ${styles.resetButton}`}
-          onClick={resetTime}
-          aria-label="Reset timer"
-        >
-          🔄
-        </button>
+        <div className={styles.simulationControls}>
+          <button
+            className={`${styles.simulationButton} ${
+              isRunning ? styles.pauseButton : styles.playButton
+            } ${simulationStopped && !isRunning ? styles.simulationButtonDisabled : ''}`}
+            onClick={() => setIsRunning((prev) => !prev)}
+            disabled={simulationStopped && !isRunning}
+            aria-label={isRunning ? 'Pause timer' : 'Start timer'}
+            title={
+              simulationStopped ? 'Simulation complete' : isRunning ? 'Pause timer' : 'Start timer'
+            }
+          >
+            {isRunning ? '⏸️' : '▶️'}
+          </button>
+          <button
+            className={`${styles.simulationButton} ${styles.resetButton}`}
+            onClick={resetTime}
+            aria-label="Reset timer"
+          >
+            🔄
+          </button>
+        </div>
       </div>
 
       {simulationStopped && (

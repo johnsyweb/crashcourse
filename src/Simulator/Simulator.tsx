@@ -7,7 +7,7 @@ import styles from './Simulator.module.css';
 // Constants for participant configuration
 const MIN_PARTICIPANTS = 1;
 const MAX_PARTICIPANTS = 2000;
-const DEFAULT_PARTICIPANTS = 2;
+export const DEFAULT_PARTICIPANTS = 200;
 
 // Constants for pace configuration
 const DEFAULT_MIN_PACE = '12:00'; // slowest pace (minutes:seconds per km)
