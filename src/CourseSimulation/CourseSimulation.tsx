@@ -152,6 +152,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
             const paceWithoutSuffix =
               typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
             const participantElapsedTime = props.elapsedTime || elapsedTime;
+            
+            // Store the original ID before creating the new participant
+            const originalId = props.id;
+            
+            // Create a new finished participant (this will generate a new ID automatically)
             const finishedParticipant = new Participant(
               course,
               participantElapsedTime,
@@ -165,12 +170,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
               finishedParticipant.setCumulativeDistance(course.length);
             }
 
-            // Preserve the ID so we can track this participant properly
-            Object.defineProperty(finishedParticipant, 'id', {
-              value: props.id,
-              writable: false,
-              configurable: false,
-            });
+            // Add custom property to track the original participant 
+            // but don't override the ID to avoid duplicate keys
+            (finishedParticipant as any).originalId = originalId;
 
             newlyFinished.push(finishedParticipant);
           }
