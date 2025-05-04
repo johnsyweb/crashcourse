@@ -14,7 +14,7 @@ jest.mock('../Participant/Participant');
 describe('Results Component', () => {
   // Setup mock participants before each test
   let mockParticipants: MockParticipant[];
-  
+
   beforeEach(() => {
     // Create a mock participant implementation
     const mockParticipant: MockParticipant = {
@@ -27,22 +27,24 @@ describe('Results Component', () => {
       }),
       getCumulativeDistance: jest.fn().mockReturnValue(5000),
     };
-    
+
     // Clear mock implementation from previous tests
     jest.clearAllMocks();
-    
+
     // Create an array with two mock participants
     mockParticipants = [mockParticipant, mockParticipant];
   });
 
   it('renders nothing when there are no participants', () => {
     const { container } = render(<Results participants={[]} elapsedTime={0} />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container).toHaveTextContent('Will be displayed here');
   });
 
   it('renders a table with results when participants are provided', () => {
-    render(<Results participants={mockParticipants as unknown as Participant[]} elapsedTime={1200} />);
-    
+    render(
+      <Results participants={mockParticipants as unknown as Participant[]} elapsedTime={1200} />
+    );
+
     // Check if table headers are rendered
     expect(screen.getByText(/Position/)).toBeInTheDocument();
     expect(screen.getByText(/Time/)).toBeInTheDocument();
@@ -54,24 +56,32 @@ describe('Results Component', () => {
 
   it('displays reset button when onReset prop is provided', () => {
     const mockReset = jest.fn();
-    render(<Results participants={mockParticipants as unknown as Participant[]} elapsedTime={1200} onReset={mockReset} />);
-    
+    render(
+      <Results
+        participants={mockParticipants as unknown as Participant[]}
+        elapsedTime={1200}
+        onReset={mockReset}
+      />
+    );
+
     const resetButton = screen.getByText('Reset Results');
     expect(resetButton).toBeInTheDocument();
-    
+
     fireEvent.click(resetButton);
     expect(mockReset).toHaveBeenCalled();
   });
 
   it('allows sorting when clicking column headers', () => {
-    render(<Results participants={mockParticipants as unknown as Participant[]} elapsedTime={1200} />);
-    
+    render(
+      <Results participants={mockParticipants as unknown as Participant[]} elapsedTime={1200} />
+    );
+
     const positionHeader = screen.getByText(/Time/);
     fireEvent.click(positionHeader);
-    
+
     expect(positionHeader.textContent).toContain('Time ↑');
-    
+
     fireEvent.click(positionHeader);
     expect(positionHeader.textContent).toContain('Time ↓');
   });
-}); 
+});

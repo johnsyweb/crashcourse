@@ -143,17 +143,22 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
         if (props.finished) {
           // Create a new participant with the same properties to preserve the finish state
           try {
-            const paceWithoutSuffix = typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
+            const paceWithoutSuffix =
+              typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
             const participantElapsedTime = props.elapsedTime || elapsedTime;
-            const finishedParticipant = new Participant(course, participantElapsedTime, paceWithoutSuffix);
-            
+            const finishedParticipant = new Participant(
+              course,
+              participantElapsedTime,
+              paceWithoutSuffix
+            );
+
             // Ensure cumulativeDistance is set correctly to avoid division by zero
             if (props.cumulativeDistance > 0) {
               finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
             } else {
               finishedParticipant.setCumulativeDistance(course.length);
             }
-            
+
             newlyFinished.push(finishedParticipant);
           } catch (error) {
             console.error('Failed to create finished participant:', error);
@@ -168,7 +173,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
       if (newlyFinished.length > 0) {
         setFinishedParticipants((prev) => [...prev, ...newlyFinished]);
       }
-      
+
       // Check if all participants have finished
       if (activeParticipants.length === 0 && updatedParticipants.length > 0) {
         // Signal to the Simulator to stop by setting a flag or calling a method
@@ -226,9 +231,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
 
           <div className={styles.resultsContainer}>
             {course && (
-              <Results 
-                participants={finishedParticipants} 
-                elapsedTime={elapsedTime} 
+              <Results
+                participants={finishedParticipants}
+                elapsedTime={elapsedTime}
                 onReset={handleResetResults}
               />
             )}

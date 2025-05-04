@@ -10,4 +10,4 @@ const originalEmit = process.emit;
 process.emit = function (event, ...args) {
   if (event === 'warning' && args[0] && args[0].name === 'ExperimentalWarning') return;
   return originalEmit.apply(process, [event, ...args]);
-}; 
+};

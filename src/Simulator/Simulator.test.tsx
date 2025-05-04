@@ -89,7 +89,7 @@ describe('Simulator Component', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
   });
-  
+
   afterEach(() => {
     jest.useRealTimers();
   });

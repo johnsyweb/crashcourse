@@ -85,7 +85,7 @@ const Simulator: React.FC<SimulatorProps> = ({
       if (tickDuration === 0 && time === 0) {
         // Timer reset: reset all participants
         participants.forEach((participant) => participant.reset());
-        setSimulationStopped(false);  // Reset stopped state if timer is reset
+        setSimulationStopped(false); // Reset stopped state if timer is reset
       } else if (tickDuration > 0) {
         // Advance each participant by the tick duration
         participants.forEach((participant) => participant.move(tickDuration));
@@ -123,13 +123,13 @@ const Simulator: React.FC<SimulatorProps> = ({
       if (onParticipantUpdate) {
         onParticipantUpdate([...participants]);
       }
-      
+
       // Check if all participants have finished
       const allFinished = participants.every((p) => {
         const props = p.getProperties();
         return props.finished === true;
       });
-      
+
       if (allFinished && participants.length > 0) {
         setSimulationStopped(true);
         console.log('All participants have finished - stopping simulation');
@@ -152,7 +152,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         // Don't advance time if simulation is stopped
         return;
       }
-      
+
       setElapsedTime(time);
       onElapsedTimeChange?.(time);
       updateParticipants(time);

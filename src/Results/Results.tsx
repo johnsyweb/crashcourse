@@ -44,9 +44,12 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
     }
   }, []);
 
-  const calculatePaceDelta = useCallback((targetPace: string, actualPace: string): number => {
-    return parsePaceToSeconds(actualPace) - parsePaceToSeconds(targetPace);
-  }, [parsePaceToSeconds]);
+  const calculatePaceDelta = useCallback(
+    (targetPace: string, actualPace: string): number => {
+      return parsePaceToSeconds(actualPace) - parsePaceToSeconds(targetPace);
+    },
+    [parsePaceToSeconds]
+  );
 
   const getSentiment = useCallback((delta: number): 'happy' | 'neutral' | 'sad' => {
     if (delta < -30) return 'happy';
@@ -65,19 +68,19 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
   const results = useMemo(() => {
     return participants.map((participant, index) => {
       const props = participant.getProperties();
-      
+
       let targetPace = (props.pace as string) || '0:00';
       targetPace = targetPace.replace(/\/km$/, '');
-      
+
       const cumulativeDistance = (props.cumulativeDistance as number) || 1;
-      
+
       const finishTime = (props.elapsedTime as number) || elapsedTime;
-      
+
       const paceInSecondsPerKm = (finishTime / cumulativeDistance) * 1000;
       const actualPace = formatPace(paceInSecondsPerKm);
-      
+
       const delta = calculatePaceDelta(targetPace, actualPace);
-      
+
       return {
         position: index + 1,
         time: finishTime,
@@ -87,8 +90,8 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
         sentiment: getSentiment(delta),
       };
     });
-  }, [participants, elapsedTime, calculatePaceDelta, formatPace, getSentiment]);  
-  
+  }, [participants, elapsedTime, calculatePaceDelta, formatPace, getSentiment]);
+
   const sortedResults = useMemo(() => {
     return [...results].sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
@@ -121,7 +124,12 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
   };
 
   if (participants.length === 0) {
-    return null;
+    return (
+      <div className={styles.resultsContainer}>
+        <h2>Results</h2>
+        <p>Will be displayed here</p>
+      </div>
+    );
   }
 
   return (
@@ -165,8 +173,13 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
                 <td>{formatTime(result.time)}</td>
                 <td>{result.pace}/km</td>
                 <td>{result.targetPace}/km</td>
-                <td className={result.delta < 0 ? styles.negative : result.delta > 0 ? styles.positive : ''}>
-                  {result.delta > 0 ? '+' : ''}{result.delta}s
+                <td
+                  className={
+                    result.delta < 0 ? styles.negative : result.delta > 0 ? styles.positive : ''
+                  }
+                >
+                  {result.delta > 0 ? '+' : ''}
+                  {result.delta}s
                 </td>
                 <td>{getSentimentEmoji(result.sentiment)}</td>
               </tr>
@@ -178,4 +191,4 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
   );
 };
 
-export default Results; 
+export default Results;
