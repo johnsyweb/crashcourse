@@ -132,7 +132,6 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       if (allFinished && participants.length > 0) {
         setSimulationStopped(true);
-        console.log('All participants have finished - stopping simulation');
       }
     },
     [participants, onParticipantUpdate, course, simulationStopped]
@@ -387,40 +386,8 @@ const Simulator: React.FC<SimulatorProps> = ({
             <div className={styles.controlContent}>
               <div className={styles.controlItem}>
                 <label htmlFor="participantCount" className={styles.controlLabel}>
-                  Count: ({formatNumber(MIN_PARTICIPANTS)}-{formatNumber(MAX_PARTICIPANTS)})
+                  Count
                 </label>
-                <div className={styles.controlInputGroup}>
-                  <button
-                    className={styles.controlButton}
-                    onClick={decreaseParticipantCount}
-                    disabled={participantCount <= MIN_PARTICIPANTS}
-                    title="Decrease Participants"
-                    aria-label="Decrease number of participants"
-                  >
-                    −
-                  </button>
-                  <input
-                    id="participantCount"
-                    type="number"
-                    min={MIN_PARTICIPANTS}
-                    max={MAX_PARTICIPANTS}
-                    value={participantCount}
-                    onChange={handleParticipantCountChange}
-                    aria-label="Number of participants"
-                    title="Number of participants between 1 and 2,000"
-                    className={styles.controlInput}
-                    placeholder="Enter participant count"
-                  />
-                  <button
-                    className={styles.controlButton}
-                    onClick={increaseParticipantCount}
-                    disabled={participantCount >= MAX_PARTICIPANTS}
-                    title="Increase Participants"
-                    aria-label="Increase number of participants"
-                  >
-                    +
-                  </button>
-                </div>
                 <div className={styles.rangeIndicator}>
                   <input
                     type="range"
@@ -431,9 +398,11 @@ const Simulator: React.FC<SimulatorProps> = ({
                     className={styles.rangeSlider}
                     aria-label="Adjust number of participants"
                     title="Slide to adjust number of participants"
+                    id="participantCount"
                   />
                   <div className={styles.rangeLabels}>
                     <span>{formatNumber(MIN_PARTICIPANTS)}</span>
+                    <span className={styles.currentValue}>{formatNumber(participantCount)}</span>
                     <span>{formatNumber(MAX_PARTICIPANTS)}</span>
                   </div>
                 </div>
@@ -441,11 +410,11 @@ const Simulator: React.FC<SimulatorProps> = ({
 
               {/* Pace Range Controls */}
               <div className={styles.controlItem}>
-                <label className={styles.controlLabel}>Participant Pace Range</label>
+                <label className={styles.controlLabel}>Pace Range</label>
                 <div className={styles.paceControlGroup}>
                   <div className={styles.paceControl}>
                     <label htmlFor="minPace" className={styles.paceLabel}>
-                      Slowest Pace:
+                      Min:
                     </label>
                     <input
                       id="minPace"
@@ -456,13 +425,13 @@ const Simulator: React.FC<SimulatorProps> = ({
                       className={styles.paceInput}
                       placeholder="MM:SS"
                       title="Slowest pace in minutes:seconds format (e.g., 12:00)"
-                      aria-label="Slowest pace in minutes and seconds per kilometer"
+                      aria-label="Minimum pace in minutes and seconds per kilometer"
                     />
                     <span className={styles.paceUnit}>/km</span>
                   </div>
                   <div className={styles.paceControl}>
                     <label htmlFor="maxPace" className={styles.paceLabel}>
-                      Fastest Pace:
+                      Max:
                     </label>
                     <input
                       id="maxPace"
@@ -473,7 +442,7 @@ const Simulator: React.FC<SimulatorProps> = ({
                       className={styles.paceInput}
                       placeholder="MM:SS"
                       title="Fastest pace in minutes:seconds format (e.g., 2:30)"
-                      aria-label="Fastest pace in minutes and seconds per kilometer"
+                      aria-label="Maximum pace in minutes and seconds per kilometer"
                     />
                     <span className={styles.paceUnit}>/km</span>
                   </div>
@@ -486,7 +455,7 @@ const Simulator: React.FC<SimulatorProps> = ({
             </div>
           </div>
 
-          {/* Timer Control Section - Use the existing ElapsedTime component */}
+          {/* Timer Control Section - Modified to use time format and simplified controls */}
           <div className={styles.controlSection}>
             <div className={styles.controlHeader}>Simulation Time</div>
             <div className={styles.controlContent}>
@@ -495,54 +464,29 @@ const Simulator: React.FC<SimulatorProps> = ({
           </div>
         </div>
 
-        {/* Unified Keyboard Shortcuts */}
+        {/* Simplified Keyboard Shortcuts */}
         <div className={styles.keyboardShortcuts}>
           <div className={styles.shortcutsHeader}>Keyboard Shortcuts</div>
-          <div className={styles.shortcutsGrid}>
-            <div className={styles.shortcutGroup}>
-              <div className={styles.shortcutGroupTitle}>Participants</div>
-              <div className={styles.shortcut}>
-                <kbd>[</kbd> <span>Decrease count</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>]</kbd> <span>Increase count</span>
-              </div>
+          <div className={styles.shortcutsTable}>
+            <div className={styles.shortcutRow}>
+              <kbd>[</kbd> <span>decrease participants</span>
+              <kbd>]</kbd> <span>increase participants</span>
             </div>
-            <div className={styles.shortcutGroup}>
-              <div className={styles.shortcutGroupTitle}>Simulation</div>
-              <div className={styles.shortcut}>
-                <kbd>P</kbd> <span>Play</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>S</kbd> <span>Stop</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>R</kbd> <span>Reset</span>
-              </div>
+            <div className={styles.shortcutRow}>
+              <kbd>p</kbd> <span>play/pause</span>
+              <kbd>r</kbd> <span>reset</span>
             </div>
-            <div className={styles.shortcutGroup}>
-              <div className={styles.shortcutGroupTitle}>Speed</div>
-              <div className={styles.shortcut}>
-                <kbd>-</kbd> <span>Decrease</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>+</kbd> <span>Increase</span>
-              </div>
+            <div className={styles.shortcutRow}>
+              <kbd>-</kbd> <span>decrease speed</span>
+              <kbd>+</kbd> <span>increase speed</span>
             </div>
-            <div className={styles.shortcutGroup}>
-              <div className={styles.shortcutGroupTitle}>Pace</div>
-              <div className={styles.shortcut}>
-                <kbd>q</kbd> <span>Slower slowest pace (+30s)</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>w</kbd> <span>Faster slowest pace (-30s)</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>a</kbd> <span>Slower fastest pace (+30s)</span>
-              </div>
-              <div className={styles.shortcut}>
-                <kbd>s</kbd> <span>Faster fastest pace (-30s)</span>
-              </div>
+            <div className={styles.shortcutRow}>
+              <kbd>q</kbd> <span>min pace slower</span>
+              <kbd>w</kbd> <span>min pace faster</span>
+            </div>
+            <div className={styles.shortcutRow}>
+              <kbd>a</kbd> <span>max pace slower</span>
+              <kbd>s</kbd> <span>max pace faster</span>
             </div>
           </div>
         </div>

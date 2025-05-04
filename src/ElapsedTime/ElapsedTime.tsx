@@ -81,9 +81,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
       }
 
       if (key === 'p') {
-        setIsRunning(true);
-      } else if (key === 's') {
-        setIsRunning(false);
+        setIsRunning((prev) => !prev); // Toggle play/pause state
       } else if (key === 'r') {
         resetTime();
       } else if (key === '+' || key === '=') {
@@ -132,11 +130,22 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     setSpeedMultiplier(Number(e.target.value));
   };
 
+  // Format time as HH:MM:SS
+  const formatTimeDisplay = (timeInSeconds: number): string => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedSeconds = seconds.toString().padStart(2, '0');
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  };
+
   return (
     <div className={styles.elapsedTimeContainer}>
-      <div className={styles.timeDisplay}>
-        {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
-      </div>
+      <div className={styles.timeDisplay}>{formatTimeDisplay(elapsedTime)}</div>
 
       <div className={styles.controlRow}>
         <div className={styles.speedControls}>
@@ -178,20 +187,11 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 
       <div className={styles.simulationControls}>
         <button
-          className={`${styles.simulationButton} ${styles.playButton}`}
-          onClick={() => setIsRunning(true)}
-          aria-label="Start timer"
-          disabled={isRunning}
+          className={`${styles.simulationButton} ${isRunning ? styles.pauseButton : styles.playButton}`}
+          onClick={() => setIsRunning((prev) => !prev)}
+          aria-label={isRunning ? 'Pause timer' : 'Start timer'}
         >
-          ▶️
-        </button>
-        <button
-          className={`${styles.simulationButton} ${styles.stopButton}`}
-          onClick={() => setIsRunning(false)}
-          aria-label="Stop timer"
-          disabled={!isRunning}
-        >
-          ⏹️
+          {isRunning ? '⏸️' : '▶️'}
         </button>
         <button
           className={`${styles.simulationButton} ${styles.resetButton}`}

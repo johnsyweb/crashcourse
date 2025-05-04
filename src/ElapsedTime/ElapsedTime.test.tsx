@@ -17,7 +17,7 @@ describe('ElapsedTime Component', () => {
     render(<ElapsedTime />);
     // In our new UI, the time display doesn't include the "Elapsed Time:" text
     // Just check for the time values themselves
-    expect(screen.getByText('0m 0s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:00')).toBeInTheDocument();
   });
 
   it('starts and updates elapsed time', () => {
@@ -27,7 +27,7 @@ describe('ElapsedTime Component', () => {
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
 
-    const startButton = screen.getByRole('button', { name: /start timer/i });
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
     fireEvent.click(startButton);
 
     // At 60x speed, we need much less real time to advance the simulation time
@@ -39,53 +39,44 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Check that the elapsed time is no longer 0
-    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
+    expect(screen.queryByText('00:00:00')).not.toBeInTheDocument();
 
     // Reset the timer to have a predictable state for other tests
-    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    const resetButton = screen.getByRole('button', { name: /Reset timer/i });
     fireEvent.click(resetButton);
   });
 
   it('stops elapsed time', () => {
-    const { rerender } = render(<ElapsedTime />);
+    render(<ElapsedTime />);
 
-    // Set a fixed speed for consistent testing
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
 
-    const startButton = screen.getByRole('button', { name: /start timer/i });
-    const stopButton = screen.getByRole('button', { name: /stop timer/i });
+    const playPauseButton = screen.getByRole('button', { name: /Start timer/i });
 
-    fireEvent.click(startButton);
+    // Start the timer
+    fireEvent.click(playPauseButton);
 
-    // At 60x speed, we need much less real time to advance the simulation time
     act(() => {
-      jest.advanceTimersByTime(50); // Should be enough for 3 seconds at 60x speed
+      jest.advanceTimersByTime(1000); // Advance 1 second (at 60x speed)
     });
 
-    // Force a rerender to ensure the component updates
-    rerender(<ElapsedTime />);
+    // The button should now be a pause button
+    expect(screen.getByRole('button', { name: /Pause timer/i })).toBeInTheDocument();
 
-    // Get the current displayed time text for verification later
-    const timeDisplayEl = screen.getByText(/\d+m \d+s/);
-    const currentTimeText = timeDisplayEl.textContent;
+    // Click to pause
+    fireEvent.click(screen.getByRole('button', { name: /Pause timer/i }));
 
-    fireEvent.click(stopButton);
+    // Get the current displayed time text for verification
+    const timeDisplayText = screen.getByText(/\d{2}:\d{2}:\d{2}/i).textContent || '';
 
-    // Advance more time while stopped
+    // Advance more time, but timer should be stopped
     act(() => {
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(1000);
     });
 
-    // Force a rerender to ensure the component updates
-    rerender(<ElapsedTime />);
-
-    // The time should not have changed
-    expect(screen.getByText(/\d+m \d+s/).textContent).toBe(currentTimeText);
-
-    // Reset the timer to have a predictable state for other tests
-    const resetButton = screen.getByRole('button', { name: /reset timer/i });
-    fireEvent.click(resetButton);
+    // Time should not have changed
+    expect(screen.getByText(timeDisplayText)).toBeInTheDocument();
   });
 
   it('resets elapsed time', () => {
@@ -95,8 +86,8 @@ describe('ElapsedTime Component', () => {
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
 
-    const startButton = screen.getByRole('button', { name: /start timer/i });
-    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
+    const resetButton = screen.getByRole('button', { name: /Reset timer/i });
 
     fireEvent.click(startButton);
 
@@ -109,13 +100,13 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Verify that time has advanced (is no longer 0)
-    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
+    expect(screen.queryByText('00:00:00')).not.toBeInTheDocument();
 
     // Reset the timer
     fireEvent.click(resetButton);
 
     // Time should be back to 0
-    expect(screen.getByText('0m 0s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:00')).toBeInTheDocument();
   });
 
   it('starts timer with keyboard shortcut "p"', () => {
@@ -136,47 +127,71 @@ describe('ElapsedTime Component', () => {
     rerender(<ElapsedTime />);
 
     // Verify time has advanced (no longer at 0)
-    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
+    expect(screen.queryByText('00:00:00')).not.toBeInTheDocument();
 
     // Reset for other tests
     fireEvent.keyDown(document, { key: 'r' });
   });
 
-  it('stops timer with keyboard shortcut "s"', () => {
+  it('plays and pauses elapsed time based on play/pause button toggle', () => {
     const { rerender } = render(<ElapsedTime />);
 
-    // Set a fixed speed for consistent testing
+    // Set speed for consistent testing behavior
     const speedSelect = screen.getByRole('combobox');
     fireEvent.change(speedSelect, { target: { value: '60' } });
 
-    // Start and then stop using keyboard shortcuts
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
+    fireEvent.click(startButton);
+
+    // At 60x speed, we need much less real time to advance the simulation time
+    act(() => {
+      jest.advanceTimersByTime(50); // Should be enough for 3 seconds at 60x speed
+    });
+
+    // Force a rerender to ensure the component updates
+    rerender(<ElapsedTime />);
+
+    // Check that the elapsed time is no longer 0
+    expect(screen.queryByText('00:00:00')).not.toBeInTheDocument();
+
+    // Pause the timer (now it should be a pause button)
+    const pauseButton = screen.getByRole('button', { name: /Pause timer/i });
+    fireEvent.click(pauseButton);
+
+    // Get the current time for comparison
+    const timeDisplayText = screen.getByText(/\d{2}:\d{2}:\d{2}/i).textContent || '';
+
+    // Advance time while paused
+    act(() => {
+      jest.advanceTimersByTime(3000);
+    });
+
+    // Time should not have changed
+    expect(screen.getByText(timeDisplayText)).toBeInTheDocument();
+  });
+
+  it('stops timer with keyboard shortcut toggle', () => {
+    render(<ElapsedTime />);
+
+    // Start the timer with "p" key
     fireEvent.keyDown(document, { key: 'p' });
 
     act(() => {
-      jest.advanceTimersByTime(50);
+      jest.advanceTimersByTime(3000); // Advance 3 seconds
     });
 
-    // Force a rerender to ensure the component updates
-    rerender(<ElapsedTime />);
+    // Get the current displayed time text for verification
+    const timeDisplayText = screen.getByText(/\d{2}:\d{2}:\d{2}/i).textContent || '';
 
-    // Get the current displayed time text for verification later
-    const timeDisplayEl = screen.getByText(/\d+m \d+s/);
-    const currentTimeText = timeDisplayEl.textContent;
-
-    fireEvent.keyDown(document, { key: 's' });
+    // Press p again to toggle pause
+    fireEvent.keyDown(document, { key: 'p' });
 
     act(() => {
-      jest.advanceTimersByTime(100); // More time while stopped
+      jest.advanceTimersByTime(3000); // Try to advance 3 more seconds, but timer should be stopped
     });
 
-    // Force a rerender to ensure the component updates
-    rerender(<ElapsedTime />);
-
-    // Time should not have changed after stopping
-    expect(screen.getByText(/\d+m \d+s/).textContent).toBe(currentTimeText);
-
-    // Reset for other tests
-    fireEvent.keyDown(document, { key: 'r' });
+    // Time should not have changed
+    expect(screen.getByText(timeDisplayText)).toBeInTheDocument();
   });
 
   it('resets timer with keyboard shortcut "r"', () => {
@@ -192,19 +207,19 @@ describe('ElapsedTime Component', () => {
     fireEvent.keyDown(document, { key: 'r' });
 
     // Time should be reset to 0
-    expect(screen.getByText('0m 0s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:00')).toBeInTheDocument();
   });
 
   it('initializes with initialElapsedTime prop', () => {
     render(<ElapsedTime initialElapsedTime={5} />);
-    expect(screen.getByText('0m 5s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:05')).toBeInTheDocument();
   });
 
   it('calls onElapsedTimeChange callback when time changes', () => {
     const mockCallback = jest.fn();
     render(<ElapsedTime onElapsedTimeChange={mockCallback} />);
 
-    const startButton = screen.getByRole('button', { name: /start timer/i });
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
     fireEvent.click(startButton);
 
     act(() => {
@@ -218,7 +233,7 @@ describe('ElapsedTime Component', () => {
     const mockCallback = jest.fn();
     render(<ElapsedTime onElapsedTimeChange={mockCallback} />);
 
-    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    const resetButton = screen.getByRole('button', { name: /Reset timer/i });
     // Reset multiple times (same value of 0)
     fireEvent.click(resetButton);
     fireEvent.click(resetButton);
@@ -231,17 +246,17 @@ describe('ElapsedTime Component', () => {
     const mockCallback = jest.fn();
     render(<ElapsedTime initialElapsedTime={10} onElapsedTimeChange={mockCallback} />);
 
-    const startButton = screen.getByRole('button', { name: /start timer/i });
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
     fireEvent.click(startButton);
 
     act(() => {
       jest.advanceTimersByTime(2000); // Advance 2 seconds
     });
 
-    const resetButton = screen.getByRole('button', { name: /reset timer/i });
+    const resetButton = screen.getByRole('button', { name: /Reset timer/i });
     fireEvent.click(resetButton);
 
-    expect(screen.getByText('0m 0s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:00')).toBeInTheDocument();
     expect(mockCallback).toHaveBeenCalledWith(0);
   });
 
@@ -268,7 +283,7 @@ describe('ElapsedTime Component', () => {
     render(<ElapsedTime />);
 
     const speedSelect = screen.getByRole('combobox');
-    const startButton = screen.getByRole('button', { name: /start timer/i });
+    const startButton = screen.getByRole('button', { name: /Start timer/i });
 
     // Set speed to 1x (real time)
     fireEvent.change(speedSelect, { target: { value: '1' } });
@@ -280,7 +295,7 @@ describe('ElapsedTime Component', () => {
     });
 
     // At 1x speed, 100ms should not be enough to update the time
-    expect(screen.getByText('0m 0s')).toBeInTheDocument();
+    expect(screen.getByText('00:00:00')).toBeInTheDocument();
 
     // Now set speed to 60x
     fireEvent.change(speedSelect, { target: { value: '60' } });
@@ -293,7 +308,7 @@ describe('ElapsedTime Component', () => {
     // At 60x speed, 100ms is enough to update multiple times
     // 100ms real time at 60x speed should update time by ~6 seconds
     // But we're advancing the timer by specific steps, so we'll just check if it's updated at all
-    expect(screen.queryByText('0m 0s')).not.toBeInTheDocument();
+    expect(screen.queryByText('00:00:00')).not.toBeInTheDocument();
   });
 
   it('allows increasing speed with + key', () => {

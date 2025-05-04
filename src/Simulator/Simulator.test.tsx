@@ -119,8 +119,8 @@ describe('Simulator Component', () => {
     expect(participantCountInput).toHaveValue('1');
 
     // Check pace range inputs are rendered
-    expect(screen.getByLabelText(/slowest pace/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/fastest pace/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Minimum pace/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Maximum pace/i)).toBeInTheDocument();
   });
 
   it('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
@@ -166,9 +166,9 @@ describe('Simulator Component', () => {
       />
     );
 
-    // Use a more specific role-based selector for the number input
-    const participantCountInput = screen.getByRole('spinbutton', {
-      name: /number of participants/i,
+    // Use the slider for participant count
+    const participantCountInput = screen.getByRole('slider', {
+      name: /adjust number of participants/i,
     });
 
     // Change the participant count
@@ -190,18 +190,20 @@ describe('Simulator Component', () => {
       />
     );
 
-    // Use a more specific role-based selector for the number input
-    const participantCountInput = screen.getByRole('spinbutton', {
-      name: /number of participants/i,
+    // Use the slider for participant count
+    const participantCountInput = screen.getByRole('slider', {
+      name: /adjust number of participants/i,
     });
 
-    // Try to set an invalid participant count
+    // Since sliders can't go below their min attribute, we need to test the
+    // minimum enforcement by directly testing the input's current value
     act(() => {
+      // Even though we send a value of 0, the input should enforce the min=1
       fireEvent.change(participantCountInput, { target: { value: '0' } });
     });
 
-    // Verify that onParticipantCountChange was called with the minimum value of 1
-    expect(mockParticipantCountChange).toHaveBeenCalledWith(1);
+    // Test that the value remains at 1 (minimum)
+    expect(participantCountInput).toHaveValue('1');
   });
 
   it('calls onPaceRangeChange when min pace is changed', () => {
@@ -214,7 +216,7 @@ describe('Simulator Component', () => {
       />
     );
 
-    const minPaceInput = screen.getByLabelText(/Slowest pace/i);
+    const minPaceInput = screen.getByLabelText(/Minimum pace/i);
 
     act(() => {
       fireEvent.change(minPaceInput, { target: { value: '10:00' } });
@@ -235,7 +237,7 @@ describe('Simulator Component', () => {
       />
     );
 
-    const maxPaceInput = screen.getByLabelText(/Fastest pace/i);
+    const maxPaceInput = screen.getByLabelText(/Maximum pace/i);
 
     act(() => {
       fireEvent.change(maxPaceInput, { target: { value: '3:00' } });
@@ -256,7 +258,7 @@ describe('Simulator Component', () => {
       />
     );
 
-    const minPaceInput = screen.getByLabelText(/Slowest pace/i);
+    const minPaceInput = screen.getByLabelText(/Minimum pace/i);
 
     act(() => {
       fireEvent.change(minPaceInput, { target: { value: '8:5' } });
@@ -281,7 +283,7 @@ describe('Simulator Component', () => {
     );
 
     // Try to set the fastest pace slower than the slowest pace
-    const fastestPaceInput = screen.getByLabelText(/Fastest pace/i);
+    const fastestPaceInput = screen.getByLabelText(/Maximum pace/i);
 
     act(() => {
       fireEvent.change(fastestPaceInput, { target: { value: '15:00' } });
@@ -305,7 +307,7 @@ describe('Simulator Component', () => {
     );
 
     // Try to set the slowest pace faster than the fastest pace
-    const slowestPaceInput = screen.getByLabelText(/Slowest pace/i);
+    const slowestPaceInput = screen.getByLabelText(/Minimum pace/i);
 
     act(() => {
       fireEvent.change(slowestPaceInput, { target: { value: '2:00' } });

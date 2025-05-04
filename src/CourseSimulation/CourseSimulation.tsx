@@ -142,27 +142,23 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
         const props = participant.getProperties() as unknown as ParticipantProperties;
         if (props.finished) {
           // Create a new participant with the same properties to preserve the finish state
-          try {
-            const paceWithoutSuffix =
-              typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
-            const participantElapsedTime = props.elapsedTime || elapsedTime;
-            const finishedParticipant = new Participant(
-              course,
-              participantElapsedTime,
-              paceWithoutSuffix
-            );
+          const paceWithoutSuffix =
+            typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
+          const participantElapsedTime = props.elapsedTime || elapsedTime;
+          const finishedParticipant = new Participant(
+            course,
+            participantElapsedTime,
+            paceWithoutSuffix
+          );
 
-            // Ensure cumulativeDistance is set correctly to avoid division by zero
-            if (props.cumulativeDistance > 0) {
-              finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
-            } else {
-              finishedParticipant.setCumulativeDistance(course.length);
-            }
-
-            newlyFinished.push(finishedParticipant);
-          } catch (error) {
-            console.error('Failed to create finished participant:', error);
+          // Ensure cumulativeDistance is set correctly to avoid division by zero
+          if (props.cumulativeDistance > 0) {
+            finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
+          } else {
+            finishedParticipant.setCumulativeDistance(course.length);
           }
+
+          newlyFinished.push(finishedParticipant);
         } else {
           activeParticipants.push(participant);
         }
@@ -176,9 +172,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
 
       // Check if all participants have finished
       if (activeParticipants.length === 0 && updatedParticipants.length > 0) {
-        // Signal to the Simulator to stop by setting a flag or calling a method
-        // For now, we'll log this - in a real implementation, you'd send a signal to the Simulator
-        console.log('All participants have finished - simulation should stop');
+        // All participants have finished
       }
     },
     [course, elapsedTime]

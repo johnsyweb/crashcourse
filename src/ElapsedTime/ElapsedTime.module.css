@@ -126,6 +126,11 @@
   border-color: #ffccbc;
 }
 
+.pauseButton {
+  background-color: #fff8e1;
+  border-color: #ffe082;
+}
+
 .resetButton {
   background-color: #e8eaf6;
   border-color: #c5cae9;

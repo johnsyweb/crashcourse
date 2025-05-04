@@ -221,6 +221,41 @@
   margin-bottom: 0.75rem;
 }
 
+.shortcutsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shortcutRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.shortcutRow kbd {
+  background-color: #f8f9fa;
+  border: 1px solid #d3d3d3;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  color: #333;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  white-space: nowrap;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.shortcutRow span {
+  color: #4a4a4a;
+  margin-right: 1rem;
+}
+
 .shortcutsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

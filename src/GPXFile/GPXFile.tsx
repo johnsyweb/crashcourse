@@ -31,18 +31,16 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
   // Use useCallback to memoize the parseGPX function
   const parseGPX = useCallback(async () => {
     if (!file) {
-      console.log('No file provided to GPXFile component');
+      setError('No file provided to GPXFile component');
       return;
     }
 
     try {
-      console.log('GPXFile: Starting to parse file', file.name);
       setIsLoading(true);
       setError(null);
 
       // Use the generic readFileContent utility instead of the internal implementation
       const fileContent = await readFileContent(file);
-      console.log('GPXFile: File content loaded successfully');
 
       // Create parser with safe options
       const parser = new XMLParser({
@@ -51,9 +49,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
         isArray: (name) => name === 'trkpt',
       });
 
-      console.log('GPXFile: About to parse XML');
       const result = parser.parse(fileContent);
-      console.log('GPXFile: XML parsed successfully', result);
 
       // Safe navigation of the XML structure
       if (!result?.gpx?.trk) {
@@ -69,7 +65,6 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
 
       // Extract track points - already ensured to be an array with isArray option
       const trackPoints = track.trkseg.trkpt;
-      console.log('GPXFile: Extracted track points', trackPoints);
 
       // Convert to our GPXPoint format
       const points: GPXPoint[] = trackPoints.map(
@@ -81,11 +76,8 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
         })
       );
 
-      console.log('GPXFile: Converted track points to GPXPoint format', points);
-
       // Get track name with safe navigation
       const trackName = track.name || track.n || file.name.replace(/\.[^/.]+$/, '');
-      console.log('GPXFile: Track name determined', trackName);
 
       const gpxData: GPXData = {
         name: trackName,
@@ -95,11 +87,9 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
         isValid: true,
       };
 
-      console.log('GPXFile: GPX data parsed successfully', gpxData);
       onDataParsed(gpxData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to parse GPX file';
-      console.error('GPXFile: Error while parsing GPX file', errorMessage);
       setError(errorMessage);
 
       onDataParsed({
@@ -109,7 +99,6 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
       });
     } finally {
       setIsLoading(false);
-      console.log('GPXFile: Parsing complete');
     }
   }, [file, onDataParsed]);
 
