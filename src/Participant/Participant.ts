@@ -13,6 +13,7 @@ export class Participant {
   private cumulativeDistance: number = 0;
   private course: Course;
   private id: string;
+  private originalId: string;
 
   /**
    * Width of the participant in meters.
@@ -26,6 +27,7 @@ export class Participant {
     this.width = width;
     this.position = course.startPoint;
     this.id = generateId();
+    this.originalId = this.id;
   }
 
   private parsePace(pace: string): number {
@@ -96,5 +98,13 @@ export class Participant {
   public setCumulativeDistance(distance: number): void {
     this.cumulativeDistance = distance;
     this.position = this.course.getPositionAtDistance(distance);
+  }
+
+  public getOriginalId(): string {
+    return this.originalId;
+  }
+
+  public setOriginalId(id: string): void {
+    this.originalId = id;
   }
 }

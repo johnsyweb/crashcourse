@@ -82,9 +82,7 @@ export class Course {
    * @returns Width in meters
    */
   public getWidthAt(distance: number): number {
-    if (distance < 0 || distance > this.totalLength) {
-      throw new Error('Distance is out of bounds');
-    }
+    distance = this.clipDistance(distance);
 
     // Round to nearest cache interval
     const cachedDistance =
@@ -148,11 +146,7 @@ export class Course {
    * @returns [lat, lon] tuple
    */
   getPositionAtDistance(distance: number): LatLngTuple {
-    if (distance < 0) {
-      distance = 0;
-    } else if (distance > this.totalLength) {
-      distance = this.totalLength;
-    }
+    distance = this.clipDistance(distance);
 
     // Use turf.along to find the point at the specified distance
     const point = turf.along(this.lineString, distance / 1000, { units: 'kilometers' });
@@ -424,9 +418,7 @@ export class Course {
    * @returns Bearing in degrees (0-360)
    */
   public getBearingAtDistance(distance: number): number {
-    if (distance < 0 || distance > this.totalLength) {
-      throw new Error('Distance is out of bounds');
-    }
+    distance = this.clipDistance(distance);
 
     // Find the segment containing this distance
     let segmentIndex = 0;
@@ -443,5 +435,14 @@ export class Course {
 
     // Calculate bearing using turf.js format [lon, lat]
     return turf.bearing([lon1, lat1], [lon2, lat2]);
+  }
+
+  private clipDistance(distance: number) {
+    if (distance < 0) {
+      distance = 0;
+    } else if (distance > this.totalLength) {
+      distance = this.totalLength;
+    }
+    return distance;
   }
 }
