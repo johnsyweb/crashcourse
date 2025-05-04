@@ -149,13 +149,25 @@ const Simulator: React.FC<SimulatorProps> = ({
 
   const handleElapsedTimeChange = useCallback(
     (time: number) => {
+      // Don't process if we're just getting the same time value
+      if (time === elapsedTime) {
+        return;
+      }
+      
+      // Don't advance time if simulation is stopped
       if (simulationStopped && time > elapsedTime) {
-        // Don't advance time if simulation is stopped
         return;
       }
 
+      // Set our internal time state
       setElapsedTime(time);
-      onElapsedTimeChange?.(time);
+      
+      // Notify parent component if callback exists
+      if (onElapsedTimeChange) {
+        onElapsedTimeChange(time);
+      }
+      
+      // Update participants based on new time
       const allFinished = updateParticipants(time);
 
       // If all participants have finished, stop the simulation

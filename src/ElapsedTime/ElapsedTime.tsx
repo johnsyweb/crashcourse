@@ -121,11 +121,16 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         setElapsedTime((prev) => {
           // Each tick adds 1 second to the simulation time
           const newTime = prev + 1;
-          // Only call the callback if the time has actually changed
+          
+          // Only call the callback if the time has actually changed and we have a callback
           if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
+            // Update our ref to track the last time we reported
             lastReportedTime.current = newTime;
+            
+            // Call the parent callback with the new time
             onElapsedTimeChange(newTime);
           }
+          
           return newTime;
         });
       }, updateInterval);
