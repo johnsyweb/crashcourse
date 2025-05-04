@@ -165,6 +165,13 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
               finishedParticipant.setCumulativeDistance(course.length);
             }
 
+            // Preserve the ID so we can track this participant properly
+            Object.defineProperty(finishedParticipant, 'id', {
+              value: props.id,
+              writable: false,
+              configurable: false,
+            });
+
             newlyFinished.push(finishedParticipant);
           }
         } else {
@@ -179,10 +186,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
       }
 
       // Check if all participants have finished
-      if (activeParticipants.length === 0 && updatedParticipants.length > 0) {
-        // Stop the simulation when all participants have finished
-        setElapsedTime((prevTime) => prevTime); // Preserve the current time
-      }
+      const allFinished = activeParticipants.length === 0 && updatedParticipants.length > 0;
+
+      // We don't need to set elapsedTime here, as it would trigger unnecessary re-renders
+      // The simulation will be stopped by the Simulator component when it detects the flag
+      return allFinished;
     },
     [course, elapsedTime, finishedParticipants]
   );

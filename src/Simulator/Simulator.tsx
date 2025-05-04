@@ -133,6 +133,8 @@ const Simulator: React.FC<SimulatorProps> = ({
       if (allFinished && participants.length > 0) {
         setSimulationStopped(true);
       }
+
+      return allFinished;
     },
     [participants, onParticipantUpdate, course, simulationStopped]
   );
@@ -154,7 +156,12 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       setElapsedTime(time);
       onElapsedTimeChange?.(time);
-      updateParticipants(time);
+      const allFinished = updateParticipants(time);
+
+      // If all participants have finished, stop the simulation
+      if (allFinished) {
+        setSimulationStopped(true);
+      }
     },
     [onElapsedTimeChange, updateParticipants, simulationStopped, elapsedTime]
   );
@@ -403,7 +410,7 @@ const Simulator: React.FC<SimulatorProps> = ({
                 </div>
               </div>
 
-              {/* Pace Range Controls */}
+              {/* Pace Range Controls - Simplified */}
               <div className={styles.controlItem}>
                 <label className={styles.controlLabel}>Pace Range</label>
                 <div className={styles.paceControlGroup}>

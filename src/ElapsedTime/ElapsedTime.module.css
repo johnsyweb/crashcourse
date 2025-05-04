@@ -135,3 +135,22 @@
   background-color: #e8eaf6;
   border-color: #c5cae9;
 }
+
+.simulationButtonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f0f0f0 !important;
+  border-color: #ddd !important;
+}
+
+.simulationCompleteMessage {
+  font-size: 0.9rem;
+  color: #3d8b3d;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+  padding: 0.5rem;
+  border: 1px solid #c8e6c9;
+}

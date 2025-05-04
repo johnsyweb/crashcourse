@@ -69,6 +69,8 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
     return participants.map((participant, index) => {
       const props = participant.getProperties();
 
+      const id = (props.id as string) || `participant-${index}`;
+
       let targetPace = (props.pace as string) || '0:00';
       targetPace = targetPace.replace(/\/km$/, '');
 
@@ -82,6 +84,7 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
       const delta = calculatePaceDelta(targetPace, actualPace);
 
       return {
+        id,
         position: index + 1,
         time: finishTime,
         pace: actualPace,
@@ -168,7 +171,7 @@ const Results: React.FC<ResultsProps> = ({ participants, elapsedTime, onReset })
           </thead>
           <tbody>
             {sortedResults.map((result) => (
-              <tr key={result.position}>
+              <tr key={result.id}>
                 <td>{result.position}</td>
                 <td>{formatTime(result.time)}</td>
                 <td>{result.pace}/km</td>

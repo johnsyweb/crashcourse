@@ -167,7 +167,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
             <button
               className={styles.controlButton}
               onClick={decreaseSpeed}
-              disabled={speedMultiplier === speedOptions[0]}
+              disabled={speedMultiplier === speedOptions[0] || simulationStopped}
               aria-label="Decrease simulation speed"
             >
               −
@@ -177,6 +177,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
               value={speedMultiplier}
               onChange={handleSpeedChange}
               className={styles.controlSelect}
+              disabled={simulationStopped}
             >
               {speedOptions.map((option) => (
                 <option key={option} value={option}>
@@ -187,7 +188,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
             <button
               className={styles.controlButton}
               onClick={increaseSpeed}
-              disabled={speedMultiplier === speedOptions[speedOptions.length - 1]}
+              disabled={
+                speedMultiplier === speedOptions[speedOptions.length - 1] || simulationStopped
+              }
               aria-label="Increase simulation speed"
             >
               +
@@ -198,7 +201,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 
       <div className={styles.simulationControls}>
         <button
-          className={`${styles.simulationButton} ${isRunning ? styles.pauseButton : styles.playButton}`}
+          className={`${styles.simulationButton} ${
+            isRunning ? styles.pauseButton : styles.playButton
+          } ${simulationStopped && !isRunning ? styles.simulationButtonDisabled : ''}`}
           onClick={() => setIsRunning((prev) => !prev)}
           disabled={simulationStopped && !isRunning}
           aria-label={isRunning ? 'Pause timer' : 'Start timer'}
@@ -216,6 +221,10 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
           🔄
         </button>
       </div>
+
+      {simulationStopped && (
+        <div className={styles.simulationCompleteMessage}>All participants have finished!</div>
+      )}
     </div>
   );
 };
