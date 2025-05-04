@@ -112,55 +112,37 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   }, [resetTime, increaseSpeed, decreaseSpeed, simulationStopped, isRunning]);
 
   useEffect(() => {
-    let requestId: number | null = null;
-    let lastUpdateTime = performance.now();
-    let accumulatedTime = 0;
-
-    const updateTimer = (currentTime: number) => {
-      if (!isRunning || simulationStopped) {
-        requestId = null;
-        return;
-      }
-
-      // Calculate elapsed milliseconds since last update
-      const deltaTime = currentTime - lastUpdateTime;
-      lastUpdateTime = currentTime;
-
-      // Accumulate time based on speed multiplier (1 ms * multiplier = simulation ms)
-      accumulatedTime += deltaTime * speedMultiplier;
-
-      // Only update when we've accumulated enough time for a full second
-      if (accumulatedTime >= 1000) {
-        // Calculate how many seconds to add (could be more than 1 at high speeds)
-        const secondsToAdd = Math.floor(accumulatedTime / 1000);
-        accumulatedTime %= 1000; // Keep remainder for next frame
-        
-        // Update time without causing unnecessary re-renders
-        const newTime = elapsedTime + secondsToAdd;
-        setElapsedTime(newTime);
-        
-        // Only notify parent if time has actually changed
-        if (onElapsedTimeChange && lastReportedTime.current !== newTime) {
-          lastReportedTime.current = newTime;
-          onElapsedTimeChange(newTime);
-        }
-      }
-
-      // Continue animation loop
-      requestId = requestAnimationFrame(updateTimer);
-    };
-
+    // Return to using setInterval for more stable timing across different devices
+    let timer: NodeJS.Timeout | null = null;
+    
     if (isRunning && !simulationStopped) {
-      lastUpdateTime = performance.now();
-      requestId = requestAnimationFrame(updateTimer);
+      // Use a fixed update interval of 100ms (10 updates per second)
+      // This provides more stable timing than requestAnimationFrame for simulation purposes
+      const updateInterval = 100; // milliseconds
+      
+      timer = setInterval(() => {
+        // Calculate time increment based on speed multiplier
+        // Each 100ms update adds (speedMultiplier/10) seconds to simulation time
+        const secondsToAdd = speedMultiplier / 10;
+        
+        setElapsedTime(prev => {
+          const newTime = prev + secondsToAdd;
+          
+          // Only notify parent if time has significantly changed (at least 1 second)
+          if (onElapsedTimeChange && Math.floor(lastReportedTime.current) !== Math.floor(newTime)) {
+            lastReportedTime.current = newTime;
+            onElapsedTimeChange(Math.floor(newTime));
+          }
+          
+          return newTime;
+        });
+      }, updateInterval);
     }
 
     return () => {
-      if (requestId !== null) {
-        cancelAnimationFrame(requestId);
-      }
+      if (timer) clearInterval(timer);
     };
-  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped, elapsedTime]);
+  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped]);
 
   // Handle speed change
   const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

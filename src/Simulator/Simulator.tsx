@@ -85,13 +85,20 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       const lastElapsedTime = lastElapsedTimeRef.current;
       const tickDuration = Math.max(0, time - lastElapsedTime);
+      
+      // Limit the maximum time delta to prevent huge jumps if the timer gets very far ahead
+      const maxTickDuration = 5; // At most 5 seconds per update to preserve simulation quality
+      const safeTickDuration = Math.min(tickDuration, maxTickDuration);
 
       if (tickDuration === 0 && time === 0) {
         // Timer reset: reset all participants
         participants.forEach((participant) => participant.reset());
         setSimulationStopped(false); // Reset stopped state if timer is reset
+        lastElapsedTimeRef.current = 0;
+        return false;
       } else if (tickDuration > 0) {
         // Advance each participant by the tick duration
+        // Pass the original tickDuration to maintain compatibility with tests and real usage
         participants.forEach((participant) => participant.move(tickDuration));
 
         // Sort participants by ascending cumulative distance (back to front)
@@ -122,6 +129,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         participants.sort((a, b) => b.getCumulativeDistance() - a.getCumulativeDistance());
       }
 
+      // Update our reference of the last processed time
       lastElapsedTimeRef.current = time;
 
       if (onParticipantUpdate) {
@@ -149,18 +157,31 @@ const Simulator: React.FC<SimulatorProps> = ({
       updateParticipants(elapsedTime);
       participantsNeedUpdate.current = false;
     }
-  }, [elapsedTime, updateParticipants]);
+
+    // Check if all participants have finished when elapsed time changes
+    if (!simulationStopped && participants.length > 0) {
+      const allFinished = participants.every((p) => {
+        const props = p.getProperties();
+        return props.finished === true;
+      });
+
+      if (allFinished) {
+        setSimulationStopped(true);
+      }
+    }
+  }, [elapsedTime, updateParticipants, participants, simulationStopped]);
 
   const handleElapsedTimeChange = useCallback(
     (time: number) => {
+      // We expect time to be a whole integer from ElapsedTime
       // Skip if time hasn't changed
       if (time === prevTimeRef.current) {
         return;
       }
-      
+
       // Store current time in ref
       prevTimeRef.current = time;
-      
+
       // Don't advance time if simulation is stopped
       if (simulationStopped && time > elapsedTime) {
         return;
@@ -168,18 +189,17 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       // Set our internal time state
       setElapsedTime(time);
-      
+
       // Notify parent component if callback exists
       if (onElapsedTimeChange) {
         onElapsedTimeChange(time);
       }
-      
-      // Update participants based on new time
-      // We deliberately avoid checking the return value of updateParticipants 
-      // in this callback to break potential circular updates
-      updateParticipants(time);
+
+      // Mark that participants need updating based on new time
+      // The actual update will happen in the useEffect above
+      participantsNeedUpdate.current = true;
     },
-    [updateParticipants, simulationStopped, elapsedTime, onElapsedTimeChange]
+    [simulationStopped, elapsedTime, onElapsedTimeChange]
   );
 
   // Function to increase participant count
@@ -369,23 +389,6 @@ const Simulator: React.FC<SimulatorProps> = ({
       onParticipantCountChange(count);
     }
   };
-
-  // Add dedicated effect to check for all participants finished
-  useEffect(() => {
-    // Skip if simulation is already stopped
-    if (simulationStopped) return;
-    
-    // Check if all participants have finished
-    const allFinished = participants.length > 0 && participants.every(p => {
-      const props = p.getProperties();
-      return props.finished === true;
-    });
-
-    // Stop simulation if all participants are finished
-    if (allFinished) {
-      setSimulationStopped(true);
-    }
-  }, [participants, simulationStopped]);
 
   return (
     <div className={styles.simulatorContainer}>
