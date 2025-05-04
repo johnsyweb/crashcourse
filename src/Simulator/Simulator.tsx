@@ -380,13 +380,13 @@ const Simulator: React.FC<SimulatorProps> = ({
 
         {/* Control Sections */}
         <div className={styles.controlSections}>
-          {/* Participant Control Section */}
+          {/* Participant Control Section - Simplified */}
           <div className={styles.controlSection}>
             <div className={styles.controlHeader}>Participants</div>
             <div className={styles.controlContent}>
               <div className={styles.controlItem}>
                 <label htmlFor="participantCount" className={styles.controlLabel}>
-                  Count
+                  Count: {formatNumber(participantCount)}
                 </label>
                 <div className={styles.rangeIndicator}>
                   <input
@@ -400,11 +400,6 @@ const Simulator: React.FC<SimulatorProps> = ({
                     title="Slide to adjust number of participants"
                     id="participantCount"
                   />
-                  <div className={styles.rangeLabels}>
-                    <span>{formatNumber(MIN_PARTICIPANTS)}</span>
-                    <span className={styles.currentValue}>{formatNumber(participantCount)}</span>
-                    <span>{formatNumber(MAX_PARTICIPANTS)}</span>
-                  </div>
                 </div>
               </div>
 
@@ -459,7 +454,11 @@ const Simulator: React.FC<SimulatorProps> = ({
           <div className={styles.controlSection}>
             <div className={styles.controlHeader}>Simulation Time</div>
             <div className={styles.controlContent}>
-              <ElapsedTime onElapsedTimeChange={handleElapsedTimeChange} initialElapsedTime={0} />
+              <ElapsedTime
+                onElapsedTimeChange={handleElapsedTimeChange}
+                initialElapsedTime={0}
+                simulationStopped={simulationStopped}
+              />
             </div>
           </div>
         </div>

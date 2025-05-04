@@ -1,12 +1,18 @@
 import { LatLngTuple } from 'leaflet';
 import { Course } from '../Course';
 
+// Helper function to generate a unique ID
+const generateId = (): string => {
+  return Math.random().toString(36).substring(2, 9);
+};
+
 export class Participant {
   private position: LatLngTuple;
   private elapsedTime: number;
   private pace: number; // in seconds per kilometer
   private cumulativeDistance: number = 0;
   private course: Course;
+  private id: string;
 
   /**
    * Width of the participant in meters.
@@ -19,6 +25,7 @@ export class Participant {
     this.pace = this.parsePace(pace);
     this.width = width;
     this.position = course.startPoint;
+    this.id = generateId();
   }
 
   private parsePace(pace: string): number {
@@ -38,6 +45,7 @@ export class Participant {
 
   public getProperties(): Record<string, string | number | LatLngTuple | boolean> {
     return {
+      id: this.id,
       position: this.position,
       elapsedTime: this.elapsedTime,
       pace: this.formatPace(),
@@ -45,6 +53,10 @@ export class Participant {
       totalDistance: this.course.length,
       finished: this.cumulativeDistance >= this.course.length,
     };
+  }
+
+  public getId(): string {
+    return this.id;
   }
 
   public reset(): void {

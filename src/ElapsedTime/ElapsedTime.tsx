@@ -4,11 +4,13 @@ import styles from './ElapsedTime.module.css';
 interface ElapsedTimeProps {
   onElapsedTimeChange?: (elapsedTime: number) => void;
   initialElapsedTime?: number;
+  simulationStopped?: boolean;
 }
 
 const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   onElapsedTimeChange,
   initialElapsedTime = 0,
+  simulationStopped = false,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(initialElapsedTime);
   const [isRunning, setIsRunning] = useState(false);
@@ -36,6 +38,13 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
       isInitialized.current = true;
     }
   }, [initialElapsedTime, onElapsedTimeChange]);
+
+  // Stop the simulation if simulationStopped is true
+  useEffect(() => {
+    if (simulationStopped && isRunning) {
+      setIsRunning(false);
+    }
+  }, [simulationStopped, isRunning]);
 
   // Define resetTime with useCallback to make it stable across renders
   const resetTime = useCallback(() => {
@@ -81,7 +90,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
       }
 
       if (key === 'p') {
-        setIsRunning((prev) => !prev); // Toggle play/pause state
+        if (!simulationStopped || !isRunning) {
+          setIsRunning((prev) => !prev); // Toggle play/pause state
+        }
       } else if (key === 'r') {
         resetTime();
       } else if (key === '+' || key === '=') {
@@ -98,11 +109,11 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [resetTime, increaseSpeed, decreaseSpeed]);
+  }, [resetTime, increaseSpeed, decreaseSpeed, simulationStopped, isRunning]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
-    if (isRunning) {
+    if (isRunning && !simulationStopped) {
       // Calculate interval based on speed multiplier (faster updates at higher speeds)
       const updateInterval = 1000 / speedMultiplier;
 
@@ -123,7 +134,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, onElapsedTimeChange, speedMultiplier]);
+  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped]);
 
   // Handle speed change
   const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -189,7 +200,11 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         <button
           className={`${styles.simulationButton} ${isRunning ? styles.pauseButton : styles.playButton}`}
           onClick={() => setIsRunning((prev) => !prev)}
+          disabled={simulationStopped && !isRunning}
           aria-label={isRunning ? 'Pause timer' : 'Start timer'}
+          title={
+            simulationStopped ? 'Simulation complete' : isRunning ? 'Pause timer' : 'Start timer'
+          }
         >
           {isRunning ? '⏸️' : '▶️'}
         </button>

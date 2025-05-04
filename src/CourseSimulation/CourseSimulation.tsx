@@ -20,6 +20,7 @@ interface CourseSimulationProps {
 }
 
 interface ParticipantProperties {
+  id: string;
   position: LatLngTuple;
   elapsedTime: number;
   pace: string;
@@ -141,24 +142,31 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
       updatedParticipants.forEach((participant) => {
         const props = participant.getProperties() as unknown as ParticipantProperties;
         if (props.finished) {
-          // Create a new participant with the same properties to preserve the finish state
-          const paceWithoutSuffix =
-            typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
-          const participantElapsedTime = props.elapsedTime || elapsedTime;
-          const finishedParticipant = new Participant(
-            course,
-            participantElapsedTime,
-            paceWithoutSuffix
+          // Check if this participant is already in finishedParticipants based on ID
+          const alreadyFinished = finishedParticipants.some(
+            (fp) => (fp.getProperties() as unknown as ParticipantProperties).id === props.id
           );
 
-          // Ensure cumulativeDistance is set correctly to avoid division by zero
-          if (props.cumulativeDistance > 0) {
-            finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
-          } else {
-            finishedParticipant.setCumulativeDistance(course.length);
-          }
+          if (!alreadyFinished) {
+            // Create a new participant with the same properties to preserve the finish state
+            const paceWithoutSuffix =
+              typeof props.pace === 'string' ? props.pace.replace('/km', '') : '5:00';
+            const participantElapsedTime = props.elapsedTime || elapsedTime;
+            const finishedParticipant = new Participant(
+              course,
+              participantElapsedTime,
+              paceWithoutSuffix
+            );
 
-          newlyFinished.push(finishedParticipant);
+            // Ensure cumulativeDistance is set correctly to avoid division by zero
+            if (props.cumulativeDistance > 0) {
+              finishedParticipant.setCumulativeDistance(props.cumulativeDistance);
+            } else {
+              finishedParticipant.setCumulativeDistance(course.length);
+            }
+
+            newlyFinished.push(finishedParticipant);
+          }
         } else {
           activeParticipants.push(participant);
         }
@@ -172,10 +180,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
 
       // Check if all participants have finished
       if (activeParticipants.length === 0 && updatedParticipants.length > 0) {
-        // All participants have finished
+        // Stop the simulation when all participants have finished
+        setElapsedTime((prevTime) => prevTime); // Preserve the current time
       }
     },
-    [course, elapsedTime]
+    [course, elapsedTime, finishedParticipants]
   );
 
   const handleResetResults = useCallback(() => {
