@@ -8,6 +8,17 @@ import type { Feature, LineString } from 'geojson';
 export class Course {
   // Width-related constants
   private static readonly DEFAULT_WIDTH = 2; // metres
+
+  /**
+   * Removes consecutive duplicate points from an array of LatLngTuple.
+   * @param points Array of LatLngTuple
+   * @returns Array of LatLngTuple with consecutive duplicates removed
+   */
+  private static removeConsecutiveDuplicatePoints(points: LatLngTuple[]): LatLngTuple[] {
+    return points.filter(
+      (point, i, arr) => i === 0 || point[0] !== arr[i - 1][0] || point[1] !== arr[i - 1][1]
+    );
+  }
   private static readonly MAX_WIDTH = Course.DEFAULT_WIDTH * 2; // metres
   private static readonly MAX_WIDTH_PLUS_TOLERANCE = Course.MAX_WIDTH * 1.01; // Add 1% for floating point precision
   private static readonly WIDTH_CACHE_INTERVAL = 10; // Cache width values every 10 meters (increased from 1)
@@ -29,12 +40,12 @@ export class Course {
    * @param points - Array of latitude/longitude points defining the course
    */
   constructor(points: LatLngTuple[]) {
-    this.points = points.filter(([lat, lon], i, points) => lat !== points[i - 1]?.[0] || lon !== points[i - 1]?.[1]); // Remove consecutive duplicate points
-    
+    this.points = Course.removeConsecutiveDuplicatePoints(points);
+
     if (this.points.length < 2) {
       throw new Error('Course must have at least two points');
     }
-  
+
     this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
