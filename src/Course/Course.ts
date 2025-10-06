@@ -29,11 +29,13 @@ export class Course {
    * @param points - Array of latitude/longitude points defining the course
    */
   constructor(points: LatLngTuple[]) {
-    if (points.length < 2) {
+    this.points = points.filter(([lat, lon], i, points) => lat !== points[i - 1]?.[0] || lon !== points[i - 1]?.[1]); // Remove consecutive duplicate points
+    
+    if (this.points.length < 2) {
       throw new Error('Course must have at least two points');
     }
-    this.points = points;
-    this.lineString = turf.lineString(points.map(([lat, lon]) => [lon, lat]));
+  
+    this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
     this.precalculateWidths();
