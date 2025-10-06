@@ -408,8 +408,6 @@ const Simulator: React.FC<SimulatorProps> = ({
   return (
     <div className={styles.simulatorContainer}>
       <div className={styles.simulatorControls}>
-        <h3 className={styles.sectionTitle}>Simulator Controls</h3>
-
         {/* Course Information */}
         <div className={styles.infoSection}>
           <div className={styles.infoItem}>
@@ -418,22 +416,6 @@ const Simulator: React.FC<SimulatorProps> = ({
               {course ? (course.length / 1000).toFixed(2) : 0} km
             </span>
           </div>
-          {course && (
-            <>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Narrowest Width:</span>
-                <span className={styles.infoValue}>
-                  {course.getCourseWidthInfo().narrowestWidth.toFixed(1)} m
-                </span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Widest Width:</span>
-                <span className={styles.infoValue}>
-                  {course.getCourseWidthInfo().widestWidth.toFixed(1)} m
-                </span>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Control Sections */}
