@@ -89,8 +89,7 @@ const Simulator: React.FC<SimulatorProps> = ({
       // Limit the maximum time delta to prevent huge jumps if the timer gets very far ahead
       // Use a much smaller value to ensure participants don't move too quickly
       const maxTickDuration = 1; // Cap at 1 second per update for smoother simulation
-      const safeTickDuration = Math.min(tickDuration, maxTickDuration);
-
+      
       if (tickDuration === 0 && time === 0) {
         // Timer reset: reset all participants
         participants.forEach((participant) => participant.reset());
