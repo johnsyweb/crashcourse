@@ -85,11 +85,11 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       const lastElapsedTime = lastElapsedTimeRef.current;
       const tickDuration = Math.max(0, time - lastElapsedTime);
-      
+
       // Limit the maximum time delta to prevent huge jumps if the timer gets very far ahead
       // Use a much smaller value to ensure participants don't move too quickly
       const maxTickDuration = 1; // Cap at 1 second per update for smoother simulation
-      
+
       if (tickDuration === 0 && time === 0) {
         // Timer reset: reset all participants
         participants.forEach((participant) => participant.reset());
@@ -103,14 +103,14 @@ const Simulator: React.FC<SimulatorProps> = ({
         // If the tick duration is large (e.g., greater than our max), break it into smaller steps
         const remainingTime = tickDuration;
         let timeProcessed = 0;
-        
+
         // Process time in smaller increments to ensure realistic movement
         while (timeProcessed < remainingTime) {
           const stepSize = Math.min(maxTickDuration, remainingTime - timeProcessed);
-          
+
           // Advance each participant by the smaller step size
           participants.forEach((participant) => participant.move(stepSize));
-          
+
           // Handle collisions after each small step
           // Sort participants by ascending cumulative distance (back to front)
           const sorted = [...participants].sort(
@@ -135,7 +135,7 @@ const Simulator: React.FC<SimulatorProps> = ({
               // If enough room, overtaking is allowed (no further action)
             }
           }
-          
+
           // Increment the processed time
           timeProcessed += stepSize;
         }

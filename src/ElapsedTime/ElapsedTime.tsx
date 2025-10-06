@@ -5,12 +5,14 @@ interface ElapsedTimeProps {
   onElapsedTimeChange?: (elapsedTime: number) => void;
   initialElapsedTime?: number;
   simulationStopped?: boolean;
+  updateIntervalMs?: number; // For testability: allow custom interval
 }
 
 const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   onElapsedTimeChange,
   initialElapsedTime = 0,
   simulationStopped = false,
+  updateIntervalMs = 100,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(initialElapsedTime);
   const [isRunning, setIsRunning] = useState(false);
@@ -114,35 +116,23 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   useEffect(() => {
     // Return to using setInterval for more stable timing across different devices
     let timer: NodeJS.Timeout | null = null;
-    
     if (isRunning && !simulationStopped) {
-      // Use a fixed update interval of 100ms (10 updates per second)
-      // This provides more stable timing than requestAnimationFrame for simulation purposes
-      const updateInterval = 100; // milliseconds
-      
       timer = setInterval(() => {
-        // Calculate time increment based on speed multiplier
-        // Each 100ms update adds (speedMultiplier/10) seconds to simulation time
-        const secondsToAdd = speedMultiplier / 10;
-        
-        setElapsedTime(prev => {
+        const secondsToAdd = speedMultiplier / (1000 / updateIntervalMs);
+        setElapsedTime((prev) => {
           const newTime = prev + secondsToAdd;
-          
-          // Only notify parent if time has significantly changed (at least 1 second)
           if (onElapsedTimeChange && Math.floor(lastReportedTime.current) !== Math.floor(newTime)) {
             lastReportedTime.current = newTime;
             onElapsedTimeChange(Math.floor(newTime));
           }
-          
           return newTime;
         });
-      }, updateInterval);
+      }, updateIntervalMs);
     }
-
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped]);
+  }, [isRunning, onElapsedTimeChange, speedMultiplier, simulationStopped, updateIntervalMs]);
 
   // Handle speed change
   const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -153,7 +143,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   const formatTimeDisplay = (timeInSeconds: number): string => {
     const hours = Math.floor(timeInSeconds / 3600);
     const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
+    const seconds = Math.floor(timeInSeconds % 60); // Always integer seconds
 
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
@@ -164,7 +154,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
 
   return (
     <div className={styles.elapsedTimeContainer}>
-      <div className={styles.timeDisplay}>{formatTimeDisplay(elapsedTime)}</div>
+      <div id="elapsed-time-display" className={styles.timeDisplay}>
+        {formatTimeDisplay(elapsedTime)}
+      </div>
 
       <div className={styles.controlRow}>
         <div className={styles.speedControls}>
