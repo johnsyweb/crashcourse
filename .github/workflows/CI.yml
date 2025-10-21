@@ -9,18 +9,20 @@ jobs:
 
     steps:
       - name: '🧑🏻‍💻 Checkout repository'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: '🌐 Set up Node.js'
-        uses: actions/setup-node@v4
+      - name: '⚙️ Setup Node.js and pnpm'
+        id: setup
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: '23'
+          node-version: '18'
+          run-install: 'true'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
 
-      - name: '📦 Install pnpm'
-        run: npm install -g pnpm
-
-      - name: '🔗 Install dependencies'
-        run: pnpm install
+      - name: 'Cache status'
+        run: |
+          echo "pnpm store cache hit: ${{ steps.setup.outputs.pnpm_store_cache_hit }}"
 
       - name: '🧪  check'
         run: pnpm check
