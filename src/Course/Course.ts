@@ -21,7 +21,7 @@ export class Course {
   }
   private static readonly MAX_WIDTH = Course.DEFAULT_WIDTH * 2; // metres
   private static readonly MAX_WIDTH_PLUS_TOLERANCE = Course.MAX_WIDTH * 1.01; // Add 1% for floating point precision
-  private static readonly WIDTH_CACHE_INTERVAL = 10; // Cache width values every 10 meters (increased from 1)
+  private static readonly WIDTH_CACHE_INTERVAL = 10; // Cache width values every 10 metres (increased from 1)
   private static readonly PARALLEL_PATH_SEARCH_WINDOW = 500; // Only search for parallel paths within 500m
 
   private points: LatLngTuple[];
@@ -34,6 +34,13 @@ export class Course {
   private cacheMisses: number = 0;
   private totalWidthCalculations: number = 0;
   private totalCalculationTime: number = 0;
+  // Lap detection cache
+  private lapCrossings: number[] = [];
+  private lapCountCache: number | null = null;
+  // Lap detection tunables (defaults preserve previous behaviour)
+  private lapDetectionStepMeters: number = 1; // sample every 1 metre
+  private lapDetectionBearingToleranceDeg: number = 90; // degrees tolerance
+  private lapDetectionCrossingToleranceMeters: number = 1; // within 1 m of start qualifies
 
   /**
    * Creates a new Course instance from an array of GPS points.
@@ -50,6 +57,8 @@ export class Course {
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
     this.precalculateWidths();
+    // compute lap crossings for multi-lap courses
+    this.computeLapCrossings();
   }
 
   /**
@@ -59,6 +68,114 @@ export class Course {
     for (let distance = 0; distance <= this.totalLength; distance += Course.WIDTH_CACHE_INTERVAL) {
       this.calculateAndCacheWidth(distance);
     }
+  }
+
+  /**
+   * Compute lap crossings: sample the course and mark distances that are within
+   * a small radius of the start point and have similar heading to the start.
+   */
+  private computeLapCrossings(): void {
+    this.lapCrossings = [];
+    this.lapCountCache = null;
+
+    if (this.points.length < 2) return;
+
+    const [startLat, startLon] = this.startPoint;
+    // start bearing using first segment
+    const startBearing = this.getBearingAtDistance(0);
+
+    const toleranceMeters = this.lapDetectionCrossingToleranceMeters;
+    const bearingTolerance = this.lapDetectionBearingToleranceDeg;
+
+    const step = this.lapDetectionStepMeters;
+    let distance = step; // skip zero
+    let lastWasCrossing = false;
+    while (distance <= this.totalLength) {
+      const pos = this.getPositionAtDistance(distance);
+      const [lat, lon] = pos;
+      const from = turf.point([startLon, startLat]);
+      const to = turf.point([lon, lat]);
+      const distToStart = turf.distance(from, to, { units: 'meters' });
+
+      if (distToStart <= toleranceMeters) {
+        const bearingAt = this.getBearingAtDistance(distance);
+        let diff = Math.abs(bearingAt - startBearing);
+        if (diff > 180) diff = 360 - diff;
+        if (diff <= bearingTolerance && !lastWasCrossing) {
+          this.lapCrossings.push(distance);
+          lastWasCrossing = true;
+          distance += 10; // skip forward a bit to avoid duplicates
+          continue;
+        }
+      } else {
+        lastWasCrossing = false;
+      }
+
+      distance += step;
+    }
+
+    this.lapCountCache = Math.max(1, this.lapCrossings.length + 1);
+  }
+
+  /**
+   * Update lap detection parameters and recompute crossings.
+   * Any parameter omitted will keep its current value.
+   */
+  public setLapDetectionParams(params: {
+    stepMeters?: number;
+    bearingToleranceDeg?: number;
+    crossingToleranceMeters?: number;
+  }): void {
+    if (typeof params.stepMeters === 'number' && params.stepMeters > 0) {
+      this.lapDetectionStepMeters = params.stepMeters;
+    }
+    if (typeof params.bearingToleranceDeg === 'number' && params.bearingToleranceDeg >= 0) {
+      this.lapDetectionBearingToleranceDeg = params.bearingToleranceDeg;
+    }
+    if (typeof params.crossingToleranceMeters === 'number' && params.crossingToleranceMeters >= 0) {
+      this.lapDetectionCrossingToleranceMeters = params.crossingToleranceMeters;
+    }
+
+    // Recompute crossings with new parameters
+    this.computeLapCrossings();
+  }
+
+  /**
+   * Get current lap detection parameters.
+   */
+  public getLapDetectionParams(): {
+    stepMeters: number;
+    bearingToleranceDeg: number;
+    crossingToleranceMeters: number;
+  } {
+    return {
+      stepMeters: this.lapDetectionStepMeters,
+      bearingToleranceDeg: this.lapDetectionBearingToleranceDeg,
+      crossingToleranceMeters: this.lapDetectionCrossingToleranceMeters,
+    };
+  }
+
+  /**
+   * Returns number of laps inferred from course geometry (>=1).
+   */
+  public getLapCount(): number {
+    if (this.lapCountCache === null) this.computeLapCrossings();
+    return this.lapCountCache || 1;
+  }
+
+  /**
+   * Returns 1-based lap index for a given distance along the course.
+   */
+  public getLapIndexAtDistance(distance: number): number {
+    if (this.lapCountCache === null) this.computeLapCrossings();
+    distance = this.clipDistance(distance);
+    if (!this.lapCrossings || this.lapCrossings.length === 0) return 1;
+    let idx = 1;
+    for (const c of this.lapCrossings) {
+      if (distance >= c) idx++;
+      else break;
+    }
+    return idx;
   }
 
   /**
@@ -126,7 +243,7 @@ export class Course {
   }
 
   /**
-   * Get the total length of the course in meters
+   * Get the total length of the course in metres
    */
   get length(): number {
     return this.totalLength;
@@ -155,7 +272,7 @@ export class Course {
 
   /**
    * Get the position at a specific distance along the course
-   * @param distance Distance in meters from the start
+   * @param distance Distance in metres from the start
    * @returns [lat, lon] tuple
    */
   getPositionAtDistance(distance: number): LatLngTuple {
@@ -170,7 +287,7 @@ export class Course {
   /**
    * Calculates the distance for a given position along the course.
    * @param position - Latitude and longitude coordinates
-   * @returns The approximate distance in meters from the start to the closest point on the course
+   * @returns The approximate distance in metres from the start to the closest point on the course
    */
   getDistanceAtPosition(position: LatLngTuple): number {
     const [targetLat, targetLon] = position;
@@ -284,7 +401,7 @@ export class Course {
       current.distance < min.distance ? current : min
     );
 
-    // Round the distance to the nearest meter
+    // Round the distance to the nearest metre
     return Math.round(closestSegment.distance);
   }
 

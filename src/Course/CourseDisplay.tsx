@@ -54,14 +54,14 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
   // Compute right edge for visualization
   const { rightEdge } = course.getCourseEdges();
 
-  // Create kilometer markers
+  // Create kilometre markers
   const renderKilometerMarkers = () => {
     if (!showKilometerMarkers) return null;
 
     const markers = [];
     const courseLength = course.length;
 
-    // Create a marker every kilometer
+    // Create a marker every kilometre
     for (let km = 1; km < Math.floor(courseLength / 1000); km++) {
       const distance = km * 1000; // distance in meters
       const position = course.getPositionAtDistance(distance);

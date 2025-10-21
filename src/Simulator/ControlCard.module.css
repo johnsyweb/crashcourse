@@ -1,0 +1,71 @@
+.controlCard {
+  border: 1px solid #e6e9ee;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  padding: 0.5rem 0.75rem;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #e1e4e8;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.content {
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.compact {
+  padding: 0.4rem;
+}
+
+.muted {
+  color: #666;
+}
+
+.small {
+  font-size: 11px;
+}
+
+/* Collapsible header button */
+.toggleButton {
+  float: right;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.chevron {
+  display: inline-block;
+  transition: transform 0.15s ease-in-out;
+}
+
+.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+.collapsed .content {
+  display: none;
+}
+
+/* Default: collapsed on very small screens to preserve space */
+@media (max-width: 480px) {
+  .controlCard {
+    margin-bottom: 0.5rem;
+  }
+
+  .controlCard:not(.expanded) .content {
+    display: none;
+  }
+}

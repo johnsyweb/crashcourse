@@ -49,14 +49,18 @@
   flex-direction: column;
   gap: 1rem;
   flex: 1;
+  /* Allow scrolling within this section if needed. Limit height so the page scrollbar
+     controls overall scrolling and these control panels can scroll internally when large. */
   overflow: auto;
-  /* Allow scrolling within this section if needed */
 }
 
 .controlSection {
   border: 1px solid #ddd;
   border-radius: 6px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Make each control section able to shrink on small screens */
 }
 
 .controlHeader {
@@ -74,6 +78,9 @@
   flex-direction: column;
   gap: 0.75rem;
   /* Adjust gap for better spacing */
+  /* Allow the content area to scroll internally if it grows too large */
+  max-height: 32vh;
+  overflow: auto;
 }
 
 .controlItem {
@@ -86,6 +93,12 @@
   font-size: 0.9rem;
   color: #555;
   font-weight: 500;
+}
+
+/* Small helper text used across control panels (matches Lap Detection box style) */
+.controlSmallText {
+  font-size: 11px;
+  color: #333;
 }
 
 .controlInputGroup {
@@ -305,6 +318,8 @@
   align-items: center;
   gap: 0.25rem;
   white-space: nowrap;
+  /* Allow the control to shrink on smaller containers */
+  flex: 1 1 auto;
 }
 
 .paceLabel {
@@ -315,10 +330,22 @@
 
 .paceInput {
   width: 3rem;
+  max-width: 100%;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 0.4rem;
   text-align: left;
+}
+
+@media (max-width: 560px) {
+  .paceControlGroup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .paceControl {
+    width: 100%;
+  }
 }
 
 .paceUnit {
@@ -341,4 +368,88 @@
   background-color: #fdecea;
   border-radius: 4px;
   border-left: 3px solid #e74c3c;
+}
+
+/* Lap detection controls (sliders + button) */
+.lapSettings {
+  padding: 0.5rem;
+  border: 1px solid #e6e9ee;
+  border-radius: 6px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lapControlsRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  /* Allow controls to wrap to new lines on narrow viewports */
+  flex-wrap: wrap;
+}
+
+.lapControl {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  /* Allow controls to shrink on narrow screens */
+  flex: 1 1 140px;
+}
+
+.lapSlider {
+  width: 180px;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.recomputeButton {
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #3366cc;
+  color: #fff;
+  border: 1px solid #2d56a6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease-in-out,
+    transform 0.05s ease-in-out;
+}
+
+.recomputeButton:hover {
+  background: #2850a1;
+}
+
+.recomputeButton:active {
+  transform: translateY(1px);
+}
+
+/* Responsive tweaks for small viewports */
+@media (max-width: 720px) {
+  .simulatorContainer {
+    padding: 0.5rem;
+  }
+
+  .controlContent {
+    max-height: 40vh;
+  }
+
+  .controlInputGroup,
+  .rangeLabels {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .paceControlGroup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lapControlsRow {
+    gap: 8px;
+  }
+
+  .recomputeButton {
+    width: 100%;
+  }
 }

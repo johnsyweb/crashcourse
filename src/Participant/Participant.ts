@@ -9,7 +9,7 @@ const generateId = (): string => {
 export class Participant {
   private position: LatLngTuple;
   private elapsedTime: number;
-  private pace: number; // in seconds per kilometer
+  private pace: number; // in seconds per kilometre
   private cumulativeDistance: number = 0;
   private course: Course;
   private id: string;
@@ -32,7 +32,7 @@ export class Participant {
 
   private parsePace(pace: string): number {
     const [minutes, seconds] = pace.split(':').map(Number);
-    return minutes * 60 + seconds; // Convert pace to seconds per kilometer
+    return minutes * 60 + seconds; // Convert pace to seconds per kilometre
   }
 
   private formatPace(): string {
@@ -54,7 +54,13 @@ export class Participant {
       cumulativeDistance: this.cumulativeDistance,
       totalDistance: this.course.length,
       finished: this.cumulativeDistance >= this.course.length,
+      lap: this.course.getLapIndexAtDistance(this.cumulativeDistance),
+      bearing: this.course.getBearingAtDistance(this.cumulativeDistance),
     };
+  }
+
+  public getLapIndex(): number {
+    return this.course.getLapIndexAtDistance(this.cumulativeDistance);
   }
 
   public getId(): string {
@@ -76,7 +82,7 @@ export class Participant {
     const terrainFactor = externalFactors.terrainFactor || 1; // Default terrain factor is 1 (no effect)
 
     // Calculate distance covered during this tick
-    const distanceCovered = (tickDuration / this.pace) * 1000 * terrainFactor; // Distance in meters
+    const distanceCovered = (tickDuration / this.pace) * 1000 * terrainFactor; // Distance in metres
     // Cap the cumulative distance at the course length
     this.cumulativeDistance = Math.min(
       this.cumulativeDistance + distanceCovered,

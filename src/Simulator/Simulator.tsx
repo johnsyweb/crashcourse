@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Course } from '../Course';
 import { Participant } from '../Participant';
 import ElapsedTime from '../ElapsedTime';
+import ControlCard from './ControlCard';
 import styles from './Simulator.module.css';
 
 // Constants for participant configuration
@@ -64,6 +65,48 @@ const Simulator: React.FC<SimulatorProps> = ({
   const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
   const [paceError, setPaceError] = useState<string | null>(null);
   const [simulationStopped, setSimulationStopped] = useState(false);
+  // Lap detection UI tunables (initialize from localStorage, else from course, else defaults)
+  const stored = typeof window !== 'undefined' ? localStorage.getItem('lapDetectionParams') : null;
+  const parsedStored = stored ? JSON.parse(stored) : null;
+  const initialLapParams =
+    parsedStored ||
+    (course && typeof (course as any).getLapDetectionParams === 'function'
+      ? (course as any).getLapDetectionParams()
+      : undefined);
+
+  const [lapStepMeters, setLapStepMeters] = useState<number>(initialLapParams?.stepMeters || 1);
+  const [lapBearingTolerance, setLapBearingTolerance] = useState<number>(
+    initialLapParams?.bearingToleranceDeg || 90
+  );
+  const [lapCrossingTolerance, setLapCrossingTolerance] = useState<number>(
+    initialLapParams?.crossingToleranceMeters || 1
+  );
+
+  // Apply lap detection params immediately (no debounce)
+  const applyLapParamsImmediate = React.useCallback(
+    (params?: {
+      stepMeters?: number;
+      bearingToleranceDeg?: number;
+      crossingToleranceMeters?: number;
+    }) => {
+      const merged = {
+        stepMeters: lapStepMeters,
+        bearingToleranceDeg: lapBearingTolerance,
+        crossingToleranceMeters: lapCrossingTolerance,
+        ...(params || {}),
+      };
+      try {
+        localStorage.setItem('lapDetectionParams', JSON.stringify(merged));
+      } catch (e) {
+        // ignore storage errors
+      }
+
+      if (course && typeof (course as any).setLapDetectionParams === 'function') {
+        (course as any).setLapDetectionParams(merged);
+      }
+    },
+    [course, lapStepMeters, lapBearingTolerance, lapCrossingTolerance]
+  );
 
   // Use a ref to track if we need to update participants
   const participantsNeedUpdate = useRef(false);
@@ -387,6 +430,15 @@ const Simulator: React.FC<SimulatorProps> = ({
       } else if (event.key === 's' || event.key === 'S') {
         increasePace('max'); // Make fastest pace even faster (-30s)
       }
+
+      // Toggle control cards collapse/expand: 'c' toggles, 'C' forces expand
+      else if (event.key === 'c') {
+        window.dispatchEvent(new CustomEvent('toggle-control-cards'));
+      } else if (event.key === 'C') {
+        window.dispatchEvent(
+          new CustomEvent('toggle-control-cards', { detail: { expanded: true } })
+        );
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -414,93 +466,202 @@ const Simulator: React.FC<SimulatorProps> = ({
             <span className={styles.infoLabel}>Course Length:</span>
             <span className={styles.infoValue}>
               {course ? (course.length / 1000).toFixed(2) : 0} km
+              {course && course.getLapCount && course.getLapCount() > 1 ? (
+                <span className={styles.infoValue} style={{ marginLeft: '8px' }}>
+                  ({course.getLapCount()} laps)
+                </span>
+              ) : null}
             </span>
           </div>
         </div>
 
+        {/* Lap legend when multiple laps detected */}
+        {course && course.getLapCount && course.getLapCount() > 1 && (
+          <div className={styles.infoItem} style={{ marginTop: '6px' }}>
+            <span className={styles.infoLabel}>Lap colours:</span>
+            <span className={styles.infoValue}>
+              {Array.from({ length: course.getLapCount() }).map((_, i) => {
+                const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#17becf'];
+                const color = colors[i % colors.length];
+                return (
+                  <span
+                    key={i}
+                    style={{ display: 'inline-flex', alignItems: 'center', marginRight: 8 }}
+                  >
+                    <span
+                      style={{
+                        width: 12,
+                        height: 12,
+                        backgroundColor: color,
+                        display: 'inline-block',
+                        marginRight: 6,
+                        borderRadius: 2,
+                      }}
+                    />
+                    Lap {i + 1}
+                  </span>
+                );
+              })}
+            </span>
+          </div>
+        )}
+
+        {/* Lap detection settings moved into controls section below for better visibility */}
+
         {/* Control Sections */}
         <div className={styles.controlSections}>
-          {/* Participant Control Section - Simplified */}
-          <div className={styles.controlSection}>
-            <div className={styles.controlHeader}>Participants</div>
-            <div className={styles.controlContent}>
-              <div className={styles.controlItem}>
-                <label htmlFor="participantCount" className={styles.controlLabel}>
-                  Count: {formatNumber(participantCount)}
-                </label>
-                <div className={styles.rangeIndicator}>
-                  <input
-                    type="range"
-                    min={MIN_PARTICIPANTS}
-                    max={MAX_PARTICIPANTS}
-                    value={participantCount}
-                    onChange={handleParticipantCountChange}
-                    className={styles.rangeSlider}
-                    aria-label="Adjust number of participants"
-                    title="Slide to adjust number of participants"
-                    id="participantCount"
-                  />
+          {/* Lap Detection Control Section */}
+          {course && (
+            <ControlCard title="Lap Detection">
+              <div className={styles.lapSettings}>
+                <div className={styles.lapControlsRow}>
+                  <div className={styles.lapControl}>
+                    <label className={styles.controlSmallText}>Sample step (m)</label>
+                    <input
+                      className={styles.lapSlider}
+                      type="range"
+                      min={0.1}
+                      max={10}
+                      step={0.1}
+                      value={lapStepMeters}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setLapStepMeters(val);
+                        applyLapParamsImmediate({ stepMeters: val });
+                      }}
+                    />
+                    <div className={styles.controlSmallText}>{lapStepMeters.toFixed(1)} m</div>
+                  </div>
+
+                  <div className={styles.lapControl}>
+                    <label className={styles.controlSmallText}>Bearing tolerance (°)</label>
+                    <input
+                      className={styles.lapSlider}
+                      type="range"
+                      min={0}
+                      max={180}
+                      step={1}
+                      value={lapBearingTolerance}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setLapBearingTolerance(val);
+                        applyLapParamsImmediate({ bearingToleranceDeg: val });
+                      }}
+                    />
+                    <div className={styles.controlSmallText}>{lapBearingTolerance}°</div>
+                  </div>
+
+                  <div className={styles.lapControl}>
+                    <label className={styles.controlSmallText}>Crossing tolerance (m)</label>
+                    <input
+                      className={styles.lapSlider}
+                      type="range"
+                      min={0}
+                      max={10}
+                      step={0.1}
+                      value={lapCrossingTolerance}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setLapCrossingTolerance(val);
+                        applyLapParamsImmediate({ crossingToleranceMeters: val });
+                      }}
+                    />
+                    <div className={styles.controlSmallText}>
+                      {lapCrossingTolerance.toFixed(1)} m
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div className={styles.controlSmallText} style={{ color: '#666' }}>
+                    Tip: move sliders to adjust lap detection. Values are saved to your browser.
+                  </div>
+                  <button
+                    onClick={() => applyLapParamsImmediate()}
+                    className={styles.recomputeButton}
+                    title="Recompute lap detection immediately with current settings"
+                  >
+                    Recompute now
+                  </button>
                 </div>
               </div>
-
-              {/* Pace Range Controls - Simplified */}
-              <div className={styles.controlItem}>
-                <label className={styles.controlLabel}>Pace Range</label>
-                <div className={styles.paceControlGroup}>
-                  <div className={styles.paceControl}>
-                    <label htmlFor="minPace" className={styles.paceLabel}>
-                      Min:
-                    </label>
-                    <input
-                      id="minPace"
-                      type="text"
-                      pattern="[0-9]+:[0-5][0-9]"
-                      value={minPace}
-                      onChange={handleMinPaceChange}
-                      className={styles.paceInput}
-                      placeholder="MM:SS"
-                      title="Slowest pace in minutes:seconds format (e.g., 12:00)"
-                      aria-label="Minimum pace in minutes and seconds per kilometer"
-                    />
-                    <span className={styles.paceUnit}>/km</span>
-                  </div>
-                  <div className={styles.paceControl}>
-                    <label htmlFor="maxPace" className={styles.paceLabel}>
-                      Max:
-                    </label>
-                    <input
-                      id="maxPace"
-                      type="text"
-                      pattern="[0-9]+:[0-5][0-9]"
-                      value={maxPace}
-                      onChange={handleMaxPaceChange}
-                      className={styles.paceInput}
-                      placeholder="MM:SS"
-                      title="Fastest pace in minutes:seconds format (e.g., 2:30)"
-                      aria-label="Maximum pace in minutes and seconds per kilometer"
-                    />
-                    <span className={styles.paceUnit}>/km</span>
-                  </div>
-                </div>
-                {paceError && <div className={styles.errorMessage}>{paceError}</div>}
-                <div className={styles.paceInfo}>
-                  Participants will be assigned random paces between these values.
-                </div>
+            </ControlCard>
+          )}
+          {/* Participant Control Section - Simplified */}
+          <ControlCard title="Participants">
+            <div className={styles.controlItem}>
+              <label htmlFor="participantCount" className={styles.controlLabel}>
+                Count: {formatNumber(participantCount)}
+              </label>
+              <div className={styles.rangeIndicator}>
+                <input
+                  type="range"
+                  min={MIN_PARTICIPANTS}
+                  max={MAX_PARTICIPANTS}
+                  value={participantCount}
+                  onChange={handleParticipantCountChange}
+                  className={styles.rangeSlider}
+                  aria-label="Adjust number of participants"
+                  title="Slide to adjust number of participants"
+                  id="participantCount"
+                />
               </div>
             </div>
-          </div>
+
+            {/* Pace Range Controls - Simplified */}
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Pace Range</label>
+              <div className={styles.paceControlGroup}>
+                <div className={styles.paceControl}>
+                  <label htmlFor="minPace" className={styles.paceLabel}>
+                    Min:
+                  </label>
+                  <input
+                    id="minPace"
+                    type="text"
+                    pattern="[0-9]+:[0-5][0-9]"
+                    value={minPace}
+                    onChange={handleMinPaceChange}
+                    className={styles.paceInput}
+                    placeholder="MM:SS"
+                    title="Slowest pace in minutes:seconds format per kilometre (e.g., 12:00)"
+                    aria-label="Minimum pace in minutes and seconds per kilometre"
+                  />
+                  <span className={styles.paceUnit}>/km</span>
+                </div>
+                <div className={styles.paceControl}>
+                  <label htmlFor="maxPace" className={styles.paceLabel}>
+                    Max:
+                  </label>
+                  <input
+                    id="maxPace"
+                    type="text"
+                    pattern="[0-9]+:[0-5][0-9]"
+                    value={maxPace}
+                    onChange={handleMaxPaceChange}
+                    className={styles.paceInput}
+                    placeholder="MM:SS"
+                    title="Fastest pace in minutes:seconds format per kilometre (e.g., 2:30)"
+                    aria-label="Maximum pace in minutes and seconds per kilometre"
+                  />
+                  <span className={styles.paceUnit}>/km</span>
+                </div>
+              </div>
+              {paceError && <div className={styles.errorMessage}>{paceError}</div>}
+              <div className={styles.paceInfo}>
+                Participants will be assigned random paces between these values.
+              </div>
+            </div>
+          </ControlCard>
 
           {/* Timer Control Section - Modified to use time format and simplified controls */}
-          <div className={styles.controlSection}>
-            <div className={styles.controlHeader}>Simulation Time</div>
-            <div className={styles.controlContent}>
-              <ElapsedTime
-                onElapsedTimeChange={handleElapsedTimeChange}
-                initialElapsedTime={0}
-                simulationStopped={simulationStopped}
-              />
-            </div>
-          </div>
+          <ControlCard title="Simulation Time">
+            <ElapsedTime
+              onElapsedTimeChange={handleElapsedTimeChange}
+              initialElapsedTime={0}
+              simulationStopped={simulationStopped}
+            />
+          </ControlCard>
         </div>
 
         {/* Simplified Keyboard Shortcuts */}
@@ -526,6 +687,10 @@ const Simulator: React.FC<SimulatorProps> = ({
             <div className={styles.shortcutRow}>
               <kbd>a</kbd> <span>max pace slower</span>
               <kbd>s</kbd> <span>max pace faster</span>
+            </div>
+            <div className={styles.shortcutRow}>
+              <kbd>c</kbd> <span>toggle controls (collapse/expand)</span>
+              <kbd>C</kbd> <span>expand all controls</span>
             </div>
           </div>
         </div>

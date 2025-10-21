@@ -16,6 +16,9 @@ jest.mock('../Course', () => ({
       return [10 + (12 - 10) * ratio, 20 + (22 - 20) * ratio];
     }),
     getWidthAt: mockGetWidthAt.mockReturnValue(2),
+    getLapIndexAtDistance: jest.fn().mockReturnValue(1),
+    getLapCount: jest.fn().mockReturnValue(1),
+    getBearingAtDistance: jest.fn().mockReturnValue(0),
   })),
 }));
 
