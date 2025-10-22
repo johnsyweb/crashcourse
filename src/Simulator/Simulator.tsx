@@ -40,6 +40,22 @@ const secondsToPace = (totalSeconds: number): string => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
+// Runtime types and guards for lap detection params — placed at module scope so
+// they are stable across renders and do not affect hook dependency arrays.
+type LapParams = {
+  stepMeters?: number;
+  bearingToleranceDeg?: number;
+  crossingToleranceMeters?: number;
+};
+
+const hasGetLapDetectionParams = (obj: unknown): obj is { getLapDetectionParams: () => LapParams } =>
+  typeof obj === 'object' && obj !== null && 'getLapDetectionParams' in obj &&
+  typeof (obj as Record<string, unknown>)['getLapDetectionParams'] === 'function';
+
+const hasSetLapDetectionParams = (obj: unknown): obj is { setLapDetectionParams: (p: LapParams) => void } =>
+  typeof obj === 'object' && obj !== null && 'setLapDetectionParams' in obj &&
+  typeof (obj as Record<string, unknown>)['setLapDetectionParams'] === 'function';
+
 interface SimulatorProps {
   course: Course | null;
   participants?: Participant[];
@@ -68,11 +84,9 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Lap detection UI tunables (initialize from localStorage, else from course, else defaults)
   const stored = typeof window !== 'undefined' ? localStorage.getItem('lapDetectionParams') : null;
   const parsedStored = stored ? JSON.parse(stored) : null;
-  const initialLapParams =
-    parsedStored ||
-    (course && typeof (course as any).getLapDetectionParams === 'function'
-      ? (course as any).getLapDetectionParams()
-      : undefined);
+
+  
+  const initialLapParams = parsedStored || (course && hasGetLapDetectionParams(course) ? course.getLapDetectionParams() : undefined);
 
   const [lapStepMeters, setLapStepMeters] = useState<number>(initialLapParams?.stepMeters || 1);
   const [lapBearingTolerance, setLapBearingTolerance] = useState<number>(
@@ -97,12 +111,12 @@ const Simulator: React.FC<SimulatorProps> = ({
       };
       try {
         localStorage.setItem('lapDetectionParams', JSON.stringify(merged));
-      } catch (e) {
+      } catch {
         // ignore storage errors
       }
 
-      if (course && typeof (course as any).setLapDetectionParams === 'function') {
-        (course as any).setLapDetectionParams(merged);
+      if (course && hasSetLapDetectionParams(course)) {
+        course.setLapDetectionParams(merged);
       }
     },
     [course, lapStepMeters, lapBearingTolerance, lapCrossingTolerance]

@@ -21,7 +21,7 @@ const ControlCard: React.FC<ControlCardProps> = ({ title, children, compact, cla
       ) {
         setExpanded(false);
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
 
