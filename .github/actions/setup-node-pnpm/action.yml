@@ -42,7 +42,7 @@ runs:
       uses: pnpm/action-setup@v4
       with:
         pnpm-version: ${{ inputs.pnpm-version }}
-        run_install: false
+        run_install: ${{ inputs.run-install }}
 
     - name: 'Cache pnpm store'
       id: pnpm-store-cache
@@ -53,7 +53,3 @@ runs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles(inputs.cache-dependency-path) }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
-
-    - name: 'Install dependencies (pnpm install)'
-      if: ${{ inputs.run-install == 'true' }}
-      run: pnpm install --frozen-lockfile
