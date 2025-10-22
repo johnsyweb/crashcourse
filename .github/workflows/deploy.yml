@@ -18,21 +18,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: '💻 Checkout repository'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: '⚙️ Setup Node.js and pnpm'
-        id: setup
-        uses: ./.github/actions/setup-node-pnpm
+      - name: '⚙️  install pnpm'
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
         with:
-          node-version: '18'
-          run-install: 'true'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          run_install: false
 
-      - name: 'Cache status'
-        run: |
-          echo "pnpm store cache hit: ${{ steps.setup.outputs.pnpm_store_cache_hit }}"
+      - name: '⚙️U Use Node.js from .tool-versions'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: '.tool-versions'
+          cache: 'pnpm'
+
+      - name: '⬇️ Install dependencies'
+        run: pnpm install
+
+      - name: '🧪  check'
+        run: pnpm check
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
