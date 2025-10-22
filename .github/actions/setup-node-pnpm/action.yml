@@ -9,7 +9,7 @@ inputs:
   pnpm-version:
     description: 'pnpm version to install (optional)'
     required: false
-    default: ''
+    default: '10'
   cache:
     description: "Enable built-in setup-node cache for package manager (e.g., 'pnpm' or 'npm')"
     required: false
