@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Course } from '../Course';
+import { Course, CourseWithLapDetection } from '../Course';
 import { Participant } from '../Participant';
 import ElapsedTime from '../ElapsedTime';
 import ControlCard from './ControlCard';
@@ -70,8 +70,8 @@ const Simulator: React.FC<SimulatorProps> = ({
   const parsedStored = stored ? JSON.parse(stored) : null;
   const initialLapParams =
     parsedStored ||
-    (course && typeof (course as any).getLapDetectionParams === 'function'
-      ? (course as any).getLapDetectionParams()
+    (course && typeof (course as CourseWithLapDetection).getLapDetectionParams === 'function'
+      ? (course as CourseWithLapDetection).getLapDetectionParams()
       : undefined);
 
   const [lapStepMeters, setLapStepMeters] = useState<number>(initialLapParams?.stepMeters || 1);
@@ -97,12 +97,15 @@ const Simulator: React.FC<SimulatorProps> = ({
       };
       try {
         localStorage.setItem('lapDetectionParams', JSON.stringify(merged));
-      } catch (e) {
+      } catch {
         // ignore storage errors
       }
 
-      if (course && typeof (course as any).setLapDetectionParams === 'function') {
-        (course as any).setLapDetectionParams(merged);
+      if (
+        course &&
+        typeof (course as CourseWithLapDetection).setLapDetectionParams === 'function'
+      ) {
+        (course as CourseWithLapDetection).setLapDetectionParams(merged);
       }
     },
     [course, lapStepMeters, lapBearingTolerance, lapCrossingTolerance]
