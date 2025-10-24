@@ -244,7 +244,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
             <div className={styles.controlsSection}>
               <div className={styles.controlsContainer}>
                 <div className={styles.controlsHeader}>
-                  <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
+                  <button
+                    className={styles.resetButton}
+                    onClick={onReset}
+                    data-testid="reset-button"
+                  >
                     Import Different Course
                   </button>
                 </div>
@@ -342,7 +346,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
             <div className={styles.mobileControlsPanel}>
               <div className={styles.controlsContainer}>
                 <div className={styles.controlsHeader}>
-                  <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
+                  <button
+                    className={styles.resetButton}
+                    onClick={onReset}
+                    data-testid="reset-button"
+                  >
                     Import Different Course
                   </button>
                 </div>
