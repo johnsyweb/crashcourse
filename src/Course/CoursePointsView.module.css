@@ -37,6 +37,40 @@
   font-weight: 500;
 }
 
+.batchActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.batchDeleteButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.batchDeleteButton:hover {
+  background-color: #c82333;
+}
+
+.batchDeleteButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.5);
+}
+
+.batchDeleteButton:active {
+  background-color: #bd2130;
+}
+
 .noCourseMessage {
   text-align: center;
   padding: 2rem 1rem;

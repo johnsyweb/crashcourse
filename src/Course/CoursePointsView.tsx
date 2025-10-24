@@ -16,45 +16,32 @@ interface CoursePointsViewProps {
   course: Course | null;
   onPointSelect?: (point: CoursePoint | null) => void;
   selectedPointIndex?: number | null;
+  onPointsSelect?: (points: CoursePoint[]) => void;
+  selectedPointIndices?: number[];
   onPointDelete?: (pointIndex: number) => void;
+  onPointsDelete?: (pointIndices: number[]) => void;
 }
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   course,
   onPointSelect,
   selectedPointIndex,
+  onPointsSelect,
+  selectedPointIndices,
   onPointDelete,
+  onPointsDelete,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
+  const [internalSelectedIndices, setInternalSelectedIndices] = useState<number[]>([]);
 
   // Use external selectedPointIndex if provided, otherwise use internal state
   const selectedIndex =
     selectedPointIndex !== undefined ? selectedPointIndex : internalSelectedIndex;
 
-  const handlePointClick = (point: CoursePoint) => {
-    const newSelectedIndex = selectedIndex === point.index ? null : point.index;
+  // Use external selectedPointIndices if provided, otherwise use internal state
+  const selectedIndices = selectedPointIndices !== undefined ? selectedPointIndices : internalSelectedIndices;
 
-    if (selectedPointIndex === undefined) {
-      setInternalSelectedIndex(newSelectedIndex);
-    }
-
-    onPointSelect?.(newSelectedIndex !== null ? point : null);
-  };
-
-  const handleDeletePoint = (pointIndex: number, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent row selection when clicking delete button
-    onPointDelete?.(pointIndex);
-  };
-  if (!course) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.noCourseMessage}>
-          No course loaded. Please upload a GPX file to view course points.
-        </div>
-      </div>
-    );
-  }
-
+  // Calculate course points early so we can use them in handlers
   const calculateCoursePoints = (course: Course): CoursePoint[] => {
     const points = course.getPoints();
     const coursePoints: CoursePoint[] = [];
@@ -94,7 +81,78 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     return coursePoints;
   };
 
-  const coursePoints = calculateCoursePoints(course);
+  const coursePoints = course ? calculateCoursePoints(course) : [];
+
+  const handlePointClick = (point: CoursePoint, event: React.MouseEvent) => {
+    const isCtrlKey = event.ctrlKey || event.metaKey; // Support both Ctrl and Cmd (Mac)
+    const isShiftKey = event.shiftKey;
+
+    if (isShiftKey && selectedIndices.length > 0) {
+      // Range selection: select all points between last selected and current
+      const lastSelected = selectedIndices[selectedIndices.length - 1];
+      const start = Math.min(lastSelected, point.index);
+      const end = Math.max(lastSelected, point.index);
+      const rangeIndices = [];
+      
+      for (let i = start; i <= end; i++) {
+        rangeIndices.push(i);
+      }
+      
+      const newSelectedIndices = [...new Set([...selectedIndices, ...rangeIndices])].sort((a, b) => a - b);
+      
+      if (selectedPointIndices === undefined) {
+        setInternalSelectedIndices(newSelectedIndices);
+      }
+      
+      if (onPointsSelect) {
+        const selectedPoints = coursePoints.filter(cp => newSelectedIndices.includes(cp.index));
+        onPointsSelect(selectedPoints);
+      }
+    } else if (isCtrlKey) {
+      // Toggle selection: add or remove point from selection
+      const newSelectedIndices = selectedIndices.includes(point.index)
+        ? selectedIndices.filter(i => i !== point.index)
+        : [...selectedIndices, point.index].sort((a, b) => a - b);
+      
+      if (selectedPointIndices === undefined) {
+        setInternalSelectedIndices(newSelectedIndices);
+      }
+      
+      if (onPointsSelect) {
+        const selectedPoints = coursePoints.filter(cp => newSelectedIndices.includes(cp.index));
+        onPointsSelect(selectedPoints);
+      }
+    } else {
+      // Single selection: clear multi-selection and select single point
+      const newSelectedIndex = selectedIndex === point.index ? null : point.index;
+
+      if (selectedPointIndex === undefined) {
+        setInternalSelectedIndex(newSelectedIndex);
+        setInternalSelectedIndices([]);
+      }
+
+      onPointSelect?.(newSelectedIndex !== null ? point : null);
+      
+      if (onPointsSelect) {
+        onPointsSelect(newSelectedIndex !== null ? [point] : []);
+      }
+    }
+  };
+
+  const handleDeletePoint = (pointIndex: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row selection when clicking delete button
+    onPointDelete?.(pointIndex);
+  };
+  if (!course) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.noCourseMessage}>
+          No course loaded. Please upload a GPX file to view course points.
+        </div>
+      </div>
+    );
+  }
+
 
   const formatCoordinate = (value: number, precision: number = 6): string => {
     return value.toFixed(precision);
@@ -148,7 +206,23 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
             Total Distance:{' '}
             {formatDistance(coursePoints[coursePoints.length - 1]?.cumulativeDistance || 0)}
           </span>
+          {selectedIndices.length > 0 && (
+            <span className={styles.summaryItem}>
+              Selected: {selectedIndices.length} point{selectedIndices.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
+        {selectedIndices.length > 0 && onPointsDelete && (
+          <div className={styles.batchActions}>
+            <button
+              className={styles.batchDeleteButton}
+              onClick={() => onPointsDelete(selectedIndices)}
+              title={`Delete ${selectedIndices.length} selected point${selectedIndices.length !== 1 ? 's' : ''}`}
+            >
+              🗑️ Delete {selectedIndices.length} Point{selectedIndices.length !== 1 ? 's' : ''}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.tableContainer}>
@@ -165,21 +239,54 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
             </tr>
           </thead>
           <tbody>
-            {coursePoints.map((point) => (
-              <tr
-                key={point.index}
-                className={`${styles.tableRow} ${selectedIndex === point.index ? styles.selectedRow : ''}`}
-                onClick={() => handlePointClick(point)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handlePointClick(point);
-                  }
-                }}
-                aria-selected={selectedIndex === point.index}
-              >
+            {coursePoints.map((point) => {
+              const isSelected = selectedIndex === point.index;
+              const isMultiSelected = selectedIndices.includes(point.index);
+              const isAnySelected = isSelected || isMultiSelected;
+              
+              return (
+                <tr
+                  key={point.index}
+                  className={`${styles.tableRow} ${isAnySelected ? styles.selectedRow : ''}`}
+                  onClick={(e) => handlePointClick(point, e)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      // Create a synthetic mouse event for keyboard interactions
+                      const syntheticEvent = {
+                        ctrlKey: false,
+                        metaKey: false,
+                        shiftKey: false,
+                        button: 0,
+                        buttons: 1,
+                        clientX: 0,
+                        clientY: 0,
+                        screenX: 0,
+                        screenY: 0,
+                        pageX: 0,
+                        pageY: 0,
+                        movementX: 0,
+                        movementY: 0,
+                        relatedTarget: null,
+                        target: e.target,
+                        currentTarget: e.currentTarget,
+                        bubbles: true,
+                        cancelable: true,
+                        defaultPrevented: false,
+                        eventPhase: 2,
+                        isTrusted: false,
+                        timeStamp: Date.now(),
+                        type: 'click',
+                        stopPropagation: e.stopPropagation,
+                        preventDefault: e.preventDefault,
+                      } as unknown as React.MouseEvent;
+                      handlePointClick(point, syntheticEvent);
+                    }
+                  }}
+                  aria-selected={isAnySelected}
+                >
                 <td className={styles.indexCell}>{point.index + 1}</td>
                 <td className={styles.coordinateCell}>{formatCoordinate(point.latitude)}</td>
                 <td className={styles.coordinateCell}>{formatCoordinate(point.longitude)}</td>
@@ -209,8 +316,9 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                     </button>
                   </td>
                 )}
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

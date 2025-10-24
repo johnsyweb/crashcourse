@@ -277,7 +277,9 @@ export class Course {
    */
   deletePoint(index: number): void {
     if (index < 0 || index >= this.points.length) {
-      throw new Error(`Invalid point index: ${index}. Must be between 0 and ${this.points.length - 1}`);
+      throw new Error(
+        `Invalid point index: ${index}. Must be between 0 and ${this.points.length - 1}`
+      );
     }
 
     if (this.points.length <= 2) {
@@ -291,13 +293,13 @@ export class Course {
     this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
-    
+
     // Clear caches since the course structure has changed
     this.widthCache.clear();
     this.segmentCache.clear();
     this.lapCountCache = null;
     this.lapCrossings = [];
-    
+
     // Recalculate cached values
     this.precalculateWidths();
     this.computeLapCrossings();

@@ -138,7 +138,6 @@ describe('Course', () => {
     it('should recalculate course properties after deletion', () => {
       const course = new Course(samplePoints);
       const originalLength = course.length;
-      const originalWidth = course.getWidthAt(50);
 
       course.deletePoint(1);
 
@@ -157,14 +156,14 @@ describe('Course', () => {
 
     it('should clear caches after deletion', () => {
       const course = new Course(samplePoints);
-      
+
       // Access some cached values
       course.getWidthAt(50);
       course.getPositionAtDistance(50);
-      
+
       // Delete a point
       course.deletePoint(1);
-      
+
       // Verify that caches were cleared and repopulated
       expect(course['widthCache'].size).toBeGreaterThan(0); // Should be repopulated
       expect(course['lapCountCache']).not.toBeNull(); // Should be recalculated (not null)

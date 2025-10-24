@@ -69,6 +69,7 @@ export const STORAGE_KEYS = {
   ELAPSED_TIME: 'elapsed_time',
   ACTIVE_TAB: 'active_tab',
   SELECTED_POINT: 'selected_point',
+  SELECTED_POINTS: 'selected_points',
   SIMULATOR_STATE: 'simulator_state',
   PARTICIPANT_COUNT: 'participant_count',
   MIN_PACE: 'min_pace',
