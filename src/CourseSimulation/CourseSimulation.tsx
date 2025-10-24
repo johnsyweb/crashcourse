@@ -5,6 +5,7 @@ import { Participant } from '../Participant/Participant';
 import ParticipantDisplay from '../Participant/ParticipantDisplay';
 import { Course } from '../Course';
 import CourseDisplay from '../Course/CourseDisplay';
+import CoursePointsView from '../Course/CoursePointsView';
 import Map from '../Map';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
@@ -34,6 +35,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [finishedParticipants, setFinishedParticipants] = useState<Participant[]>([]);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [activeTab, setActiveTab] = useState<'results' | 'coursePoints'>('results');
 
   // Memoize course creation to prevent unnecessary recalculation
   const course = useMemo(() => {
@@ -241,13 +243,37 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
           </div>
 
           <div className={styles.resultsContainer}>
-            {course && (
-              <Results
-                participants={finishedParticipants}
-                elapsedTime={elapsedTime}
-                onReset={handleResetResults}
-              />
-            )}
+            {/* Tab Navigation */}
+            <div className={styles.tabNavigation}>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'results' ? styles.activeTab : ''}`}
+                onClick={() => setActiveTab('results')}
+                aria-selected={activeTab === 'results'}
+              >
+                Results
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'coursePoints' ? styles.activeTab : ''}`}
+                onClick={() => setActiveTab('coursePoints')}
+                aria-selected={activeTab === 'coursePoints'}
+              >
+                Course Points
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className={styles.tabContent}>
+              {activeTab === 'results' && course && (
+                <Results
+                  participants={finishedParticipants}
+                  elapsedTime={elapsedTime}
+                  onReset={handleResetResults}
+                />
+              )}
+              {activeTab === 'coursePoints' && course && (
+                <CoursePointsView course={course} />
+              )}
+            </div>
           </div>
         </div>
       </ErrorBoundary>

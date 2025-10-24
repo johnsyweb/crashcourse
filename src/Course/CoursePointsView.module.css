@@ -1,0 +1,203 @@
+.container {
+  padding: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.summary {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.summaryItem {
+  font-weight: 500;
+}
+
+.noCourseMessage {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #666;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.tableContainer {
+  background: white;
+  border-radius: 4px;
+  box-shadow: none;
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+.tableRow:hover {
+  background-color: #f8f9fa;
+}
+
+.tableRow:last-child td {
+  border-bottom: none;
+}
+
+/* Column-specific styling */
+.indexColumn {
+  width: 50px;
+  text-align: center;
+}
+
+.coordinateColumn {
+  width: 100px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.distanceColumn {
+  width: 120px;
+  text-align: right;
+}
+
+.bearingColumn {
+  width: 100px;
+  text-align: center;
+}
+
+.indexCell {
+  text-align: center;
+  font-weight: 500;
+  color: #666;
+}
+
+.coordinateCell {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  color: #495057;
+}
+
+.distanceCell {
+  text-align: right;
+  font-weight: 500;
+  color: #495057;
+}
+
+.bearingCell {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bearingValue {
+  font-weight: 500;
+  color: #495057;
+}
+
+.bearingDirection {
+  font-size: 0.7rem;
+  color: #6c757d;
+  font-weight: 600;
+  background-color: #e9ecef;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 0;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .summary {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.375rem 0.25rem;
+  }
+  
+  .coordinateColumn {
+    width: 80px;
+  }
+  
+  .distanceColumn {
+    width: 100px;
+  }
+  
+  .bearingColumn {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    font-size: 0.7rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.25rem 0.125rem;
+  }
+  
+  .coordinateCell {
+    font-size: 0.7rem;
+  }
+  
+  .bearingDirection {
+    font-size: 0.65rem;
+    padding: 0.0625rem 0.25rem;
+  }
+}
