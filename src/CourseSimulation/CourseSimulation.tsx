@@ -21,6 +21,10 @@ interface CourseSimulationProps {
   coursePoints: LatLngTuple[];
   onReset?: () => void;
   onCoursePointsChange?: (newCoursePoints: LatLngTuple[]) => void;
+  undo?: () => void;
+  redo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 interface ParticipantProperties {
@@ -37,6 +41,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   coursePoints,
   onReset,
   onCoursePointsChange,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
 }) => {
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -364,6 +372,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointsSelect={handlePointsSelect}
                         selectedPointIndices={selectedPoints.map((p) => p.index)}
                         onPointsDelete={handlePointsDelete}
+                        undo={undo}
+                        redo={redo}
+                        canUndo={canUndo}
+                        canRedo={canRedo}
                       />
                     )}
                   </div>
@@ -452,6 +464,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       onPointsSelect={handlePointsSelect}
                       selectedPointIndices={selectedPoints.map((p) => p.index)}
                       onPointsDelete={handlePointsDelete}
+                      undo={undo}
+                      redo={redo}
+                      canUndo={canUndo}
+                      canRedo={canRedo}
                     />
                   )}
                 </div>

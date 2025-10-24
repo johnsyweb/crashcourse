@@ -43,6 +43,12 @@
   align-items: center;
 }
 
+.undoRedoActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .batchDeleteButton {
   background-color: #dc3545;
   color: white;
@@ -69,6 +75,46 @@
 
 .batchDeleteButton:active {
   background-color: #bd2130;
+}
+
+.undoButton,
+.redoButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.undoButton:hover:not(:disabled),
+.redoButton:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.undoButton:focus,
+.redoButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.5);
+}
+
+.undoButton:active:not(:disabled),
+.redoButton:active:not(:disabled) {
+  background-color: #545b62;
+}
+
+.undoButton:disabled,
+.redoButton:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .noCourseMessage {

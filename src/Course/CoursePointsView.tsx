@@ -19,6 +19,10 @@ interface CoursePointsViewProps {
   onPointsSelect?: (points: CoursePoint[]) => void;
   selectedPointIndices?: number[];
   onPointsDelete?: (pointIndices: number[]) => void;
+  undo?: () => void;
+  redo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
@@ -28,6 +32,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   onPointsSelect,
   selectedPointIndices,
   onPointsDelete,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
   const [internalSelectedIndices, setInternalSelectedIndices] = useState<number[]>([]);
@@ -216,6 +224,26 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               title={`Delete ${selectedIndices.length} selected point${selectedIndices.length !== 1 ? 's' : ''}`}
             >
               🗑️ Delete {selectedIndices.length} Point{selectedIndices.length !== 1 ? 's' : ''}
+            </button>
+          </div>
+        )}
+        {(undo || redo) && (
+          <div className={styles.undoRedoActions}>
+            <button
+              className={styles.undoButton}
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo last change (Ctrl+Z)"
+            >
+              ↶ Undo
+            </button>
+            <button
+              className={styles.redoButton}
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo last undone change (Ctrl+Y)"
+            >
+              ↷ Redo
             </button>
           </div>
         )}

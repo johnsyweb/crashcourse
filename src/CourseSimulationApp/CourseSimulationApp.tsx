@@ -4,12 +4,23 @@ import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulationApp.module.css';
 import CourseDataImporter from '../CourseDataImporter';
 import CourseSimulation from '../CourseSimulation';
-import { usePersistentState } from '../utils/usePersistentState';
+import { useUndoRedo, useUndoRedoKeyboard } from '../utils/useUndoRedo';
 import { useDocumentTitle } from '../utils/useDocumentTitle';
 
 // Removed empty interface and using React.FC without props type
 const CourseSimulationApp: React.FC = () => {
-  const [coursePoints, setCoursePoints] = usePersistentState('COURSE_POINTS', [] as LatLngTuple[]);
+  const {
+    current: coursePoints,
+    setState: setCoursePoints,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    clear: clearHistory,
+  } = useUndoRedo<LatLngTuple[]>([], 100); // Keep 100 history entries
+
+  // Enable keyboard shortcuts for undo/redo
+  useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);
 
   // Update document title based on application state
   useDocumentTitle(
@@ -23,6 +34,11 @@ const CourseSimulationApp: React.FC = () => {
 
   const handleResetSimulation = () => {
     setCoursePoints([]);
+    clearHistory(); // Clear undo history when resetting
+  };
+
+  const handleCoursePointsChange = (newPoints: LatLngTuple[]) => {
+    setCoursePoints(newPoints);
   };
 
   return (
@@ -33,7 +49,11 @@ const CourseSimulationApp: React.FC = () => {
         <CourseSimulation
           coursePoints={coursePoints}
           onReset={handleResetSimulation}
-          onCoursePointsChange={setCoursePoints}
+          onCoursePointsChange={handleCoursePointsChange}
+          undo={undo}
+          redo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
       )}
     </div>
