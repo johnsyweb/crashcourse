@@ -11,6 +11,7 @@ import SelectedPointMarker from '../Map/SelectedPointMarker';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
+import { usePersistentState } from '../utils/usePersistentState';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -35,9 +36,27 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
   const [error, setError] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [finishedParticipants, setFinishedParticipants] = useState<Participant[]>([]);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [activeTab, setActiveTab] = useState<'results' | 'coursePoints'>('results');
-  const [selectedPoint, setSelectedPoint] = useState<CoursePoint | null>(null);
+  const [elapsedTime, setElapsedTime] = usePersistentState('ELAPSED_TIME', 0);
+  const [activeTab, setActiveTab] = usePersistentState(
+    'ACTIVE_TAB',
+    'results' as 'results' | 'coursePoints'
+  );
+  const [selectedPoint, setSelectedPoint] = usePersistentState(
+    'SELECTED_POINT',
+    null as CoursePoint | null
+  );
+
+  // Clear persistent state when course points change (new course loaded)
+  useEffect(() => {
+    if (coursePoints.length > 0) {
+      // Reset simulation state when new course is loaded
+      setParticipants([]);
+      setFinishedParticipants([]);
+      setElapsedTime(0);
+      setSelectedPoint(null);
+      // Keep activeTab as it's a UI preference
+    }
+  }, [coursePoints, setParticipants, setFinishedParticipants, setElapsedTime, setSelectedPoint]);
 
   // Memoize course creation to prevent unnecessary recalculation
   const course = useMemo(() => {

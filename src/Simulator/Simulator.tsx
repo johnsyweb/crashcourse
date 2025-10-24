@@ -4,6 +4,7 @@ import { Participant } from '../Participant';
 import ElapsedTime from '../ElapsedTime';
 import ControlCard from './ControlCard';
 import styles from './Simulator.module.css';
+import { usePersistentState } from '../utils/usePersistentState';
 
 // Constants for participant configuration
 const MIN_PARTICIPANTS = 1;
@@ -58,11 +59,12 @@ const Simulator: React.FC<SimulatorProps> = ({
   onElapsedTimeChange,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [participantCount, setParticipantCount] = useState(
+  const [participantCount, setParticipantCount] = usePersistentState(
+    'PARTICIPANT_COUNT',
     participants.length || DEFAULT_PARTICIPANTS
   );
-  const [minPace, setMinPace] = useState(DEFAULT_MIN_PACE);
-  const [maxPace, setMaxPace] = useState(DEFAULT_MAX_PACE);
+  const [minPace, setMinPace] = usePersistentState('MIN_PACE', DEFAULT_MIN_PACE);
+  const [maxPace, setMaxPace] = usePersistentState('MAX_PACE', DEFAULT_MAX_PACE);
   const [paceError, setPaceError] = useState<string | null>(null);
   const [simulationStopped, setSimulationStopped] = useState(false);
   // Lap detection UI tunables (initialize from localStorage, else from course, else defaults)

@@ -1,3 +1,5 @@
+const React = require('react');
+
 // Suppress the punycode deprecation warning
 const originalWarn = process.emitWarning;
 process.emitWarning = (...args) => {
@@ -14,10 +16,29 @@ process.emit = function (event, ...args) {
 
 // Mock react-leaflet for testing
 jest.mock('react-leaflet', () => ({
-  MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
-  TileLayer: () => <div data-testid="tile-layer" />,
-  Marker: ({ children, position }) => <div data-testid="marker" data-position={JSON.stringify(position)}>{children}</div>,
-  Popup: ({ children }) => <div data-testid="popup">{children}</div>,
+  MapContainer: ({ children }) => {
+    const React = require('react');
+    return React.createElement('div', { 'data-testid': 'map-container' }, children);
+  },
+  TileLayer: () => {
+    const React = require('react');
+    return React.createElement('div', { 'data-testid': 'tile-layer' });
+  },
+  Marker: ({ children, position }) => {
+    const React = require('react');
+    return React.createElement(
+      'div',
+      {
+        'data-testid': 'marker',
+        'data-position': JSON.stringify(position),
+      },
+      children
+    );
+  },
+  Popup: ({ children }) => {
+    const React = require('react');
+    return React.createElement('div', { 'data-testid': 'popup' }, children);
+  },
   useMap: () => ({
     setView: jest.fn(),
     fitBounds: jest.fn(),

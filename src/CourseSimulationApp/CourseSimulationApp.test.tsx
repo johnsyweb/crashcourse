@@ -37,6 +37,8 @@ jest.mock('../CourseSimulation', () => ({
 describe('CourseSimulationApp', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear localStorage before each test to ensure clean state
+    localStorage.clear();
   });
 
   it('renders CourseDataImporter when no course points are provided', () => {

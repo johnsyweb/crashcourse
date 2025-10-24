@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { LatLngBounds, Map } from 'leaflet';
+import { Map } from 'leaflet';
 import { FitBounds } from './FitBounds';
 import { useMap } from 'react-leaflet';
 import '@testing-library/jest-dom';
