@@ -298,10 +298,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                       </span>
                     )}
                   </td>
-                   <td className={styles.distanceCell}>
-                     {formatDistance(point.cumulativeDistance)}
-                   </td>
-                 </tr>
+                  <td className={styles.distanceCell}>
+                    {formatDistance(point.cumulativeDistance)}
+                  </td>
+                </tr>
               );
             })}
           </tbody>
