@@ -170,4 +170,116 @@ describe('Course', () => {
       expect(course['lapCrossings'].length).toBeGreaterThanOrEqual(0); // Should be recalculated
     });
   });
+
+  describe('addPoint', () => {
+    it('should add a point at the end when no index is provided', () => {
+      const course = new Course(samplePoints);
+      const originalLength = course.length;
+      const newPoint: LatLngTuple = [51.506, -0.127];
+
+      course.addPoint(newPoint);
+
+      expect(course.getPoints()).toHaveLength(samplePoints.length + 1);
+      expect(course.getPoints()[course.getPoints().length - 1]).toEqual(newPoint);
+      expect(course.length).not.toBe(originalLength);
+    });
+
+    it('should add a point at the specified index', () => {
+      const course = new Course(samplePoints);
+      const newPoint: LatLngTuple = [51.506, -0.127];
+      const insertIndex = 2;
+
+      course.addPoint(newPoint, insertIndex);
+
+      expect(course.getPoints()).toHaveLength(samplePoints.length + 1);
+      expect(course.getPoints()[insertIndex]).toEqual(newPoint);
+    });
+
+    it('should add a point at the beginning when index is 0', () => {
+      const course = new Course(samplePoints);
+      const newPoint: LatLngTuple = [51.506, -0.127];
+
+      course.addPoint(newPoint, 0);
+
+      expect(course.getPoints()).toHaveLength(samplePoints.length + 1);
+      expect(course.getPoints()[0]).toEqual(newPoint);
+    });
+
+    it('should throw error for invalid point format', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => course.addPoint([51.505] as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
+      expect(() => course.addPoint(['51.505', '-0.127'] as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
+      expect(() => course.addPoint(null as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
+    });
+
+    it('should throw error for invalid latitude', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => course.addPoint([91, -0.127])).toThrow('Invalid latitude: must be between -90 and 90 degrees');
+      expect(() => course.addPoint([-91, -0.127])).toThrow('Invalid latitude: must be between -90 and 90 degrees');
+    });
+
+    it('should throw error for invalid longitude', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => course.addPoint([51.505, 181])).toThrow('Invalid longitude: must be between -180 and 180 degrees');
+      expect(() => course.addPoint([51.505, -181])).toThrow('Invalid longitude: must be between -180 and 180 degrees');
+    });
+
+    it('should throw error for invalid index', () => {
+      const course = new Course(samplePoints);
+      const newPoint: LatLngTuple = [51.506, -0.127];
+
+      expect(() => course.addPoint(newPoint, -1)).toThrow('Invalid insert index: -1. Must be between 0 and');
+      expect(() => course.addPoint(newPoint, course.getPoints().length + 1)).toThrow('Invalid insert index:');
+    });
+
+    it('should recalculate course properties after adding point', () => {
+      const course = new Course(samplePoints);
+      const originalLength = course.length;
+      const newPoint: LatLngTuple = [51.506, -0.127];
+
+      course.addPoint(newPoint);
+
+      // Course length should be different
+      expect(course.length).not.toBe(originalLength);
+
+      // Width calculation should still work
+      const newWidth = course.getWidthAt(50);
+      expect(newWidth).toBeGreaterThan(0);
+
+      // Position calculation should still work
+      const position = course.getPositionAtDistance(50);
+      expect(position).toBeDefined();
+      expect(Array.isArray(position)).toBe(true);
+    });
+
+    it('should clear caches after adding point', () => {
+      const course = new Course(samplePoints);
+
+      // Access some cached values
+      course.getWidthAt(50);
+      course.getPositionAtDistance(50);
+
+      // Add a point
+      const newPoint: LatLngTuple = [51.506, -0.127];
+      course.addPoint(newPoint);
+
+      // Verify that caches were cleared and repopulated
+      expect(course['widthCache'].size).toBeGreaterThan(0); // Should be repopulated
+      expect(course['lapCountCache']).not.toBeNull(); // Should be recalculated (not null)
+      expect(course['lapCrossings'].length).toBeGreaterThanOrEqual(0); // Should be recalculated
+    });
+
+    it('should remove consecutive duplicate points', () => {
+      const course = new Course(samplePoints);
+      const duplicatePoint = course.getPoints()[1]; // Use an existing point
+
+      course.addPoint(duplicatePoint, 1);
+
+      // Should not increase the length since duplicates are removed
+      expect(course.getPoints()).toHaveLength(samplePoints.length);
+    });
+  });
 });

@@ -20,6 +20,7 @@ interface CoursePointsViewProps {
   onPointsSelect?: (points: CoursePoint[]) => void;
   selectedPointIndices?: number[];
   onPointsDelete?: (pointIndices: number[]) => void;
+  onPointAdd?: (point: [number, number], index?: number) => void;
   undo?: () => void;
   redo?: () => void;
   canUndo?: boolean;
@@ -35,6 +36,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   onPointsSelect,
   selectedPointIndices,
   onPointsDelete,
+  onPointAdd,
   undo,
   redo,
   canUndo,
@@ -43,6 +45,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
   const [internalSelectedIndices, setInternalSelectedIndices] = useState<number[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPointLat, setNewPointLat] = useState('');
+  const [newPointLng, setNewPointLng] = useState('');
+  const [addAtIndex, setAddAtIndex] = useState<number | null>(null);
 
   // Use external selectedPointIndex if provided, otherwise use internal state
   const selectedIndex =
@@ -204,6 +210,40 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     return directions[index];
   };
 
+  const handleAddPoint = () => {
+    if (!onPointAdd) return;
+
+    const lat = parseFloat(newPointLat);
+    const lng = parseFloat(newPointLng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      alert('Please enter valid latitude and longitude values');
+      return;
+    }
+
+    try {
+      onPointAdd([lat, lng], addAtIndex || undefined);
+      setShowAddForm(false);
+      setNewPointLat('');
+      setNewPointLng('');
+      setAddAtIndex(null);
+    } catch (error) {
+      alert(`Error adding point: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleCancelAdd = () => {
+    setShowAddForm(false);
+    setNewPointLat('');
+    setNewPointLng('');
+    setAddAtIndex(null);
+  };
+
+  const handleAddAfterPoint = (index: number) => {
+    setAddAtIndex(index + 1);
+    setShowAddForm(true);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -220,6 +260,75 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
             </span>
           )}
         </div>
+        {onPointAdd && (
+          <div className={styles.addPointSection}>
+            {!showAddForm ? (
+              <button
+                className={styles.addPointButton}
+                onClick={() => setShowAddForm(true)}
+                title="Add a new point to the course"
+              >
+                + Add Point
+              </button>
+            ) : (
+              <div className={styles.addPointForm}>
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>
+                    Latitude:
+                    <input
+                      type="number"
+                      step="any"
+                      value={newPointLat}
+                      onChange={(e) => setNewPointLat(e.target.value)}
+                      placeholder="e.g., 51.505"
+                      className={styles.formInput}
+                    />
+                  </label>
+                  <label className={styles.formLabel}>
+                    Longitude:
+                    <input
+                      type="number"
+                      step="any"
+                      value={newPointLng}
+                      onChange={(e) => setNewPointLng(e.target.value)}
+                      placeholder="e.g., -0.127"
+                      className={styles.formInput}
+                    />
+                  </label>
+                </div>
+                <div className={styles.formRow}>
+                  <label className={styles.formLabel}>
+                    Insert at index:
+                    <input
+                      type="number"
+                      min="0"
+                      max={coursePoints.length}
+                      value={addAtIndex || ''}
+                      onChange={(e) => setAddAtIndex(e.target.value ? parseInt(e.target.value) : null)}
+                      placeholder={`${coursePoints.length} (end)`}
+                      className={styles.formInput}
+                    />
+                  </label>
+                </div>
+                <div className={styles.formActions}>
+                  <button
+                    className={styles.addButton}
+                    onClick={handleAddPoint}
+                    disabled={!newPointLat || !newPointLng}
+                  >
+                    Add Point
+                  </button>
+                  <button
+                    className={styles.cancelButton}
+                    onClick={handleCancelAdd}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {selectedIndices.length > 0 && onPointsDelete && (
           <div className={styles.batchActions}>
             <button
@@ -274,6 +383,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               <th className={styles.distanceColumn}>Distance from Previous</th>
               <th className={styles.bearingColumn}>Bearing from Previous</th>
               <th className={styles.distanceColumn}>Cumulative Distance</th>
+              {onPointAdd && <th className={styles.actionColumn}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -344,6 +454,20 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   <td className={styles.distanceCell}>
                     {formatDistance(point.cumulativeDistance)}
                   </td>
+                  {onPointAdd && (
+                    <td className={styles.actionCell}>
+                      <button
+                        className={styles.addAfterButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddAfterPoint(point.index);
+                        }}
+                        title={`Add point after point ${point.index + 1}`}
+                      >
+                        + Add After
+                      </button>
+                    </td>
+                  )}
                 </tr>
               );
             })}

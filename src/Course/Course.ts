@@ -271,6 +271,55 @@ export class Course {
   }
 
   /**
+   * Adds a new point to the course at the specified index.
+   * @param point - The new point to add as [latitude, longitude]
+   * @param index - The index where to insert the point (optional, defaults to end)
+   * @throws Error if the point is invalid or if the index is out of bounds
+   */
+  addPoint(point: LatLngTuple, index?: number): void {
+    if (!point || point.length !== 2 || typeof point[0] !== 'number' || typeof point[1] !== 'number') {
+      throw new Error('Invalid point: must be [latitude, longitude] with numeric values');
+    }
+
+    if (point[0] < -90 || point[0] > 90) {
+      throw new Error('Invalid latitude: must be between -90 and 90 degrees');
+    }
+
+    if (point[1] < -180 || point[1] > 180) {
+      throw new Error('Invalid longitude: must be between -180 and 180 degrees');
+    }
+
+    const insertIndex = index !== undefined ? index : this.points.length;
+
+    if (insertIndex < 0 || insertIndex > this.points.length) {
+      throw new Error(
+        `Invalid insert index: ${insertIndex}. Must be between 0 and ${this.points.length}`
+      );
+    }
+
+    // Insert the point
+    this.points.splice(insertIndex, 0, point);
+
+    // Remove consecutive duplicates (in case the new point is the same as adjacent points)
+    this.points = Course.removeConsecutiveDuplicatePoints(this.points);
+
+    // Recalculate the course
+    this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
+    this.totalLength = turf.length(this.lineString, { units: 'meters' });
+    this.calculateDistances();
+
+    // Clear caches since the course structure has changed
+    this.widthCache.clear();
+    this.segmentCache.clear();
+    this.lapCountCache = null;
+    this.lapCrossings = [];
+
+    // Recalculate cached values
+    this.precalculateWidths();
+    this.computeLapCrossings();
+  }
+
+  /**
    * Deletes a point from the course at the specified index
    * @param index Index of the point to delete
    * @throws Error if index is invalid or course would have less than 2 points

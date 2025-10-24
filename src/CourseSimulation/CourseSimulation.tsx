@@ -280,6 +280,23 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [coursePoints, onCoursePointsChange, selectedPoints, selectedPoint]
   );
 
+  const handlePointAdd = useCallback(
+    (point: [number, number], index?: number) => {
+      if (!onCoursePointsChange) {
+        console.warn('onCoursePointsChange not provided - cannot add points');
+        return;
+      }
+
+      // Create a new course with the point added
+      const newCoursePoints = [...coursePoints];
+      const insertIndex = index !== undefined ? index : newCoursePoints.length;
+      newCoursePoints.splice(insertIndex, 0, point);
+
+      onCoursePointsChange(newCoursePoints);
+    },
+    [coursePoints, onCoursePointsChange]
+  );
+
   const handleResetResults = useCallback(() => {
     setFinishedParticipants([]);
   }, []);
@@ -404,6 +421,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointsSelect={handlePointsSelect}
                         selectedPointIndices={selectedPoints.map((p) => p.index)}
                         onPointsDelete={handlePointsDelete}
+                        onPointAdd={handlePointAdd}
                         undo={undo}
                         redo={redo}
                         canUndo={canUndo}
@@ -504,6 +522,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       onPointsSelect={handlePointsSelect}
                       selectedPointIndices={selectedPoints.map((p) => p.index)}
                       onPointsDelete={handlePointsDelete}
+                      onPointAdd={handlePointAdd}
                       undo={undo}
                       redo={redo}
                       canUndo={canUndo}
