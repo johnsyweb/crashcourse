@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Course } from './Course';
 import * as turf from '@turf/turf';
 import styles from './CoursePointsView.module.css';
 
-interface CoursePoint {
+export interface CoursePoint {
   index: number;
   latitude: number;
   longitude: number;
@@ -14,9 +14,30 @@ interface CoursePoint {
 
 interface CoursePointsViewProps {
   course: Course | null;
+  onPointSelect?: (point: CoursePoint | null) => void;
+  selectedPointIndex?: number | null;
 }
 
-const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
+const CoursePointsView: React.FC<CoursePointsViewProps> = ({
+  course,
+  onPointSelect,
+  selectedPointIndex,
+}) => {
+  const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
+
+  // Use external selectedPointIndex if provided, otherwise use internal state
+  const selectedIndex =
+    selectedPointIndex !== undefined ? selectedPointIndex : internalSelectedIndex;
+
+  const handlePointClick = (point: CoursePoint) => {
+    const newSelectedIndex = selectedIndex === point.index ? null : point.index;
+
+    if (selectedPointIndex === undefined) {
+      setInternalSelectedIndex(newSelectedIndex);
+    }
+
+    onPointSelect?.(newSelectedIndex !== null ? point : null);
+  };
   if (!course) {
     return (
       <div className={styles.container}>
@@ -39,21 +60,19 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
       if (index > 0) {
         const previousPoint = points[index - 1];
         const [prevLat, prevLon] = previousPoint;
-        
+
         // Calculate distance using turf.js
         const from = turf.point([prevLon, prevLat]);
         const to = turf.point([longitude, latitude]);
         distanceFromPrevious = turf.distance(from, to, { units: 'meters' });
-        
+
         // Calculate bearing using turf.js
         bearingFromPrevious = turf.bearing(from, to);
       }
 
       // Calculate cumulative distance
-      const cumulativeDistance = coursePoints.reduce(
-        (sum, cp) => sum + cp.distanceFromPrevious,
-        0
-      ) + distanceFromPrevious;
+      const cumulativeDistance =
+        coursePoints.reduce((sum, cp) => sum + cp.distanceFromPrevious, 0) + distanceFromPrevious;
 
       coursePoints.push({
         index,
@@ -88,12 +107,26 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
 
   const getBearingDirection = (bearing: number | null): string => {
     if (bearing === null) return '';
-    
+
     const directions = [
-      'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'
+      'N',
+      'NNE',
+      'NE',
+      'ENE',
+      'E',
+      'ESE',
+      'SE',
+      'SSE',
+      'S',
+      'SSW',
+      'SW',
+      'WSW',
+      'W',
+      'WNW',
+      'NW',
+      'NNW',
     ];
-    
+
     const index = Math.round(bearing / 22.5) % 16;
     return directions[index];
   };
@@ -103,11 +136,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
       <div className={styles.header}>
         <h2 className={styles.title}>Course Points</h2>
         <div className={styles.summary}>
+          <span className={styles.summaryItem}>Total Points: {coursePoints.length}</span>
           <span className={styles.summaryItem}>
-            Total Points: {coursePoints.length}
-          </span>
-          <span className={styles.summaryItem}>
-            Total Distance: {formatDistance(coursePoints[coursePoints.length - 1]?.cumulativeDistance || 0)}
+            Total Distance:{' '}
+            {formatDistance(coursePoints[coursePoints.length - 1]?.cumulativeDistance || 0)}
           </span>
         </div>
       </div>
@@ -126,14 +158,23 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
           </thead>
           <tbody>
             {coursePoints.map((point) => (
-              <tr key={point.index} className={styles.tableRow}>
+              <tr
+                key={point.index}
+                className={`${styles.tableRow} ${selectedIndex === point.index ? styles.selectedRow : ''}`}
+                onClick={() => handlePointClick(point)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePointClick(point);
+                  }
+                }}
+                aria-selected={selectedIndex === point.index}
+              >
                 <td className={styles.indexCell}>{point.index + 1}</td>
-                <td className={styles.coordinateCell}>
-                  {formatCoordinate(point.latitude)}
-                </td>
-                <td className={styles.coordinateCell}>
-                  {formatCoordinate(point.longitude)}
-                </td>
+                <td className={styles.coordinateCell}>{formatCoordinate(point.latitude)}</td>
+                <td className={styles.coordinateCell}>{formatCoordinate(point.longitude)}</td>
                 <td className={styles.distanceCell}>
                   {formatDistance(point.distanceFromPrevious)}
                 </td>
@@ -147,9 +188,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({ course }) => {
                     </span>
                   )}
                 </td>
-                <td className={styles.distanceCell}>
-                  {formatDistance(point.cumulativeDistance)}
-                </td>
+                <td className={styles.distanceCell}>{formatDistance(point.cumulativeDistance)}</td>
               </tr>
             ))}
           </tbody>

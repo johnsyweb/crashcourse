@@ -132,7 +132,6 @@
   border-left: 4px solid #ef5350;
 }
 
-
 @media (max-width: 900px) {
   .mainContent {
     flex-direction: column;

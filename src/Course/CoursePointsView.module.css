@@ -78,6 +78,15 @@
   background-color: #f8f9fa;
 }
 
+.selectedRow {
+  background-color: #e3f2fd !important;
+  border-left: 3px solid #2196f3;
+}
+
+.selectedRow:hover {
+  background-color: #bbdefb !important;
+}
+
 .tableRow:last-child td {
   border-bottom: none;
 }
@@ -148,35 +157,35 @@
   .container {
     padding: 0;
   }
-  
+
   .header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .summary {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .table {
     font-size: 0.75rem;
   }
-  
+
   .table th,
   .table td {
     padding: 0.375rem 0.25rem;
   }
-  
+
   .coordinateColumn {
     width: 80px;
   }
-  
+
   .distanceColumn {
     width: 100px;
   }
-  
+
   .bearingColumn {
     width: 80px;
   }
@@ -186,16 +195,16 @@
   .table {
     font-size: 0.7rem;
   }
-  
+
   .table th,
   .table td {
     padding: 0.25rem 0.125rem;
   }
-  
+
   .coordinateCell {
     font-size: 0.7rem;
   }
-  
+
   .bearingDirection {
     font-size: 0.65rem;
     padding: 0.0625rem 0.25rem;

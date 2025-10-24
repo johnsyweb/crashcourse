@@ -5,8 +5,9 @@ import { Participant } from '../Participant/Participant';
 import ParticipantDisplay from '../Participant/ParticipantDisplay';
 import { Course } from '../Course';
 import CourseDisplay from '../Course/CourseDisplay';
-import CoursePointsView from '../Course/CoursePointsView';
+import CoursePointsView, { CoursePoint } from '../Course/CoursePointsView';
 import Map from '../Map';
+import SelectedPointMarker from '../Map/SelectedPointMarker';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
@@ -36,6 +37,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
   const [finishedParticipants, setFinishedParticipants] = useState<Participant[]>([]);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [activeTab, setActiveTab] = useState<'results' | 'coursePoints'>('results');
+  const [selectedPoint, setSelectedPoint] = useState<CoursePoint | null>(null);
 
   // Memoize course creation to prevent unnecessary recalculation
   const course = useMemo(() => {
@@ -197,6 +199,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
     [course, elapsedTime, finishedParticipants]
   );
 
+  const handlePointSelect = (point: CoursePoint | null) => {
+    setSelectedPoint(point);
+  };
+
   const handleResetResults = useCallback(() => {
     setFinishedParticipants([]);
   }, []);
@@ -224,6 +230,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
                   {participants.map((participant) => (
                     <ParticipantDisplay key={participant.getId()} participant={participant} />
                   ))}
+                  <SelectedPointMarker point={selectedPoint} />
                 </Map>
               )}
             </div>
@@ -271,7 +278,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
                 />
               )}
               {activeTab === 'coursePoints' && course && (
-                <CoursePointsView course={course} />
+                <CoursePointsView course={course} onPointSelect={handlePointSelect} />
               )}
             </div>
           </div>

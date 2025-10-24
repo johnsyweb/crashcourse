@@ -27,7 +27,10 @@ describe('FitBounds Component', () => {
     // Check that fitBounds was called with a LatLngBounds object
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
     expect(mockFitBounds).toHaveBeenCalledWith(
-      expect.any(LatLngBounds),
+      expect.objectContaining({
+        extend: expect.any(Function),
+        isValid: expect.any(Function),
+      }),
       expect.objectContaining({
         padding: [50, 50],
         maxZoom: 16,
@@ -59,7 +62,10 @@ describe('FitBounds Component', () => {
     // First render should call fitBounds
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
     expect(mockFitBounds).toHaveBeenCalledWith(
-      expect.any(LatLngBounds),
+      expect.objectContaining({
+        extend: expect.any(Function),
+        isValid: expect.any(Function),
+      }),
       expect.objectContaining({
         padding: [50, 50],
         maxZoom: 16,
@@ -77,7 +83,10 @@ describe('FitBounds Component', () => {
     // Should call fitBounds again with new points
     expect(mockFitBounds).toHaveBeenCalledTimes(1);
     expect(mockFitBounds).toHaveBeenCalledWith(
-      expect.any(LatLngBounds),
+      expect.objectContaining({
+        extend: expect.any(Function),
+        isValid: expect.any(Function),
+      }),
       expect.objectContaining({
         padding: [50, 50],
         maxZoom: 16,

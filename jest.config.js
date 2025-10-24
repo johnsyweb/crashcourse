@@ -25,6 +25,9 @@ export default {
     ],
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-leaflet|leaflet)/)',
+  ],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   testMatch: ['<rootDir>/src/**/__tests__/**/*.{ts,tsx}', '<rootDir>/src/**/*.test.{ts,tsx}'],
