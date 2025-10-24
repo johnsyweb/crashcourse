@@ -109,13 +109,16 @@ describe('CourseDataImporter', () => {
 
     // Wait for the async GPX parsing to complete
     await waitFor(() => {
-      expect(mockOnCourseDataImported).toHaveBeenCalledWith([
-        [10, 20],
-        [11, 21],
-      ], {
-        name: 'Test Track',
-        description: 'Test Description',
-      });
+      expect(mockOnCourseDataImported).toHaveBeenCalledWith(
+        [
+          [10, 20],
+          [11, 21],
+        ],
+        {
+          name: 'Test Track',
+          description: 'Test Description',
+        }
+      );
     });
   });
 

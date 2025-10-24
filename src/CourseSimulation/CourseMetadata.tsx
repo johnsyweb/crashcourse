@@ -111,7 +111,9 @@ const CourseMetadata: React.FC<CourseMetadataProps> = ({ metadata, onMetadataCha
           <div className={styles.field}>
             <label>Description:</label>
             <div className={styles.value}>
-              {metadata.description || <span className={styles.placeholder}>No description set</span>}
+              {metadata.description || (
+                <span className={styles.placeholder}>No description set</span>
+              )}
             </div>
           </div>
         </div>

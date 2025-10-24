@@ -31,12 +31,17 @@ const CourseSimulationApp: React.FC = () => {
   // Update document title based on application state
   useDocumentTitle(
     'Crash Course Simulator',
-    coursePoints.length > 0 
-      ? (courseMetadata?.name ? `${courseMetadata.name} - Course Simulation` : 'Course Simulation')
+    coursePoints.length > 0
+      ? courseMetadata?.name
+        ? `${courseMetadata.name} - Course Simulation`
+        : 'Course Simulation'
       : 'Import Course Data'
   );
 
-  const handleCourseDataImported = (points: LatLngTuple[], metadata?: { name?: string; description?: string }) => {
+  const handleCourseDataImported = (
+    points: LatLngTuple[],
+    metadata?: { name?: string; description?: string }
+  ) => {
     setCoursePoints(points);
     if (metadata) {
       setCourseMetadata(metadata);
