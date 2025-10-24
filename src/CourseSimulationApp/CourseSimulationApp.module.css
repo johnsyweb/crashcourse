@@ -8,3 +8,12 @@
   overflow: hidden;
   box-sizing: border-box;
 }
+
+/* Mobile - allow scrolling */
+@media (max-width: 768px) {
+  .courseSimulationApp {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+  }
+}

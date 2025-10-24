@@ -11,6 +11,42 @@
   overflow: hidden;
 }
 
+/* Mobile container - completely override for scrolling */
+@media (max-width: 768px) {
+  .container {
+    position: static !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  
+  .layout {
+    position: static !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  
+  .mobileLayout {
+    display: flex !important;
+    position: static !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  
+  .desktopLayout {
+    display: none !important;
+  }
+}
+
 .layout {
   display: flex;
   flex-direction: row;
@@ -31,8 +67,8 @@
 .mobileLayout {
   display: none;
   flex-direction: column;
-  height: 100%;
   width: 100%;
+  overflow: visible;
 }
 
 /* Left Side - Controls Section */
@@ -92,7 +128,7 @@
 
 .mobileResultsPanel {
   width: 100%;
-  flex: 1;
+  min-height: 50vh;
   background-color: #f8f9fa;
   overflow-y: auto;
 }
