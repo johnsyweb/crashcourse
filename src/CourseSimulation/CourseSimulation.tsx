@@ -237,68 +237,167 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({ coursePoints, onRes
   return (
     <div className={styles.container}>
       <ErrorBoundary>
-        <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
-          Import Different Course
-        </button>
-        <div className={styles.gridLayout}>
-          <div className={styles.mainContent}>
-            <div className={styles.mapContainer}>
-              {course && (
-                <Map gpsPoints={coursePoints}>
-                  <CourseDisplay course={course} />
-                  {participants.map((participant) => (
-                    <ParticipantDisplay key={participant.getId()} participant={participant} />
-                  ))}
-                  <SelectedPointMarker point={selectedPoint} />
-                </Map>
-              )}
+        <div className={styles.layout}>
+          {/* Desktop/Tablet Layout */}
+          <div className={styles.desktopLayout}>
+            {/* Left Side - Controls Panel */}
+            <div className={styles.controlsSection}>
+              <div className={styles.controlsContainer}>
+                <div className={styles.controlsHeader}>
+                  <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
+                    Import Different Course
+                  </button>
+                </div>
+                {course && (
+                  <Simulator
+                    course={course}
+                    participants={participants}
+                    onParticipantUpdate={handleParticipantUpdate}
+                    onParticipantCountChange={handleParticipantCountChange}
+                    onPaceRangeChange={handlePaceRangeChange}
+                    onElapsedTimeChange={setElapsedTime}
+                  />
+                )}
+              </div>
             </div>
 
-            <div className={styles.controlsContainer}>
-              {course && (
-                <Simulator
-                  course={course}
-                  participants={participants}
-                  onParticipantUpdate={handleParticipantUpdate}
-                  onParticipantCountChange={handleParticipantCountChange}
-                  onPaceRangeChange={handlePaceRangeChange}
-                  onElapsedTimeChange={setElapsedTime}
-                />
-              )}
+            {/* Right Side - Map and Results */}
+            <div className={styles.rightSection}>
+              {/* Map Panel */}
+              <div className={styles.mapPanel}>
+                <div className={styles.mapContainer}>
+                  {course && (
+                    <Map gpsPoints={coursePoints}>
+                      <CourseDisplay course={course} />
+                      {participants.map((participant) => (
+                        <ParticipantDisplay key={participant.getId()} participant={participant} />
+                      ))}
+                      <SelectedPointMarker point={selectedPoint} />
+                    </Map>
+                  )}
+                </div>
+              </div>
+
+              {/* Results Panel */}
+              <div className={styles.resultsPanel}>
+                <div className={styles.resultsContainer}>
+                  {/* Tab Navigation */}
+                  <div className={styles.tabNavigation}>
+                    <button
+                      className={`${styles.tabButton} ${activeTab === 'results' ? styles.activeTab : ''}`}
+                      onClick={() => setActiveTab('results')}
+                      aria-selected={activeTab === 'results'}
+                    >
+                      Results
+                    </button>
+                    <button
+                      className={`${styles.tabButton} ${activeTab === 'coursePoints' ? styles.activeTab : ''}`}
+                      onClick={() => setActiveTab('coursePoints')}
+                      aria-selected={activeTab === 'coursePoints'}
+                    >
+                      Course Points
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className={styles.tabContent}>
+                    {activeTab === 'results' && course && (
+                      <Results
+                        participants={finishedParticipants}
+                        elapsedTime={elapsedTime}
+                        onReset={handleResetResults}
+                      />
+                    )}
+                    {activeTab === 'coursePoints' && course && (
+                      <CoursePointsView
+                        course={course}
+                        onPointSelect={handlePointSelect}
+                        selectedPointIndex={selectedPoint?.index}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className={styles.resultsContainer}>
-            {/* Tab Navigation */}
-            <div className={styles.tabNavigation}>
-              <button
-                className={`${styles.tabButton} ${activeTab === 'results' ? styles.activeTab : ''}`}
-                onClick={() => setActiveTab('results')}
-                aria-selected={activeTab === 'results'}
-              >
-                Results
-              </button>
-              <button
-                className={`${styles.tabButton} ${activeTab === 'coursePoints' ? styles.activeTab : ''}`}
-                onClick={() => setActiveTab('coursePoints')}
-                aria-selected={activeTab === 'coursePoints'}
-              >
-                Course Points
-              </button>
+          {/* Mobile Layout */}
+          <div className={styles.mobileLayout}>
+            {/* Map Panel */}
+            <div className={styles.mobileMapPanel}>
+              <div className={styles.mapContainer}>
+                {course && (
+                  <Map gpsPoints={coursePoints}>
+                    <CourseDisplay course={course} />
+                    {participants.map((participant) => (
+                      <ParticipantDisplay key={participant.getId()} participant={participant} />
+                    ))}
+                    <SelectedPointMarker point={selectedPoint} />
+                  </Map>
+                )}
+              </div>
             </div>
 
-            {/* Tab Content */}
-            <div className={styles.tabContent}>
-              {activeTab === 'results' && course && (
-                <Results
-                  participants={finishedParticipants}
-                  elapsedTime={elapsedTime}
-                  onReset={handleResetResults}
-                />
-              )}
-              {activeTab === 'coursePoints' && course && (
-                <CoursePointsView course={course} onPointSelect={handlePointSelect} />
-              )}
+            {/* Controls Panel */}
+            <div className={styles.mobileControlsPanel}>
+              <div className={styles.controlsContainer}>
+                <div className={styles.controlsHeader}>
+                  <button className={styles.resetButton} onClick={onReset} data-testid="reset-button">
+                    Import Different Course
+                  </button>
+                </div>
+                {course && (
+                  <Simulator
+                    course={course}
+                    participants={participants}
+                    onParticipantUpdate={handleParticipantUpdate}
+                    onParticipantCountChange={handleParticipantCountChange}
+                    onPaceRangeChange={handlePaceRangeChange}
+                    onElapsedTimeChange={setElapsedTime}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Results Panel */}
+            <div className={styles.mobileResultsPanel}>
+              <div className={styles.resultsContainer}>
+                {/* Tab Navigation */}
+                <div className={styles.tabNavigation}>
+                  <button
+                    className={`${styles.tabButton} ${activeTab === 'results' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('results')}
+                    aria-selected={activeTab === 'results'}
+                  >
+                    Results
+                  </button>
+                  <button
+                    className={`${styles.tabButton} ${activeTab === 'coursePoints' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('coursePoints')}
+                    aria-selected={activeTab === 'coursePoints'}
+                  >
+                    Course Points
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                <div className={styles.tabContent}>
+                  {activeTab === 'results' && course && (
+                    <Results
+                      participants={finishedParticipants}
+                      elapsedTime={elapsedTime}
+                      onReset={handleResetResults}
+                    />
+                  )}
+                  {activeTab === 'coursePoints' && course && (
+                    <CoursePointsView
+                      course={course}
+                      onPointSelect={handlePointSelect}
+                      selectedPointIndex={selectedPoint?.index}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

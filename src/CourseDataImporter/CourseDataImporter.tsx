@@ -38,11 +38,6 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   return (
     <div className={styles.courseDataImporter}>
-      <h2 className={styles.title}>Import Course Data</h2>
-      <p className={styles.description}>
-        Upload a GPX or KML file containing GPS data for your course.
-      </p>
-
       <FileUploadSection handleFileChange={handleFileChange} />
 
       {importError && <div className={styles.errorMessage}>{importError}</div>}

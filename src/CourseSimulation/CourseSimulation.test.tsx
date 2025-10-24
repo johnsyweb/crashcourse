@@ -150,7 +150,7 @@ describe('CourseSimulation', () => {
 
   it('renders the course simulation component', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
-    expect(screen.getByTestId('mock-map')).toBeInTheDocument();
+    expect(screen.getAllByTestId('mock-map')).toHaveLength(2); // Desktop and mobile layouts
   });
 
   it('should create a Course from the provided course points', () => {
@@ -175,11 +175,11 @@ describe('CourseSimulation', () => {
     const { rerender } = render(<CourseSimulation coursePoints={mockCoursePoints} />);
 
     act(() => {
-      screen.getByTestId('update-participants-button').click();
+      screen.getAllByTestId('update-participants-button')[0].click(); // Use first button (desktop layout)
     });
 
     rerender(<CourseSimulation coursePoints={mockCoursePoints} />);
-    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(1);
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(2); // 1 participant × 2 layouts
   });
 
   it('should preserve existing participants when adding new ones', () => {
@@ -187,7 +187,7 @@ describe('CourseSimulation', () => {
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
 
     act(() => {
-      screen.getByTestId('change-participant-count-button').click();
+      screen.getAllByTestId('change-participant-count-button')[0].click(); // Use first button (desktop layout)
     });
 
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
@@ -199,16 +199,16 @@ describe('CourseSimulation', () => {
 
     // First increase to 5 participants
     act(() => {
-      screen.getByTestId('change-participant-count-button').click();
+      screen.getAllByTestId('change-participant-count-button')[0].click(); // Use first button (desktop layout)
     });
 
     // Then decrease to 3 participants
     act(() => {
-      screen.getByTestId('decrease-participant-count-button').click();
+      screen.getAllByTestId('decrease-participant-count-button')[0].click(); // Use first button (desktop layout)
     });
 
-    // Verify that we have 3 participants
-    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(3);
+    // Verify that we have 3 participants (multiply by 2 for desktop and mobile layouts)
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(6); // 3 participants × 2 layouts
   });
 
   it('should recreate participants when pace range changes', () => {
@@ -216,7 +216,7 @@ describe('CourseSimulation', () => {
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
 
     act(() => {
-      screen.getByTestId('change-pace-range-button').click();
+      screen.getAllByTestId('change-pace-range-button')[0].click(); // Use first button (desktop layout)
     });
 
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
@@ -225,21 +225,21 @@ describe('CourseSimulation', () => {
   it('should call onReset when reset button is clicked', () => {
     const mockOnReset = jest.fn();
     render(<CourseSimulation coursePoints={mockCoursePoints} onReset={mockOnReset} />);
-    fireEvent.click(screen.getByTestId('reset-button'));
+    fireEvent.click(screen.getAllByTestId('reset-button')[0]); // Use first button (desktop layout)
     expect(mockOnReset).toHaveBeenCalledTimes(1);
   });
 
   it('adds a participant when the add button is clicked', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
-    const addButton = screen.getByTestId('change-participant-count-button');
+    const addButton = screen.getAllByTestId('change-participant-count-button')[0]; // Use first button (desktop layout)
     fireEvent.click(addButton);
     expect(Participant).toHaveBeenCalled();
   });
 
   it('updates participants when the update button is clicked', () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
-    const updateButton = screen.getByTestId('update-participants-button');
+    const updateButton = screen.getAllByTestId('update-participants-button')[0]; // Use first button (desktop layout)
     fireEvent.click(updateButton);
-    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(1);
+    expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(2); // 1 participant × 2 layouts
   });
 });

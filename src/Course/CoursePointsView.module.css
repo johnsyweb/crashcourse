@@ -1,7 +1,10 @@
 .container {
   padding: 0;
   max-width: 100%;
-  overflow-x: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .header {
@@ -11,6 +14,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .title {
@@ -39,6 +43,10 @@
   background-color: #f8f9fa;
   border-radius: 8px;
   border: 2px dashed #dee2e6;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tableContainer {
@@ -46,8 +54,9 @@
   border-radius: 4px;
   box-shadow: none;
   overflow: hidden;
-  max-height: 200px;
-  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .table {

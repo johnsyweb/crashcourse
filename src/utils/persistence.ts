@@ -25,20 +25,7 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
     if (serializedData === null) {
       return defaultValue;
     }
-    const parsed = JSON.parse(serializedData) as T;
-    
-    // Special handling for Participant arrays - recreate Participant objects
-    if (key === STORAGE_KEYS.PARTICIPANTS || key === STORAGE_KEYS.FINISHED_PARTICIPANTS) {
-      const { Participant } = require('../Participant/Participant');
-      return (parsed as any[]).map((p: any) => {
-        if (p && typeof p === 'object' && p.id && p.position && p.pace) {
-          return new Participant(p.id, p.position, p.pace);
-        }
-        return p;
-      }) as T;
-    }
-    
-    return parsed;
+    return JSON.parse(serializedData) as T;
   } catch (error) {
     console.warn(`Failed to load data from localStorage for key "${key}":`, error);
     return defaultValue;

@@ -78,7 +78,6 @@ describe('CourseDataImporter', () => {
   it('renders correctly with initial state', () => {
     render(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
-    expect(screen.getByText(/Import Course Data/i)).toBeInTheDocument();
     expect(screen.getByTestId('mock-file-upload-section')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-gpx-file')).not.toBeInTheDocument();
   });
