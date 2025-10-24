@@ -30,7 +30,11 @@ const CourseSimulationApp: React.FC = () => {
       {coursePoints.length === 0 ? (
         <CourseDataImporter onCourseDataImported={handleCourseDataImported} />
       ) : (
-        <CourseSimulation coursePoints={coursePoints} onReset={handleResetSimulation} />
+        <CourseSimulation 
+          coursePoints={coursePoints} 
+          onReset={handleResetSimulation}
+          onCoursePointsChange={setCoursePoints}
+        />
       )}
     </div>
   );

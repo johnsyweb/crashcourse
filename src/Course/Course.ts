@@ -271,6 +271,39 @@ export class Course {
   }
 
   /**
+   * Deletes a point from the course at the specified index
+   * @param index Index of the point to delete
+   * @throws Error if index is invalid or course would have less than 2 points
+   */
+  deletePoint(index: number): void {
+    if (index < 0 || index >= this.points.length) {
+      throw new Error(`Invalid point index: ${index}. Must be between 0 and ${this.points.length - 1}`);
+    }
+
+    if (this.points.length <= 2) {
+      throw new Error('Cannot delete point: course must have at least 2 points');
+    }
+
+    // Remove the point
+    this.points.splice(index, 1);
+
+    // Recalculate the course
+    this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
+    this.totalLength = turf.length(this.lineString, { units: 'meters' });
+    this.calculateDistances();
+    
+    // Clear caches since the course structure has changed
+    this.widthCache.clear();
+    this.segmentCache.clear();
+    this.lapCountCache = null;
+    this.lapCrossings = [];
+    
+    // Recalculate cached values
+    this.precalculateWidths();
+    this.computeLapCrossings();
+  }
+
+  /**
    * Get the position at a specific distance along the course
    * @param distance Distance in metres from the start
    * @returns [lat, lon] tuple

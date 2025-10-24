@@ -16,12 +16,14 @@ interface CoursePointsViewProps {
   course: Course | null;
   onPointSelect?: (point: CoursePoint | null) => void;
   selectedPointIndex?: number | null;
+  onPointDelete?: (pointIndex: number) => void;
 }
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   course,
   onPointSelect,
   selectedPointIndex,
+  onPointDelete,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
 
@@ -37,6 +39,11 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     }
 
     onPointSelect?.(newSelectedIndex !== null ? point : null);
+  };
+
+  const handleDeletePoint = (pointIndex: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent row selection when clicking delete button
+    onPointDelete?.(pointIndex);
   };
   if (!course) {
     return (
@@ -154,6 +161,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               <th className={styles.distanceColumn}>Distance from Previous</th>
               <th className={styles.bearingColumn}>Bearing from Previous</th>
               <th className={styles.distanceColumn}>Cumulative Distance</th>
+              {onPointDelete && <th className={styles.actionColumn}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -189,6 +197,18 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   )}
                 </td>
                 <td className={styles.distanceCell}>{formatDistance(point.cumulativeDistance)}</td>
+                {onPointDelete && (
+                  <td className={styles.actionCell}>
+                    <button
+                      className={styles.deleteButton}
+                      onClick={(e) => handleDeletePoint(point.index, e)}
+                      title={`Delete point ${point.index + 1}`}
+                      aria-label={`Delete point ${point.index + 1}`}
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

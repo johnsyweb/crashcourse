@@ -96,4 +96,79 @@ describe('Course', () => {
       expect(parallelPath).toBeGreaterThanOrEqual(0);
     }
   });
+
+  describe('deletePoint', () => {
+    it('should delete a point at the specified index', () => {
+      const course = new Course(samplePoints);
+      const originalLength = course.getPoints().length;
+      const originalTotalLength = course.length;
+
+      course.deletePoint(1); // Delete the middle point
+
+      const newPoints = course.getPoints();
+      expect(newPoints.length).toBe(originalLength - 1);
+      expect(newPoints[0]).toEqual(samplePoints[0]);
+      expect(newPoints[1]).toEqual(samplePoints[2]);
+      expect(course.length).toBeLessThan(originalTotalLength);
+    });
+
+    it('should throw an error when trying to delete from a course with only 2 points', () => {
+      const twoPointCourse = new Course([
+        [51.505, -0.09],
+        [51.51, -0.1],
+      ]);
+
+      expect(() => {
+        twoPointCourse.deletePoint(0);
+      }).toThrow('Cannot delete point: course must have at least 2 points');
+    });
+
+    it('should throw an error for invalid index', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => {
+        course.deletePoint(-1);
+      }).toThrow('Invalid point index: -1. Must be between 0 and 2');
+
+      expect(() => {
+        course.deletePoint(3);
+      }).toThrow('Invalid point index: 3. Must be between 0 and 2');
+    });
+
+    it('should recalculate course properties after deletion', () => {
+      const course = new Course(samplePoints);
+      const originalLength = course.length;
+      const originalWidth = course.getWidthAt(50);
+
+      course.deletePoint(1);
+
+      // Course length should be different
+      expect(course.length).not.toBe(originalLength);
+      
+      // Width calculation should still work
+      const newWidth = course.getWidthAt(50);
+      expect(newWidth).toBeGreaterThan(0);
+      
+      // Position calculation should still work
+      const position = course.getPositionAtDistance(50);
+      expect(position).toBeDefined();
+      expect(Array.isArray(position)).toBe(true);
+    });
+
+    it('should clear caches after deletion', () => {
+      const course = new Course(samplePoints);
+      
+      // Access some cached values
+      course.getWidthAt(50);
+      course.getPositionAtDistance(50);
+      
+      // Delete a point
+      course.deletePoint(1);
+      
+      // Verify that caches were cleared and repopulated
+      expect(course['widthCache'].size).toBeGreaterThan(0); // Should be repopulated
+      expect(course['lapCountCache']).not.toBeNull(); // Should be recalculated (not null)
+      expect(course['lapCrossings'].length).toBeGreaterThanOrEqual(0); // Should be recalculated
+    });
+  });
 });
