@@ -88,13 +88,16 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           <h2>Getting Started</h2>
           <ol className={styles.stepsList}>
             <li>
-              <strong>Upload a Course:</strong> Click the button below to select a GPX file from your device
+              <strong>Upload a Course:</strong> Click the button below to select a GPX file from
+              your device
             </li>
             <li>
-              <strong>Review & Edit:</strong> Examine course points, edit metadata, and make adjustments
+              <strong>Review & Edit:</strong> Examine course points, edit metadata, and make
+              adjustments
             </li>
             <li>
-              <strong>Simulate:</strong> Run simulations with different participant counts and pace ranges
+              <strong>Simulate:</strong> Run simulations with different participant counts and pace
+              ranges
             </li>
             <li>
               <strong>Export:</strong> Save your modified course back to GPX format
@@ -108,7 +111,9 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           <div className={styles.formatList}>
             <div className={styles.format}>
               <span className={styles.formatIcon}>🗺️</span>
-              <span><strong>GPX</strong> - GPS Exchange Format</span>
+              <span>
+                <strong>GPX</strong> - GPS Exchange Format
+              </span>
             </div>
           </div>
         </div>

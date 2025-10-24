@@ -43,9 +43,15 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .subtitle {
@@ -68,7 +74,9 @@
   padding: 2rem;
   text-align: center;
   border: 1px solid #93a1a1; /* Solarized light base1 */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   color: #586e75; /* Solarized light base01 */
 }
 
@@ -185,33 +193,33 @@
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .explosionIcon {
     font-size: 3rem;
   }
-  
+
   .subtitle {
     font-size: 1.2rem;
   }
-  
+
   .featuresGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .feature {
     padding: 1.5rem;
   }
-  
+
   .formatList {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .welcomeSection {
     padding: 1rem;
   }
-  
+
   .uploadSection {
     margin: 1rem;
     padding: 1.5rem;
