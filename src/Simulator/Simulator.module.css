@@ -218,6 +218,13 @@
   border-radius: 6px;
 }
 
+/* Hide keyboard shortcuts on mobile */
+@media (max-width: 768px) {
+  .keyboardShortcuts {
+    display: none;
+  }
+}
+
 .shortcutsHeader {
   font-weight: bold;
   color: #2c3e50;

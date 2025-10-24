@@ -22,7 +22,7 @@
     overflow-x: hidden !important;
     overflow-y: visible !important;
   }
-  
+
   .layout {
     position: static !important;
     height: auto !important;
@@ -31,7 +31,7 @@
     flex-direction: column !important;
     overflow: visible !important;
   }
-  
+
   .mobileLayout {
     display: flex !important;
     position: static !important;
@@ -41,7 +41,7 @@
     flex-direction: column !important;
     overflow: visible !important;
   }
-  
+
   .desktopLayout {
     display: none !important;
   }
