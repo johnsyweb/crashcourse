@@ -18,7 +18,6 @@ interface CoursePointsViewProps {
   selectedPointIndex?: number | null;
   onPointsSelect?: (points: CoursePoint[]) => void;
   selectedPointIndices?: number[];
-  onPointDelete?: (pointIndex: number) => void;
   onPointsDelete?: (pointIndices: number[]) => void;
 }
 
@@ -28,7 +27,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   selectedPointIndex,
   onPointsSelect,
   selectedPointIndices,
-  onPointDelete,
   onPointsDelete,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
@@ -39,7 +37,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     selectedPointIndex !== undefined ? selectedPointIndex : internalSelectedIndex;
 
   // Use external selectedPointIndices if provided, otherwise use internal state
-  const selectedIndices = selectedPointIndices !== undefined ? selectedPointIndices : internalSelectedIndices;
+  const selectedIndices =
+    selectedPointIndices !== undefined ? selectedPointIndices : internalSelectedIndices;
 
   // Calculate course points early so we can use them in handlers
   const calculateCoursePoints = (course: Course): CoursePoint[] => {
@@ -93,33 +92,35 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
       const start = Math.min(lastSelected, point.index);
       const end = Math.max(lastSelected, point.index);
       const rangeIndices = [];
-      
+
       for (let i = start; i <= end; i++) {
         rangeIndices.push(i);
       }
-      
-      const newSelectedIndices = [...new Set([...selectedIndices, ...rangeIndices])].sort((a, b) => a - b);
-      
+
+      const newSelectedIndices = [...new Set([...selectedIndices, ...rangeIndices])].sort(
+        (a, b) => a - b
+      );
+
       if (selectedPointIndices === undefined) {
         setInternalSelectedIndices(newSelectedIndices);
       }
-      
+
       if (onPointsSelect) {
-        const selectedPoints = coursePoints.filter(cp => newSelectedIndices.includes(cp.index));
+        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
         onPointsSelect(selectedPoints);
       }
     } else if (isCtrlKey) {
       // Toggle selection: add or remove point from selection
       const newSelectedIndices = selectedIndices.includes(point.index)
-        ? selectedIndices.filter(i => i !== point.index)
+        ? selectedIndices.filter((i) => i !== point.index)
         : [...selectedIndices, point.index].sort((a, b) => a - b);
-      
+
       if (selectedPointIndices === undefined) {
         setInternalSelectedIndices(newSelectedIndices);
       }
-      
+
       if (onPointsSelect) {
-        const selectedPoints = coursePoints.filter(cp => newSelectedIndices.includes(cp.index));
+        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
         onPointsSelect(selectedPoints);
       }
     } else {
@@ -132,17 +133,13 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
       }
 
       onPointSelect?.(newSelectedIndex !== null ? point : null);
-      
+
       if (onPointsSelect) {
         onPointsSelect(newSelectedIndex !== null ? [point] : []);
       }
     }
   };
 
-  const handleDeletePoint = (pointIndex: number, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent row selection when clicking delete button
-    onPointDelete?.(pointIndex);
-  };
   if (!course) {
     return (
       <div className={styles.container}>
@@ -152,7 +149,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
       </div>
     );
   }
-
 
   const formatCoordinate = (value: number, precision: number = 6): string => {
     return value.toFixed(precision);
@@ -235,7 +231,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               <th className={styles.distanceColumn}>Distance from Previous</th>
               <th className={styles.bearingColumn}>Bearing from Previous</th>
               <th className={styles.distanceColumn}>Cumulative Distance</th>
-              {onPointDelete && <th className={styles.actionColumn}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -243,7 +238,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               const isSelected = selectedIndex === point.index;
               const isMultiSelected = selectedIndices.includes(point.index);
               const isAnySelected = isSelected || isMultiSelected;
-              
+
               return (
                 <tr
                   key={point.index}
@@ -287,36 +282,26 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   }}
                   aria-selected={isAnySelected}
                 >
-                <td className={styles.indexCell}>{point.index + 1}</td>
-                <td className={styles.coordinateCell}>{formatCoordinate(point.latitude)}</td>
-                <td className={styles.coordinateCell}>{formatCoordinate(point.longitude)}</td>
-                <td className={styles.distanceCell}>
-                  {formatDistance(point.distanceFromPrevious)}
-                </td>
-                <td className={styles.bearingCell}>
-                  <span className={styles.bearingValue}>
-                    {formatBearing(point.bearingFromPrevious)}
-                  </span>
-                  {point.bearingFromPrevious !== null && (
-                    <span className={styles.bearingDirection}>
-                      {getBearingDirection(point.bearingFromPrevious)}
-                    </span>
-                  )}
-                </td>
-                <td className={styles.distanceCell}>{formatDistance(point.cumulativeDistance)}</td>
-                {onPointDelete && (
-                  <td className={styles.actionCell}>
-                    <button
-                      className={styles.deleteButton}
-                      onClick={(e) => handleDeletePoint(point.index, e)}
-                      title={`Delete point ${point.index + 1}`}
-                      aria-label={`Delete point ${point.index + 1}`}
-                    >
-                      🗑️
-                    </button>
+                  <td className={styles.indexCell}>{point.index + 1}</td>
+                  <td className={styles.coordinateCell}>{formatCoordinate(point.latitude)}</td>
+                  <td className={styles.coordinateCell}>{formatCoordinate(point.longitude)}</td>
+                  <td className={styles.distanceCell}>
+                    {formatDistance(point.distanceFromPrevious)}
                   </td>
-                )}
-                </tr>
+                  <td className={styles.bearingCell}>
+                    <span className={styles.bearingValue}>
+                      {formatBearing(point.bearingFromPrevious)}
+                    </span>
+                    {point.bearingFromPrevious !== null && (
+                      <span className={styles.bearingDirection}>
+                        {getBearingDirection(point.bearingFromPrevious)}
+                      </span>
+                    )}
+                  </td>
+                   <td className={styles.distanceCell}>
+                     {formatDistance(point.cumulativeDistance)}
+                   </td>
+                 </tr>
               );
             })}
           </tbody>

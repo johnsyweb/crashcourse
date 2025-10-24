@@ -50,7 +50,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     'SELECTED_POINT',
     null as CoursePoint | null
   );
-  const [selectedPoints, setSelectedPoints] = usePersistentState('SELECTED_POINTS', [] as CoursePoint[]);
+  const [selectedPoints, setSelectedPoints] = usePersistentState(
+    'SELECTED_POINTS',
+    [] as CoursePoint[]
+  );
 
   // Clear persistent state when course points change (new course loaded)
   useEffect(() => {
@@ -241,18 +244,18 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
 
       // Sort indices in descending order to avoid index shifting issues
       const sortedIndices = [...pointIndices].sort((a, b) => b - a);
-      
+
       // Create a new course with the points deleted
       const newCoursePoints = [...coursePoints];
-      sortedIndices.forEach(index => {
+      sortedIndices.forEach((index) => {
         newCoursePoints.splice(index, 1);
       });
 
       // Clear selected points if any were deleted
       const deletedIndices = new Set(pointIndices);
-      const remainingSelectedPoints = selectedPoints.filter(p => !deletedIndices.has(p.index));
+      const remainingSelectedPoints = selectedPoints.filter((p) => !deletedIndices.has(p.index));
       setSelectedPoints(remainingSelectedPoints);
-      
+
       // Clear single selected point if it was deleted
       if (selectedPoint && deletedIndices.has(selectedPoint.index)) {
         setSelectedPoint(null);
@@ -261,27 +264,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
       onCoursePointsChange(newCoursePoints);
     },
     [coursePoints, onCoursePointsChange, selectedPoints, selectedPoint]
-  );
-
-  const handlePointDelete = useCallback(
-    (pointIndex: number) => {
-      if (!onCoursePointsChange) {
-        console.warn('onCoursePointsChange not provided - cannot delete point');
-        return;
-      }
-
-      // Create a new course with the point deleted
-      const newCoursePoints = [...coursePoints];
-      newCoursePoints.splice(pointIndex, 1);
-
-      // Clear selected point if it was the deleted point
-      if (selectedPoint?.index === pointIndex) {
-        setSelectedPoint(null);
-      }
-
-      onCoursePointsChange(newCoursePoints);
-    },
-    [coursePoints, onCoursePointsChange, selectedPoint]
   );
 
   const handleResetResults = useCallback(() => {
@@ -380,8 +362,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointSelect={handlePointSelect}
                         selectedPointIndex={selectedPoint?.index}
                         onPointsSelect={handlePointsSelect}
-                        selectedPointIndices={selectedPoints.map(p => p.index)}
-                        onPointDelete={handlePointDelete}
+                        selectedPointIndices={selectedPoints.map((p) => p.index)}
                         onPointsDelete={handlePointsDelete}
                       />
                     )}
@@ -469,8 +450,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       onPointSelect={handlePointSelect}
                       selectedPointIndex={selectedPoint?.index}
                       onPointsSelect={handlePointsSelect}
-                      selectedPointIndices={selectedPoints.map(p => p.index)}
-                      onPointDelete={handlePointDelete}
+                      selectedPointIndices={selectedPoints.map((p) => p.index)}
                       onPointsDelete={handlePointsDelete}
                     />
                   )}

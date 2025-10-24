@@ -143,11 +143,11 @@ describe('Course', () => {
 
       // Course length should be different
       expect(course.length).not.toBe(originalLength);
-      
+
       // Width calculation should still work
       const newWidth = course.getWidthAt(50);
       expect(newWidth).toBeGreaterThan(0);
-      
+
       // Position calculation should still work
       const position = course.getPositionAtDistance(50);
       expect(position).toBeDefined();
