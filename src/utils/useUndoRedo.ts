@@ -37,7 +37,7 @@ export function useUndoRedo<T>(
 
   // Update canUndo and canRedo flags
   useEffect(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       canUndo: prev.historyIndex > 0,
       canRedo: prev.historyIndex < prev.history.length - 1,
@@ -45,7 +45,7 @@ export function useUndoRedo<T>(
   }, [state.historyIndex, state.history.length]);
 
   const setNewState = useCallback((newState: T) => {
-    setState(prev => {
+    setState((prev) => {
       // Don't add to history if the state hasn't changed
       if (JSON.stringify(prev.current) === JSON.stringify(newState)) {
         return prev;
@@ -80,7 +80,7 @@ export function useUndoRedo<T>(
   }, []);
 
   const undo = useCallback(() => {
-    setState(prev => {
+    setState((prev) => {
       if (prev.historyIndex > 0) {
         const newIndex = prev.historyIndex - 1;
         return {
@@ -94,7 +94,7 @@ export function useUndoRedo<T>(
   }, []);
 
   const redo = useCallback(() => {
-    setState(prev => {
+    setState((prev) => {
       if (prev.historyIndex < prev.history.length - 1) {
         const newIndex = prev.historyIndex + 1;
         return {
@@ -132,11 +132,7 @@ export function useUndoRedo<T>(
  * @param redo Function to call for redo
  * @param enabled Whether keyboard shortcuts are enabled (default: true)
  */
-export function useUndoRedoKeyboard(
-  undo: () => void,
-  redo: () => void,
-  enabled: boolean = true
-) {
+export function useUndoRedoKeyboard(undo: () => void, redo: () => void, enabled: boolean = true) {
   useEffect(() => {
     if (!enabled) return;
 
@@ -148,8 +144,8 @@ export function useUndoRedoKeyboard(
       }
       // Check for Ctrl+Y (or Cmd+Shift+Z on Mac) for redo
       else if (
-        ((event.ctrlKey && event.key === 'y') ||
-         (event.metaKey && event.shiftKey && event.key === 'z'))
+        (event.ctrlKey && event.key === 'y') ||
+        (event.metaKey && event.shiftKey && event.key === 'z')
       ) {
         event.preventDefault();
         redo();

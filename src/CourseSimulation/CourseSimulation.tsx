@@ -12,6 +12,7 @@ import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
 import { usePersistentState } from '../utils/usePersistentState';
+import { downloadGPX, generateGPXFilename } from '../GPXFile';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -278,6 +279,22 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     setFinishedParticipants([]);
   }, []);
 
+  const handleExportGPX = useCallback((courseName?: string) => {
+    try {
+      const filename = generateGPXFilename(courseName);
+      downloadGPX(coursePoints, filename, {
+        name: courseName || 'Course',
+        description: 'Exported course from Crash Course Simulator',
+        author: 'Crash Course Simulator',
+        includeElevation: false,
+        includeTimestamps: false,
+      });
+    } catch (error) {
+      console.error('Failed to export GPX:', error);
+      setError(error instanceof Error ? error.message : 'Failed to export GPX file');
+    }
+  }, [coursePoints]);
+
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
   }
@@ -376,6 +393,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         redo={redo}
                         canUndo={canUndo}
                         canRedo={canRedo}
+                        onExportGPX={handleExportGPX}
                       />
                     )}
                   </div>
@@ -468,6 +486,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       redo={redo}
                       canUndo={canUndo}
                       canRedo={canRedo}
+                      onExportGPX={handleExportGPX}
                     />
                   )}
                 </div>

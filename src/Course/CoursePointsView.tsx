@@ -23,6 +23,7 @@ interface CoursePointsViewProps {
   redo?: () => void;
   canUndo?: boolean;
   canRedo?: boolean;
+  onExportGPX?: (courseName?: string) => void;
 }
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
@@ -36,6 +37,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   redo,
   canUndo,
   canRedo,
+  onExportGPX,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
   const [internalSelectedIndices, setInternalSelectedIndices] = useState<number[]>([]);
@@ -244,6 +246,17 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               title="Redo last undone change (Ctrl+Y)"
             >
               ↷ Redo
+            </button>
+          </div>
+        )}
+        {onExportGPX && (
+          <div className={styles.exportActions}>
+            <button
+              className={styles.exportButton}
+              onClick={() => onExportGPX()}
+              title="Export course as GPX file"
+            >
+              📥 Export GPX
             </button>
           </div>
         )}

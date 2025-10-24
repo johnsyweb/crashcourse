@@ -49,6 +49,12 @@
   align-items: center;
 }
 
+.exportActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .batchDeleteButton {
   background-color: #dc3545;
   color: white;
@@ -115,6 +121,34 @@
   color: #6c757d;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.exportButton {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.exportButton:hover {
+  background-color: #218838;
+}
+
+.exportButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.5);
+}
+
+.exportButton:active {
+  background-color: #1e7e34;
 }
 
 .noCourseMessage {

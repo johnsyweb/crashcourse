@@ -161,7 +161,7 @@ describe('useUndoRedo', () => {
   });
 
   it('should work with complex objects', () => {
-    const initial = { points: [], name: 'test' };
+    const initial = { points: [] as number[], name: 'test' };
     const { result } = renderHook(() => useUndoRedo(initial));
 
     act(() => {
