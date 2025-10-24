@@ -190,7 +190,7 @@ describe('generateGPXFilename', () => {
     originalDate = global.Date;
 
     // Mock Date constructor to return a fixed date
-    global.Date = jest.fn(() => new originalDate('2024-01-15T12:00:00Z')) as any;
+    global.Date = jest.fn(() => new originalDate('2024-01-15T12:00:00Z')) as unknown as typeof Date;
     global.Date.now = jest.fn(() => new originalDate('2024-01-15T12:00:00Z').getTime());
   });
 
