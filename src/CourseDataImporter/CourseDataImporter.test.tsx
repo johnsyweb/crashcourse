@@ -32,6 +32,8 @@ const standardGPXMock = jest.fn(({ onDataParsed }) => {
   React.useEffect(() => {
     const mockData: GPXData = {
       isValid: true,
+      name: 'Test Track',
+      description: 'Test Description',
       points: [
         { lat: 10, lon: 20, ele: 100 },
         { lat: 11, lon: 21, ele: 110 },
@@ -110,7 +112,10 @@ describe('CourseDataImporter', () => {
       expect(mockOnCourseDataImported).toHaveBeenCalledWith([
         [10, 20],
         [11, 21],
-      ]);
+      ], {
+        name: 'Test Track',
+        description: 'Test Description',
+      });
     });
   });
 

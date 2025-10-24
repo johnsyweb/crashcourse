@@ -6,6 +6,7 @@ import ParticipantDisplay from '../Participant/ParticipantDisplay';
 import { Course } from '../Course';
 import CourseDisplay from '../Course/CourseDisplay';
 import CoursePointsView, { CoursePoint } from '../Course/CoursePointsView';
+import CourseMetadata from './CourseMetadata';
 import Map from '../Map';
 import SelectedPointMarker from '../Map/SelectedPointMarker';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
@@ -20,8 +21,10 @@ const DEFAULT_MAX_PACE = '2:30'; // fastest
 
 interface CourseSimulationProps {
   coursePoints: LatLngTuple[];
+  courseMetadata?: { name?: string; description?: string };
   onReset?: () => void;
   onCoursePointsChange?: (newCoursePoints: LatLngTuple[]) => void;
+  onCourseMetadataChange?: (metadata: { name?: string; description?: string }) => void;
   undo?: () => void;
   redo?: () => void;
   canUndo?: boolean;
@@ -40,8 +43,10 @@ interface ParticipantProperties {
 
 const CourseSimulation: React.FC<CourseSimulationProps> = ({
   coursePoints,
+  courseMetadata,
   onReset,
   onCoursePointsChange,
+  onCourseMetadataChange,
   undo,
   redo,
   canUndo,
@@ -279,21 +284,24 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     setFinishedParticipants([]);
   }, []);
 
-  const handleExportGPX = useCallback((courseName?: string) => {
-    try {
-      const filename = generateGPXFilename(courseName);
-      downloadGPX(coursePoints, filename, {
-        name: courseName || 'Course',
-        description: 'Exported course from Crash Course Simulator',
-        author: 'Crash Course Simulator',
-        includeElevation: false,
-        includeTimestamps: false,
-      });
-    } catch (error) {
-      console.error('Failed to export GPX:', error);
-      setError(error instanceof Error ? error.message : 'Failed to export GPX file');
-    }
-  }, [coursePoints]);
+  const handleExportGPX = useCallback(
+    (courseName?: string) => {
+      try {
+        const filename = generateGPXFilename(courseName || courseMetadata?.name);
+        downloadGPX(coursePoints, filename, {
+          name: courseName || courseMetadata?.name || 'Course',
+          description: courseMetadata?.description || 'Exported course from Crash Course Simulator',
+          author: 'Crash Course Simulator',
+          includeElevation: false,
+          includeTimestamps: false,
+        });
+      } catch (error) {
+        console.error('Failed to export GPX:', error);
+        setError(error instanceof Error ? error.message : 'Failed to export GPX file');
+      }
+    },
+    [coursePoints, courseMetadata]
+  );
 
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
@@ -321,6 +329,12 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     Import Different Course
                   </button>
                 </div>
+                {courseMetadata && onCourseMetadataChange && (
+                  <CourseMetadata
+                    metadata={courseMetadata}
+                    onMetadataChange={onCourseMetadataChange}
+                  />
+                )}
                 {course && (
                   <Simulator
                     course={course}
@@ -384,6 +398,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     {activeTab === 'coursePoints' && course && (
                       <CoursePointsView
                         course={course}
+                        courseMetadata={courseMetadata}
                         onPointSelect={handlePointSelect}
                         selectedPointIndex={selectedPoint?.index}
                         onPointsSelect={handlePointsSelect}
@@ -431,6 +446,12 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     Import Different Course
                   </button>
                 </div>
+                {courseMetadata && onCourseMetadataChange && (
+                  <CourseMetadata
+                    metadata={courseMetadata}
+                    onMetadataChange={onCourseMetadataChange}
+                  />
+                )}
                 {course && (
                   <Simulator
                     course={course}
@@ -477,6 +498,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   {activeTab === 'coursePoints' && course && (
                     <CoursePointsView
                       course={course}
+                      courseMetadata={courseMetadata}
                       onPointSelect={handlePointSelect}
                       selectedPointIndex={selectedPoint?.index}
                       onPointsSelect={handlePointsSelect}

@@ -12,6 +12,7 @@ export interface GPXPoint {
 
 export interface GPXData {
   name?: string;
+  description?: string;
   points: GPXPoint[];
   startPoint?: GPXPoint;
   endPoint?: GPXPoint;
@@ -76,11 +77,13 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
         })
       );
 
-      // Get track name with safe navigation
+      // Get track name and description with safe navigation
       const trackName = track.name || track.n || file.name.replace(/\.[^/.]+$/, '');
+      const trackDescription = track.desc || track.description || '';
 
       const gpxData: GPXData = {
         name: trackName,
+        description: trackDescription,
         points,
         startPoint: points.length > 0 ? points[0] : undefined,
         endPoint: points.length > 0 ? points[points.length - 1] : undefined,

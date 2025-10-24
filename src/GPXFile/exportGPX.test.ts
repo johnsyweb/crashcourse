@@ -49,7 +49,7 @@ describe('exportToGPX', () => {
 
   it('should generate valid GPX XML for basic course', () => {
     const gpx = exportToGPX(samplePoints);
-    
+
     expect(gpx).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(gpx).toContain('<gpx version="1.1"');
     expect(gpx).toContain('<trk>');
@@ -65,9 +65,9 @@ describe('exportToGPX', () => {
       description: 'A test course for unit testing',
       author: 'Test Author',
     };
-    
+
     const gpx = exportToGPX(samplePoints, options);
-    
+
     expect(gpx).toContain('<name>Test Course</name>');
     expect(gpx).toContain('<desc>A test course for unit testing</desc>');
     expect(gpx).toContain('creator="Test Author"');
@@ -77,9 +77,9 @@ describe('exportToGPX', () => {
     const options: GPXExportOptions = {
       includeElevation: true,
     };
-    
+
     const gpx = exportToGPX(samplePoints, options);
-    
+
     expect(gpx).toContain('<ele>0</ele>');
   });
 
@@ -87,9 +87,9 @@ describe('exportToGPX', () => {
     const options: GPXExportOptions = {
       includeTimestamps: true,
     };
-    
+
     const gpx = exportToGPX(samplePoints, options);
-    
+
     expect(gpx).toContain('<time>');
     expect(gpx).toMatch(/<time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z<\/time>/);
   });
@@ -99,10 +99,12 @@ describe('exportToGPX', () => {
       name: 'Test & Course <with> "special" characters',
       description: 'Description with & < > " \' characters',
     };
-    
+
     const gpx = exportToGPX(samplePoints, options);
-    
-    expect(gpx).toContain('<name>Test &amp; Course &lt;with&gt; &quot;special&quot; characters</name>');
+
+    expect(gpx).toContain(
+      '<name>Test &amp; Course &lt;with&gt; &quot;special&quot; characters</name>'
+    );
     expect(gpx).toContain('<desc>Description with &amp; &lt; &gt; &quot; &#39; characters</desc>');
   });
 
@@ -112,7 +114,7 @@ describe('exportToGPX', () => {
 
   it('should use default values when no options provided', () => {
     const gpx = exportToGPX(samplePoints);
-    
+
     expect(gpx).toContain('<name>Course</name>');
     expect(gpx).toContain('<desc>Exported course from Crash Course Simulator</desc>');
     expect(gpx).toContain('creator="Crash Course Simulator"');
@@ -135,7 +137,7 @@ describe('downloadGPX', () => {
 
   it('should create and download GPX file', () => {
     downloadGPX(samplePoints, 'test.gpx');
-    
+
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(mockLink.href).toBe('blob:mock-url');
     expect(mockLink.download).toBe('test.gpx');
@@ -147,13 +149,13 @@ describe('downloadGPX', () => {
 
   it('should add .gpx extension if not provided', () => {
     downloadGPX(samplePoints, 'test');
-    
+
     expect(mockLink.download).toBe('test.gpx');
   });
 
   it('should use default filename if not provided', () => {
     downloadGPX(samplePoints);
-    
+
     expect(mockLink.download).toMatch(/^course_\d{4}-\d{2}-\d{2}\.gpx$/);
   });
 
@@ -162,9 +164,9 @@ describe('downloadGPX', () => {
       name: 'Test Course',
       includeElevation: true,
     };
-    
+
     downloadGPX(samplePoints, 'test.gpx', options);
-    
+
     const blob = mockCreateObjectURL.mock.calls[0][0];
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe('application/gpx+xml');
@@ -173,9 +175,9 @@ describe('downloadGPX', () => {
   it('should throw error for empty course', () => {
     // Suppress console.error for this test since it's expected
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     expect(() => downloadGPX([])).toThrow('Cannot export empty course');
-    
+
     consoleSpy.mockRestore();
   });
 });
@@ -186,7 +188,7 @@ describe('generateGPXFilename', () => {
   beforeEach(() => {
     // Store original Date constructor
     originalDate = global.Date;
-    
+
     // Mock Date constructor to return a fixed date
     global.Date = jest.fn(() => new originalDate('2024-01-15T12:00:00Z')) as any;
     global.Date.now = jest.fn(() => new originalDate('2024-01-15T12:00:00Z').getTime());
@@ -199,43 +201,43 @@ describe('generateGPXFilename', () => {
 
   it('should generate filename with course name and date', () => {
     const filename = generateGPXFilename('My Test Course');
-    
+
     expect(filename).toBe('my_test_course_2024-01-15.gpx');
   });
 
   it('should clean course name for filename', () => {
     const filename = generateGPXFilename('My Test Course!@#$%^&*()');
-    
+
     expect(filename).toBe('my_test_course_2024-01-15.gpx');
   });
 
   it('should replace spaces with underscores', () => {
     const filename = generateGPXFilename('My Test Course With Spaces');
-    
+
     expect(filename).toBe('my_test_course_with_spaces_2024-01-15.gpx');
   });
 
   it('should convert to lowercase', () => {
     const filename = generateGPXFilename('MY TEST COURSE');
-    
+
     expect(filename).toBe('my_test_course_2024-01-15.gpx');
   });
 
   it('should generate default filename when no course name provided', () => {
     const filename = generateGPXFilename();
-    
+
     expect(filename).toBe('course_2024-01-15.gpx');
   });
 
   it('should handle empty course name', () => {
     const filename = generateGPXFilename('');
-    
+
     expect(filename).toBe('course_2024-01-15.gpx');
   });
 
   it('should handle course name with only special characters', () => {
     const filename = generateGPXFilename('!@#$%^&*()');
-    
+
     expect(filename).toBe('course_2024-01-15.gpx');
   });
 });

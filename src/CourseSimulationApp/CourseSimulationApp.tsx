@@ -19,26 +19,43 @@ const CourseSimulationApp: React.FC = () => {
     clear: clearHistory,
   } = useUndoRedo<LatLngTuple[]>([], 100); // Keep 100 history entries
 
+  const {
+    current: courseMetadata,
+    setState: setCourseMetadata,
+    clear: clearMetadataHistory,
+  } = useUndoRedo<{ name?: string; description?: string }>({}, 100);
+
   // Enable keyboard shortcuts for undo/redo
   useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);
 
   // Update document title based on application state
   useDocumentTitle(
     'Crash Course Simulator',
-    coursePoints.length > 0 ? 'Course Simulation' : 'Import Course Data'
+    coursePoints.length > 0 
+      ? (courseMetadata?.name ? `${courseMetadata.name} - Course Simulation` : 'Course Simulation')
+      : 'Import Course Data'
   );
 
-  const handleCourseDataImported = (points: LatLngTuple[]) => {
+  const handleCourseDataImported = (points: LatLngTuple[], metadata?: { name?: string; description?: string }) => {
     setCoursePoints(points);
+    if (metadata) {
+      setCourseMetadata(metadata);
+    }
   };
 
   const handleResetSimulation = () => {
     setCoursePoints([]);
+    setCourseMetadata({});
     clearHistory(); // Clear undo history when resetting
+    clearMetadataHistory();
   };
 
   const handleCoursePointsChange = (newPoints: LatLngTuple[]) => {
     setCoursePoints(newPoints);
+  };
+
+  const handleCourseMetadataChange = (newMetadata: { name?: string; description?: string }) => {
+    setCourseMetadata(newMetadata);
   };
 
   return (
@@ -48,8 +65,10 @@ const CourseSimulationApp: React.FC = () => {
       ) : (
         <CourseSimulation
           coursePoints={coursePoints}
+          courseMetadata={courseMetadata}
           onReset={handleResetSimulation}
           onCoursePointsChange={handleCoursePointsChange}
+          onCourseMetadataChange={handleCourseMetadataChange}
           undo={undo}
           redo={redo}
           canUndo={canUndo}

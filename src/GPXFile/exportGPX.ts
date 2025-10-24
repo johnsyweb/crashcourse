@@ -14,10 +14,7 @@ export interface GPXExportOptions {
  * @param options Export options
  * @returns GPX XML string
  */
-export function exportToGPX(
-  points: LatLngTuple[],
-  options: GPXExportOptions = {}
-): string {
+export function exportToGPX(points: LatLngTuple[], options: GPXExportOptions = {}): string {
   const {
     name = 'Course',
     description = 'Exported course from Crash Course Simulator',
@@ -31,23 +28,25 @@ export function exportToGPX(
   }
 
   // Generate track points
-  const trackPoints = points.map(([lat, lon], index) => {
-    let pointXml = `    <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}">`;
-    
-    if (includeElevation) {
-      // Default elevation to 0 if not provided
-      pointXml += `\n      <ele>0</ele>`;
-    }
-    
-    if (includeTimestamps) {
-      // Generate a timestamp based on index (assuming 1 second intervals)
-      const timestamp = new Date(Date.now() + index * 1000).toISOString();
-      pointXml += `\n      <time>${timestamp}</time>`;
-    }
-    
-    pointXml += `\n    </trkpt>`;
-    return pointXml;
-  }).join('\n');
+  const trackPoints = points
+    .map(([lat, lon], index) => {
+      let pointXml = `    <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}">`;
+
+      if (includeElevation) {
+        // Default elevation to 0 if not provided
+        pointXml += `\n      <ele>0</ele>`;
+      }
+
+      if (includeTimestamps) {
+        // Generate a timestamp based on index (assuming 1 second intervals)
+        const timestamp = new Date(Date.now() + index * 1000).toISOString();
+        pointXml += `\n      <time>${timestamp}</time>`;
+      }
+
+      pointXml += `\n    </trkpt>`;
+      return pointXml;
+    })
+    .join('\n');
 
   // Generate GPX XML
   const gpxXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -57,6 +56,9 @@ export function exportToGPX(
     <desc>${escapeXml(description)}</desc>
     <author>
       <name>${escapeXml(author)}</name>
+      <link href="https://johnsy.com/crashcourse/">
+        <text>Crash Course Simulator</text>
+      </link>
     </author>
     <time>${new Date().toISOString()}</time>
   </metadata>
@@ -85,21 +87,21 @@ export function downloadGPX(
 ): void {
   try {
     const gpxContent = exportToGPX(points, options);
-    
+
     // Use generateGPXFilename if no filename provided
     const finalFilename = filename || generateGPXFilename();
-    
+
     // Create blob and download
     const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = finalFilename.endsWith('.gpx') ? finalFilename : `${finalFilename}.gpx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Clean up the URL object
     URL.revokeObjectURL(url);
   } catch (error) {
@@ -130,21 +132,21 @@ function escapeXml(text: string): string {
 export function generateGPXFilename(courseName?: string): string {
   const now = new Date();
   const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
-  
+
   if (courseName) {
     // Clean the course name for filename
     const cleanName = courseName
       .replace(/[^a-zA-Z0-9\s-_]/g, '') // Remove special characters
       .replace(/\s+/g, '_') // Replace spaces with underscores
       .toLowerCase();
-    
+
     // If clean name is empty after cleaning, use default
     if (cleanName.trim() === '') {
       return `course_${dateStr}.gpx`;
     }
-    
+
     return `${cleanName}_${dateStr}.gpx`;
   }
-  
+
   return `course_${dateStr}.gpx`;
 }

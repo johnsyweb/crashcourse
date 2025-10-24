@@ -5,7 +5,7 @@ import FileUploadSection from '../FileUploadSection';
 import GPXFile, { GPXData } from '../GPXFile';
 
 interface CourseDataImporterProps {
-  onCourseDataImported: (points: LatLngTuple[]) => void;
+  onCourseDataImported: (points: LatLngTuple[], metadata?: { name?: string; description?: string }) => void;
 }
 
 const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImported }) => {
@@ -30,7 +30,13 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
         return;
       }
 
-      onCourseDataImported(points);
+      // Pass metadata along with points
+      const metadata = {
+        name: data.name,
+        description: data.description,
+      };
+
+      onCourseDataImported(points, metadata);
     } else if (data.errorMessage) {
       setImportError(data.errorMessage);
     }

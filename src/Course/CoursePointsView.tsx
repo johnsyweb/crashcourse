@@ -14,6 +14,7 @@ export interface CoursePoint {
 
 interface CoursePointsViewProps {
   course: Course | null;
+  courseMetadata?: { name?: string; description?: string };
   onPointSelect?: (point: CoursePoint | null) => void;
   selectedPointIndex?: number | null;
   onPointsSelect?: (points: CoursePoint[]) => void;
@@ -28,6 +29,7 @@ interface CoursePointsViewProps {
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   course,
+  courseMetadata,
   onPointSelect,
   selectedPointIndex,
   onPointsSelect,
@@ -253,7 +255,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           <div className={styles.exportActions}>
             <button
               className={styles.exportButton}
-              onClick={() => onExportGPX()}
+              onClick={() => onExportGPX(courseMetadata?.name)}
               title="Export course as GPX file"
             >
               📥 Export GPX
