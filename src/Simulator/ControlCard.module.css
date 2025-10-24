@@ -6,6 +6,19 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.controlCard.expanded {
+  /* Explicit expanded state */
+}
+
+.controlCard.collapsed {
+  /* Explicit collapsed state */
+}
+
+.controlCard.collapsed .content {
+  display: none !important;
 }
 
 .header {
@@ -44,19 +57,23 @@
   cursor: pointer;
   font-size: 0.9rem;
   color: #2c3e50;
+  padding: 0.25rem;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: #e9ecef;
 }
 
 .chevron {
   display: inline-block;
   transition: transform 0.15s ease-in-out;
+  font-weight: bold;
 }
 
-.collapsed .chevron {
+.controlCard.collapsed .chevron {
   transform: rotate(-90deg);
-}
-
-.collapsed .content {
-  display: none;
 }
 
 /* Default: collapsed on very small screens to preserve space */
@@ -66,6 +83,6 @@
   }
 
   .controlCard:not(.expanded) .content {
-    display: none;
+    display: none !important;
   }
 }

@@ -69,6 +69,8 @@
   background-color: white;
   border-top: 2px solid #007bff;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Mobile Panel Styles */
@@ -187,9 +189,11 @@
 
 .tabContent {
   flex: 1;
-  padding: 16px;
+  padding: 0;
   background-color: white;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .errorMessage {

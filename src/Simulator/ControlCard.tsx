@@ -41,7 +41,7 @@ const ControlCard: React.FC<ControlCardProps> = ({ title, children, compact, cla
 
   return (
     <div
-      className={`${styles.controlCard} ${className || ''} ${expanded ? 'expanded' : 'collapsed'}`}
+      className={`${styles.controlCard} ${className || ''} ${expanded ? styles.expanded : styles.collapsed}`}
     >
       {title ? (
         <div className={styles.header}>
