@@ -2,11 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Course } from './Course';
 import * as turf from '@turf/turf';
 import styles from './CoursePointsView.module.css';
+import {
+  createLatitude,
+  createLongitude,
+  latitudeToNumber,
+  longitudeToNumber,
+  type Latitude,
+  type Longitude,
+} from '../utils/coordinates';
 
 export interface CoursePoint {
   index: number;
-  latitude: number;
-  longitude: number;
+  latitude: Latitude;
+  longitude: Longitude;
   distanceFromPrevious: number;
   bearingFromPrevious: number | null;
   cumulativeDistance: number;
@@ -95,8 +103,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
       coursePoints.push({
         index,
-        latitude,
-        longitude,
+        latitude: createLatitude(latitude),
+        longitude: createLongitude(longitude),
         distanceFromPrevious,
         bearingFromPrevious,
         cumulativeDistance,
@@ -344,8 +352,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const handleMovePoint = (index: number) => {
     const point = coursePoints[index];
     setMovePointIndex(index);
-    setMovePointLat(point.lat.toFixed(6));
-    setMovePointLng(point.lng.toFixed(6));
+    setMovePointLat(point.latitude.toFixed(6));
+    setMovePointLng(point.longitude.toFixed(6));
     setShowMoveForm(true);
   };
 
@@ -386,8 +394,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     if (!onPointMove) return;
 
     const point = coursePoints[index];
-    const currentLat = point.latitude;
-    const currentLng = point.longitude;
+    const currentLat = latitudeToNumber(point.latitude);
+    const currentLng = longitudeToNumber(point.longitude);
 
     // Convert distance to degrees (rough approximation)
     const latOffset = distanceMeters / 111000; // ~111km per degree latitude
@@ -426,8 +434,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
     selectedIndices.forEach((index) => {
       const point = coursePoints[index];
-      const currentLat = point.latitude;
-      const currentLng = point.longitude;
+      const currentLat = latitudeToNumber(point.latitude);
+      const currentLng = longitudeToNumber(point.longitude);
 
       // Convert distance to degrees (rough approximation)
       const latOffset = 1 / 111000; // ~111km per degree latitude
