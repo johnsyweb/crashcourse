@@ -98,6 +98,55 @@ describe('Course', () => {
     }
   });
 
+  describe('movePoint', () => {
+    it('should move a point to a new location', () => {
+      const course = new Course(samplePoints);
+      const originalPoint = course.getPoints()[1];
+      const newPoint: LatLngTuple = [51.52, -0.11];
+
+      course.movePoint(1, newPoint);
+
+      expect(course.getPoints()[1]).toEqual(newPoint);
+      expect(course.getPoints()).toHaveLength(3);
+    });
+
+    it('should recalculate distances and bearings after moving a point', () => {
+      const course = new Course(samplePoints);
+      const newPoint: LatLngTuple = [51.52, -0.11];
+
+      course.movePoint(1, newPoint);
+
+      // The course should still be valid with recalculated distances
+      expect(course.totalLength).toBeGreaterThan(0);
+      expect(course.getPoints()).toHaveLength(3);
+    });
+
+    it('should throw error for invalid point', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => course.movePoint(1, [91, -0.11])).toThrow('Invalid latitude');
+      expect(() => course.movePoint(1, [51.52, 181])).toThrow('Invalid longitude');
+      expect(() => course.movePoint(1, [51.52])).toThrow('Invalid point');
+    });
+
+    it('should throw error for invalid index', () => {
+      const course = new Course(samplePoints);
+
+      expect(() => course.movePoint(-1, [51.52, -0.11])).toThrow('Invalid index');
+      expect(() => course.movePoint(3, [51.52, -0.11])).toThrow('Invalid index');
+    });
+
+    it('should remove consecutive duplicates after moving', () => {
+      const course = new Course(samplePoints);
+      const duplicatePoint = course.getPoints()[0];
+
+      course.movePoint(1, duplicatePoint);
+
+      // Should remove the duplicate and have 2 points instead of 3
+      expect(course.getPoints()).toHaveLength(2);
+    });
+  });
+
   describe('deletePoint', () => {
     it('should delete a point at the specified index', () => {
       const course = new Course(samplePoints);

@@ -291,13 +291,36 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         // Create a temporary course to validate the point and get proper insertion logic
         const tempCourse = new Course(coursePoints);
         tempCourse.addPoint(point, index);
-
+        
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);
       } catch (error) {
         console.error('Error adding point:', error);
         alert(`Error adding point: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    },
+    [coursePoints, onCoursePointsChange]
+  );
+
+  const handlePointMove = useCallback(
+    (index: number, point: [number, number]) => {
+      if (!onCoursePointsChange) {
+        console.warn('onCoursePointsChange not provided - cannot move points');
+        return;
+      }
+
+      try {
+        // Create a temporary course to validate the point and get proper update logic
+        const tempCourse = new Course(coursePoints);
+        tempCourse.movePoint(index, point);
+        
+        // Get the updated points from the temporary course
+        const updatedPoints = tempCourse.getPoints();
+        onCoursePointsChange(updatedPoints);
+      } catch (error) {
+        console.error('Error moving point:', error);
+        alert(`Error moving point: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
     [coursePoints, onCoursePointsChange]
@@ -428,6 +451,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         selectedPointIndices={selectedPoints.map((p) => p.index)}
                         onPointsDelete={handlePointsDelete}
                         onPointAdd={handlePointAdd}
+                        onPointMove={handlePointMove}
                         undo={undo}
                         redo={redo}
                         canUndo={canUndo}
