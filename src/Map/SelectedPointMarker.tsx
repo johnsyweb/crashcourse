@@ -1,7 +1,7 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { latitudeToNumber, longitudeToNumber } from '../../utils/coordinates';
+import { latitudeToNumber, longitudeToNumber } from '../utils/coordinates';
 
 interface SelectedPointMarkerProps {
   point: { latitude: number; longitude: number; index: number } | null;

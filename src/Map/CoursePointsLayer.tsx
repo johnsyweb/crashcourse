@@ -1,7 +1,7 @@
 import React from 'react';
 import { CircleMarker } from 'react-leaflet';
 import { CoursePoint } from '../../Course/CoursePointsView';
-import { latitudeToNumber, longitudeToNumber } from '../../utils/coordinates';
+import { latitudeToNumber, longitudeToNumber } from '../utils/coordinates';
 
 interface CoursePointsLayerProps {
   points: CoursePoint[];
