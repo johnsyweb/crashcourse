@@ -46,17 +46,6 @@ const CoursePointsLayer: React.FC<CoursePointsLayerProps> = ({
           return null;
         }
 
-        // Validate coordinates before rendering
-        if (
-          typeof point.latitude !== 'number' || 
-          typeof point.longitude !== 'number' ||
-          isNaN(point.latitude) || 
-          isNaN(point.longitude)
-        ) {
-          console.warn(`Invalid coordinates for point ${index}:`, point);
-          return null;
-        }
-
         return (
           <CircleMarker
             key={index}

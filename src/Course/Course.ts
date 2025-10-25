@@ -47,6 +47,35 @@ export class Course {
    * @param points - Array of latitude/longitude points defining the course
    */
   constructor(points: LatLngTuple[]) {
+    // Validate input data at the source
+    if (!Array.isArray(points)) {
+      throw new Error('Points must be an array');
+    }
+
+    // Validate each point
+    points.forEach((point, index) => {
+      if (!Array.isArray(point) || point.length !== 2) {
+        throw new Error(`Point at index ${index} must be a [latitude, longitude] tuple`);
+      }
+      
+      const [lat, lng] = point;
+      if (typeof lat !== 'number' || typeof lng !== 'number') {
+        throw new Error(`Point at index ${index} must have numeric latitude and longitude`);
+      }
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        throw new Error(`Point at index ${index} has NaN coordinates`);
+      }
+      
+      if (lat < -90 || lat > 90) {
+        throw new Error(`Point at index ${index} has invalid latitude: ${lat}`);
+      }
+      
+      if (lng < -180 || lng > 180) {
+        throw new Error(`Point at index ${index} has invalid longitude: ${lng}`);
+      }
+    });
+
     this.points = Course.removeConsecutiveDuplicatePoints(points);
 
     if (this.points.length < 2) {

@@ -44,17 +44,6 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
     return null;
   }
 
-  // Validate coordinates
-  if (
-    typeof point.latitude !== 'number' || 
-    typeof point.longitude !== 'number' ||
-    isNaN(point.latitude) || 
-    isNaN(point.longitude)
-  ) {
-    console.warn('Invalid coordinates for selected point:', point);
-    return null;
-  }
-
   const handleDragEnd = (e: L.DragEndEvent) => {
     if (!onPointMove) return;
 
