@@ -314,13 +314,39 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         // Create a temporary course to validate the point and get proper update logic
         const tempCourse = new Course(coursePoints);
         tempCourse.movePoint(index, point);
-
+        
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);
       } catch (error) {
         console.error('Error moving point:', error);
         alert(`Error moving point: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    },
+    [coursePoints, onCoursePointsChange]
+  );
+
+  const handleBatchPointMove = useCallback(
+    (updates: Array<{ index: number; point: [number, number] }>) => {
+      if (!onCoursePointsChange) {
+        console.warn('onCoursePointsChange not provided - cannot move points');
+        return;
+      }
+
+      try {
+        // Create a temporary course and apply all updates
+        const tempCourse = new Course(coursePoints);
+        
+        updates.forEach(({ index, point }) => {
+          tempCourse.movePoint(index, point);
+        });
+        
+        // Get the updated points from the temporary course
+        const updatedPoints = tempCourse.getPoints();
+        onCoursePointsChange(updatedPoints);
+      } catch (error) {
+        console.error('Error moving points:', error);
+        alert(`Error moving points: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
     [coursePoints, onCoursePointsChange]
@@ -452,6 +478,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointsDelete={handlePointsDelete}
                         onPointAdd={handlePointAdd}
                         onPointMove={handlePointMove}
+                        onBatchPointMove={handleBatchPointMove}
                         undo={undo}
                         redo={redo}
                         canUndo={canUndo}

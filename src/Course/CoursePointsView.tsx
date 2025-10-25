@@ -22,6 +22,7 @@ interface CoursePointsViewProps {
   onPointsDelete?: (pointIndices: number[]) => void;
   onPointAdd?: (point: [number, number], index?: number) => void;
   onPointMove?: (index: number, point: [number, number]) => void;
+  onBatchPointMove?: (updates: Array<{ index: number; point: [number, number] }>) => void;
   undo?: () => void;
   redo?: () => void;
   canUndo?: boolean;
@@ -39,6 +40,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   onPointsDelete,
   onPointAdd,
   onPointMove,
+  onBatchPointMove,
   undo,
   redo,
   canUndo,
@@ -417,11 +419,47 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   };
 
   const moveSelectedPoints = (direction: 'north' | 'south' | 'east' | 'west') => {
-    if (!onPointMove || selectedIndices.length === 0) return;
+    if (!onBatchPointMove || selectedIndices.length === 0) return;
 
+    // Calculate new positions for all selected points
+    const updates: Array<{ index: number; point: [number, number] }> = [];
+    
     selectedIndices.forEach((index) => {
-      movePointDirection(index, direction, 1);
+      const point = coursePoints[index];
+      const currentLat = point.latitude;
+      const currentLng = point.longitude;
+
+      // Convert distance to degrees (rough approximation)
+      const latOffset = 1 / 111000; // ~111km per degree latitude
+      const lngOffset = 1 / (111000 * Math.cos((currentLat * Math.PI) / 180)); // Adjust for longitude
+
+      let newLat = currentLat;
+      let newLng = currentLng;
+
+      switch (direction) {
+        case 'north':
+          newLat = currentLat + latOffset;
+          break;
+        case 'south':
+          newLat = currentLat - latOffset;
+          break;
+        case 'east':
+          newLng = currentLng + lngOffset;
+          break;
+        case 'west':
+          newLng = currentLng - lngOffset;
+          break;
+      }
+
+      updates.push({ index, point: [newLat, newLng] });
     });
+
+    // Apply all updates in a single batch
+    try {
+      onBatchPointMove(updates);
+    } catch (error) {
+      alert(`Error moving points: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const addAfterSelectedPoint = () => {
