@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # Run full project checks to catch cross-file type errors
 echo "🔍 Running pre-commit checks on full project..."
 
