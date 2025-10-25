@@ -367,16 +367,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                 >
                   + Add at End
                 </button>
-                <button
-                  className={styles.addPointButton}
-                  onClick={() => {
-                    setAddAtIndex(coursePoints.length); // Default to end
-                    setShowAddForm(true);
-                  }}
-                  title="Add a new point at a specific location"
-                >
-                  + Add Point (Custom)
-                </button>
               </div>
             ) : (
               <div className={styles.addPointForm}>
@@ -402,27 +392,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                       placeholder="e.g., -0.127"
                       className={styles.formInput}
                     />
-                  </label>
-                </div>
-                <div className={styles.formRow}>
-                  <label className={styles.formLabel}>
-                    Insert at index:
-                    <input
-                      type="number"
-                      min="0"
-                      max={coursePoints.length}
-                      value={addAtIndex}
-                      onChange={(e) => setAddAtIndex(parseInt(e.target.value) || 0)}
-                      placeholder="0 (start)"
-                      className={styles.formInput}
-                    />
-                    <small className={styles.formHelp}>
-                      {addAtIndex === 0
-                        ? 'Will insert at the start (becomes new first point)'
-                        : addAtIndex === coursePoints.length
-                          ? 'Will insert at the end (after last point)'
-                          : `Will insert at position ${addAtIndex} (between points ${addAtIndex} and ${addAtIndex + 1})`}
-                    </small>
                   </label>
                 </div>
                 <div className={styles.formActions}>
