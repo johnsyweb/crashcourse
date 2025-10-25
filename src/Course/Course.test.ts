@@ -101,7 +101,6 @@ describe('Course', () => {
   describe('movePoint', () => {
     it('should move a point to a new location', () => {
       const course = new Course(samplePoints);
-      const originalPoint = course.getPoints()[1];
       const newPoint: LatLngTuple = [51.52, -0.11];
 
       course.movePoint(1, newPoint);

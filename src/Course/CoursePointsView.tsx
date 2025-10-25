@@ -61,7 +61,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const [newPointLat, setNewPointLat] = useState('');
   const [newPointLng, setNewPointLng] = useState('');
   const [addAtIndex, setAddAtIndex] = useState<number>(0);
-  const [showMoveForm, setShowMoveForm] = useState(false);
+  const [_showMoveForm, setShowMoveForm] = useState(false);
   const [movePointIndex, setMovePointIndex] = useState<number | null>(null);
   const [movePointLat, setMovePointLat] = useState('');
   const [movePointLng, setMovePointLng] = useState('');
@@ -349,7 +349,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setShowAddForm(true);
   };
 
-  const handleMovePoint = (index: number) => {
+  const _handleMovePoint = (index: number) => {
     const point = coursePoints[index];
     setMovePointIndex(index);
     setMovePointLat(point.latitude.toFixed(6));
@@ -357,7 +357,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setShowMoveForm(true);
   };
 
-  const handleConfirmMove = () => {
+  const _handleConfirmMove = () => {
     if (!onPointMove || movePointIndex === null) return;
 
     const lat = parseFloat(movePointLat);
@@ -379,14 +379,14 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     }
   };
 
-  const handleCancelMove = () => {
+  const _handleCancelMove = () => {
     setShowMoveForm(false);
     setMovePointIndex(null);
     setMovePointLat('');
     setMovePointLng('');
   };
 
-  const movePointDirection = (
+  const _movePointDirection = (
     index: number,
     direction: 'north' | 'south' | 'east' | 'west',
     distanceMeters: number = 1

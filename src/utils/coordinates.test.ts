@@ -16,6 +16,7 @@ describe('createLatitude', () => {
 
   it('should reject non-numeric values', () => {
     expect(() => createLatitude(NaN)).toThrow('Invalid latitude');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(() => createLatitude('45' as any)).toThrow('Invalid latitude');
   });
 });
@@ -36,6 +37,7 @@ describe('createLongitude', () => {
 
   it('should reject non-numeric values', () => {
     expect(() => createLongitude(NaN)).toThrow('Invalid longitude');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(() => createLongitude('45' as any)).toThrow('Invalid longitude');
   });
 });
