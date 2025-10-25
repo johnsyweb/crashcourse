@@ -345,13 +345,13 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           <div className={styles.addPointSection}>
             {!showAddForm ? (
               <div className={styles.addPointButtons}>
-                <button
-                  className={styles.addPointButton}
-                  onClick={handleAddBeforeFirst}
-                  title="Add a point at position 0 (becomes new first point)"
-                >
-                  + Add at Position 0
-                </button>
+      <button
+        className={styles.addPointButton}
+        onClick={handleAddBeforeFirst}
+        title="Add a point at the start of the course (becomes new first point)"
+      >
+        + Add at Start
+      </button>
                 <button
                   className={styles.addPointButton}
                   onClick={handleAddAtEnd}
@@ -399,22 +399,20 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                 <div className={styles.formRow}>
                   <label className={styles.formLabel}>
                     Insert at index:
-    <input
-      type="number"
-      min="0"
-      max={coursePoints.length}
-      value={addAtIndex}
-      onChange={(e) =>
-        setAddAtIndex(parseInt(e.target.value) || 0)
-      }
-      placeholder="0"
-      className={styles.formInput}
-    />
+                    <input
+                      type="number"
+                      min="0"
+                      max={coursePoints.length}
+                      value={addAtIndex}
+                      onChange={(e) => setAddAtIndex(parseInt(e.target.value) || 0)}
+                      placeholder="0 (start)"
+                      className={styles.formInput}
+                    />
                     <small className={styles.formHelp}>
                       {addAtIndex === 0
-                        ? 'Will insert at position 0 (becomes new first point)'
+                        ? 'Will insert at the start (becomes new first point)'
                         : addAtIndex === coursePoints.length
-                          ? 'Will insert at end (after last point)'
+                          ? 'Will insert at the end (after last point)'
                           : `Will insert at position ${addAtIndex} (between points ${addAtIndex} and ${addAtIndex + 1})`}
                     </small>
                   </label>
