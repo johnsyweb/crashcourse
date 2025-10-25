@@ -61,10 +61,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const [newPointLat, setNewPointLat] = useState('');
   const [newPointLng, setNewPointLng] = useState('');
   const [addAtIndex, setAddAtIndex] = useState<number>(0);
-  const [_showMoveForm, setShowMoveForm] = useState(false);
-  const [movePointIndex, setMovePointIndex] = useState<number | null>(null);
-  const [movePointLat, setMovePointLat] = useState('');
-  const [movePointLng, setMovePointLng] = useState('');
 
   // Use external selectedPointIndex if provided, otherwise use internal state
   const selectedIndex =
@@ -347,83 +343,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setNewPointLat(lat.toFixed(6));
     setNewPointLng(lng.toFixed(6));
     setShowAddForm(true);
-  };
-
-  const _handleMovePoint = (index: number) => {
-    const point = coursePoints[index];
-    setMovePointIndex(index);
-    setMovePointLat(point.latitude.toFixed(6));
-    setMovePointLng(point.longitude.toFixed(6));
-    setShowMoveForm(true);
-  };
-
-  const _handleConfirmMove = () => {
-    if (!onPointMove || movePointIndex === null) return;
-
-    const lat = parseFloat(movePointLat);
-    const lng = parseFloat(movePointLng);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      alert('Please enter valid latitude and longitude values');
-      return;
-    }
-
-    try {
-      onPointMove(movePointIndex, [lat, lng]);
-      setShowMoveForm(false);
-      setMovePointIndex(null);
-      setMovePointLat('');
-      setMovePointLng('');
-    } catch (error) {
-      alert(`Error moving point: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
-  const _handleCancelMove = () => {
-    setShowMoveForm(false);
-    setMovePointIndex(null);
-    setMovePointLat('');
-    setMovePointLng('');
-  };
-
-  const _movePointDirection = (
-    index: number,
-    direction: 'north' | 'south' | 'east' | 'west',
-    distanceMeters: number = 1
-  ) => {
-    if (!onPointMove) return;
-
-    const point = coursePoints[index];
-    const currentLat = latitudeToNumber(point.latitude);
-    const currentLng = longitudeToNumber(point.longitude);
-
-    // Convert distance to degrees (rough approximation)
-    const latOffset = distanceMeters / 111000; // ~111km per degree latitude
-    const lngOffset = distanceMeters / (111000 * Math.cos((currentLat * Math.PI) / 180)); // Adjust for longitude
-
-    let newLat = currentLat;
-    let newLng = currentLng;
-
-    switch (direction) {
-      case 'north':
-        newLat = currentLat + latOffset;
-        break;
-      case 'south':
-        newLat = currentLat - latOffset;
-        break;
-      case 'east':
-        newLng = currentLng + lngOffset;
-        break;
-      case 'west':
-        newLng = currentLng - lngOffset;
-        break;
-    }
-
-    try {
-      onPointMove(index, [newLat, newLng]);
-    } catch (error) {
-      alert(`Error moving point: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
   };
 
   const moveSelectedPoints = (direction: 'north' | 'south' | 'east' | 'west') => {
