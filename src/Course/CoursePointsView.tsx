@@ -423,7 +423,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
     // Calculate new positions for all selected points
     const updates: Array<{ index: number; point: [number, number] }> = [];
-    
+
     selectedIndices.forEach((index) => {
       const point = coursePoints[index];
       const currentLat = point.latitude;

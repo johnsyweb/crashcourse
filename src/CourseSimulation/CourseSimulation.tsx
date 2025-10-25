@@ -9,6 +9,7 @@ import CoursePointsView, { CoursePoint } from '../Course/CoursePointsView';
 import CourseMetadata from './CourseMetadata';
 import Map from '../Map';
 import SelectedPointMarker from '../Map/SelectedPointMarker';
+import CoursePointsLayer from '../Map/CoursePointsLayer';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
@@ -314,7 +315,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         // Create a temporary course to validate the point and get proper update logic
         const tempCourse = new Course(coursePoints);
         tempCourse.movePoint(index, point);
-        
+
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);
@@ -336,11 +337,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
       try {
         // Create a temporary course and apply all updates
         const tempCourse = new Course(coursePoints);
-        
+
         updates.forEach(({ index, point }) => {
           tempCourse.movePoint(index, point);
         });
-        
+
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);
@@ -426,12 +427,25 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
               <div className={styles.mapPanel}>
                 <div className={styles.mapContainer}>
                   {course && (
-                    <Map gpsPoints={coursePoints}>
+                    <Map 
+                      gpsPoints={coursePoints}
+                      centerOnPoint={selectedPoint ? [selectedPoint.latitude, selectedPoint.longitude] : undefined}
+                      zoomLevel={selectedPoint ? 18 : undefined}
+                    >
                       <CourseDisplay course={course} />
                       {participants.map((participant) => (
                         <ParticipantDisplay key={participant.getId()} participant={participant} />
                       ))}
-                      <SelectedPointMarker point={selectedPoint} />
+                      <CoursePointsLayer 
+                        points={coursePoints} 
+                        selectedIndex={selectedPoint?.index}
+                        showAllPoints={!!selectedPoint}
+                      />
+                      <SelectedPointMarker 
+                        point={selectedPoint} 
+                        onPointMove={handlePointMove}
+                        draggable={!!selectedPoint}
+                      />
                     </Map>
                   )}
                 </div>
@@ -498,12 +512,25 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
             <div className={styles.mobileMapPanel}>
               <div className={styles.mapContainer}>
                 {course && (
-                  <Map gpsPoints={coursePoints}>
+                  <Map 
+                    gpsPoints={coursePoints}
+                    centerOnPoint={selectedPoint ? [selectedPoint.latitude, selectedPoint.longitude] : undefined}
+                    zoomLevel={selectedPoint ? 18 : undefined}
+                  >
                     <CourseDisplay course={course} />
                     {participants.map((participant) => (
                       <ParticipantDisplay key={participant.getId()} participant={participant} />
                     ))}
-                    <SelectedPointMarker point={selectedPoint} />
+                    <CoursePointsLayer 
+                      points={coursePoints} 
+                      selectedIndex={selectedPoint?.index}
+                      showAllPoints={!!selectedPoint}
+                    />
+                    <SelectedPointMarker 
+                      point={selectedPoint} 
+                      onPointMove={handlePointMove}
+                      draggable={!!selectedPoint}
+                    />
                   </Map>
                 )}
               </div>
