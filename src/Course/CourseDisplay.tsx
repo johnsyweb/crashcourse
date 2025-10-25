@@ -66,14 +66,26 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
       const distance = km * 1000; // distance in meters
       const position = course.getPositionAtDistance(distance);
 
-      markers.push(
-        <Marker key={`km-${km}`} position={position} icon={kmMarkerIcon}>
-          <Popup>{km} km</Popup>
-        </Marker>
-      );
+      // Validate position before rendering
+      if (Array.isArray(position) && position.length === 2 && 
+          typeof position[0] === 'number' && typeof position[1] === 'number' &&
+          !isNaN(position[0]) && !isNaN(position[1])) {
+        markers.push(
+          <Marker key={`km-${km}`} position={position} icon={kmMarkerIcon}>
+            <Popup>{km} km</Popup>
+          </Marker>
+        );
+      }
     }
 
     return markers;
+  };
+
+  // Helper function to validate coordinates
+  const isValidPosition = (position: LatLngTuple): boolean => {
+    return Array.isArray(position) && position.length === 2 && 
+           typeof position[0] === 'number' && typeof position[1] === 'number' &&
+           !isNaN(position[0]) && !isNaN(position[1]);
   };
 
   return (
@@ -83,27 +95,35 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
       <Polyline positions={rightEdge} color="gray" weight={lineWeight} dashArray="8 8" />
 
       {/* Start marker */}
-      <Marker position={course.startPoint} icon={startIcon}>
-        <Popup>Start</Popup>
-      </Marker>
+      {isValidPosition(course.startPoint) && (
+        <Marker position={course.startPoint} icon={startIcon}>
+          <Popup>Start</Popup>
+        </Marker>
+      )}
 
       {/* Kilometer markers */}
       {renderKilometerMarkers()}
 
       {/* Finish marker */}
-      <Marker position={course.finishPoint} icon={finishIcon}>
-        <Popup>Finish</Popup>
-      </Marker>
+      {isValidPosition(course.finishPoint) && (
+        <Marker position={course.finishPoint} icon={finishIcon}>
+          <Popup>Finish</Popup>
+        </Marker>
+      )}
 
       {/* Narrowest point marker */}
-      <Marker position={narrowestPoint} icon={narrowIcon}>
-        <Popup>Narrowest Width: {narrowestWidth.toFixed(2)}m</Popup>
-      </Marker>
+      {isValidPosition(narrowestPoint) && (
+        <Marker position={narrowestPoint} icon={narrowIcon}>
+          <Popup>Narrowest Width: {narrowestWidth.toFixed(2)}m</Popup>
+        </Marker>
+      )}
 
       {/* Widest point marker */}
-      <Marker position={widestPoint} icon={wideIcon}>
-        <Popup>Widest Width: {widestWidth.toFixed(2)}m</Popup>
-      </Marker>
+      {isValidPosition(widestPoint) && (
+        <Marker position={widestPoint} icon={wideIcon}>
+          <Popup>Widest Width: {widestWidth.toFixed(2)}m</Popup>
+        </Marker>
+      )}
     </>
   );
 };

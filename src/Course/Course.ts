@@ -57,20 +57,20 @@ export class Course {
       if (!Array.isArray(point) || point.length !== 2) {
         throw new Error(`Point at index ${index} must be a [latitude, longitude] tuple`);
       }
-      
+
       const [lat, lng] = point;
       if (typeof lat !== 'number' || typeof lng !== 'number') {
         throw new Error(`Point at index ${index} must have numeric latitude and longitude`);
       }
-      
+
       if (isNaN(lat) || isNaN(lng)) {
         throw new Error(`Point at index ${index} has NaN coordinates`);
       }
-      
+
       if (lat < -90 || lat > 90) {
         throw new Error(`Point at index ${index} has invalid latitude: ${lat}`);
       }
-      
+
       if (lng < -180 || lng > 180) {
         throw new Error(`Point at index ${index} has invalid longitude: ${lng}`);
       }
