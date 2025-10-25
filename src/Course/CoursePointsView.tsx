@@ -304,7 +304,9 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                       min="0"
                       max={coursePoints.length}
                       value={addAtIndex || ''}
-                      onChange={(e) => setAddAtIndex(e.target.value ? parseInt(e.target.value) : null)}
+                      onChange={(e) =>
+                        setAddAtIndex(e.target.value ? parseInt(e.target.value) : null)
+                      }
                       placeholder={`${coursePoints.length} (end)`}
                       className={styles.formInput}
                     />
@@ -318,10 +320,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   >
                     Add Point
                   </button>
-                  <button
-                    className={styles.cancelButton}
-                    onClick={handleCancelAdd}
-                  >
+                  <button className={styles.cancelButton} onClick={handleCancelAdd}>
                     Cancel
                   </button>
                 </div>

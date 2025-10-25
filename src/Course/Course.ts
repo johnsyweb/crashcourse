@@ -277,7 +277,12 @@ export class Course {
    * @throws Error if the point is invalid or if the index is out of bounds
    */
   addPoint(point: LatLngTuple, index?: number): void {
-    if (!point || point.length !== 2 || typeof point[0] !== 'number' || typeof point[1] !== 'number') {
+    if (
+      !point ||
+      point.length !== 2 ||
+      typeof point[0] !== 'number' ||
+      typeof point[1] !== 'number'
+    ) {
       throw new Error('Invalid point: must be [latitude, longitude] with numeric values');
     }
 

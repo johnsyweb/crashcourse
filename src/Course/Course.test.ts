@@ -208,31 +208,49 @@ describe('Course', () => {
     it('should throw error for invalid point format', () => {
       const course = new Course(samplePoints);
 
-      expect(() => course.addPoint([51.505] as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
-      expect(() => course.addPoint(['51.505', '-0.127'] as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
-      expect(() => course.addPoint(null as any)).toThrow('Invalid point: must be [latitude, longitude] with numeric values');
+      expect(() => course.addPoint([51.505] as unknown as LatLngTuple)).toThrow(
+        'Invalid point: must be [latitude, longitude] with numeric values'
+      );
+      expect(() => course.addPoint(['51.505', '-0.127'] as unknown as LatLngTuple)).toThrow(
+        'Invalid point: must be [latitude, longitude] with numeric values'
+      );
+      expect(() => course.addPoint(null as unknown as LatLngTuple)).toThrow(
+        'Invalid point: must be [latitude, longitude] with numeric values'
+      );
     });
 
     it('should throw error for invalid latitude', () => {
       const course = new Course(samplePoints);
 
-      expect(() => course.addPoint([91, -0.127])).toThrow('Invalid latitude: must be between -90 and 90 degrees');
-      expect(() => course.addPoint([-91, -0.127])).toThrow('Invalid latitude: must be between -90 and 90 degrees');
+      expect(() => course.addPoint([91, -0.127])).toThrow(
+        'Invalid latitude: must be between -90 and 90 degrees'
+      );
+      expect(() => course.addPoint([-91, -0.127])).toThrow(
+        'Invalid latitude: must be between -90 and 90 degrees'
+      );
     });
 
     it('should throw error for invalid longitude', () => {
       const course = new Course(samplePoints);
 
-      expect(() => course.addPoint([51.505, 181])).toThrow('Invalid longitude: must be between -180 and 180 degrees');
-      expect(() => course.addPoint([51.505, -181])).toThrow('Invalid longitude: must be between -180 and 180 degrees');
+      expect(() => course.addPoint([51.505, 181])).toThrow(
+        'Invalid longitude: must be between -180 and 180 degrees'
+      );
+      expect(() => course.addPoint([51.505, -181])).toThrow(
+        'Invalid longitude: must be between -180 and 180 degrees'
+      );
     });
 
     it('should throw error for invalid index', () => {
       const course = new Course(samplePoints);
       const newPoint: LatLngTuple = [51.506, -0.127];
 
-      expect(() => course.addPoint(newPoint, -1)).toThrow('Invalid insert index: -1. Must be between 0 and');
-      expect(() => course.addPoint(newPoint, course.getPoints().length + 1)).toThrow('Invalid insert index:');
+      expect(() => course.addPoint(newPoint, -1)).toThrow(
+        'Invalid insert index: -1. Must be between 0 and'
+      );
+      expect(() => course.addPoint(newPoint, course.getPoints().length + 1)).toThrow(
+        'Invalid insert index:'
+      );
     });
 
     it('should recalculate course properties after adding point', () => {
