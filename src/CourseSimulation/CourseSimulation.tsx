@@ -291,7 +291,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         // Create a temporary course to validate the point and get proper insertion logic
         const tempCourse = new Course(coursePoints);
         tempCourse.addPoint(point, index);
-        
+
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);
@@ -314,7 +314,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         // Create a temporary course to validate the point and get proper update logic
         const tempCourse = new Course(coursePoints);
         tempCourse.movePoint(index, point);
-        
+
         // Get the updated points from the temporary course
         const updatedPoints = tempCourse.getPoints();
         onCoursePointsChange(updatedPoints);

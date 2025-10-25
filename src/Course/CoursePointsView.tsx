@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Course } from './Course';
 import * as turf from '@turf/turf';
 import styles from './CoursePointsView.module.css';
@@ -376,7 +376,11 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setMovePointLng('');
   };
 
-  const movePointDirection = (index: number, direction: 'north' | 'south' | 'east' | 'west', distanceMeters: number = 1) => {
+  const movePointDirection = (
+    index: number,
+    direction: 'north' | 'south' | 'east' | 'west',
+    distanceMeters: number = 1
+  ) => {
     if (!onPointMove) return;
 
     const point = coursePoints[index];
@@ -385,7 +389,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
     // Convert distance to degrees (rough approximation)
     const latOffset = distanceMeters / 111000; // ~111km per degree latitude
-    const lngOffset = distanceMeters / (111000 * Math.cos(currentLat * Math.PI / 180)); // Adjust for longitude
+    const lngOffset = distanceMeters / (111000 * Math.cos((currentLat * Math.PI) / 180)); // Adjust for longitude
 
     let newLat = currentLat;
     let newLng = currentLng;
@@ -412,6 +416,65 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     }
   };
 
+  const moveSelectedPoints = (direction: 'north' | 'south' | 'east' | 'west') => {
+    if (!onPointMove || selectedIndices.length === 0) return;
+
+    selectedIndices.forEach(index => {
+      movePointDirection(index, direction, 1);
+    });
+  };
+
+  const addAfterSelectedPoint = () => {
+    if (!onPointAdd || selectedIndices.length === 0) return;
+
+    // Use the first selected point for adding after
+    const index = selectedIndices[0];
+    handleAddAfterPoint(index);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when no input is focused
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      if (selectedIndices.length === 0) return;
+
+      switch (e.key.toLowerCase()) {
+        case 'arrowup':
+        case 'w':
+          e.preventDefault();
+          moveSelectedPoints('north');
+          break;
+        case 'arrowdown':
+        case 's':
+          e.preventDefault();
+          moveSelectedPoints('south');
+          break;
+        case 'arrowleft':
+        case 'a':
+          e.preventDefault();
+          moveSelectedPoints('west');
+          break;
+        case 'arrowright':
+        case 'd':
+          e.preventDefault();
+          moveSelectedPoints('east');
+          break;
+        case 'enter':
+        case '+':
+          e.preventDefault();
+          addAfterSelectedPoint();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndices, onPointMove, onPointAdd]);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -428,6 +491,62 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
             </span>
           )}
         </div>
+
+        {/* Selected Points Controls */}
+        {selectedIndices.length > 0 && (
+          <div className={styles.selectedControls}>
+            <div className={styles.controlButtons}>
+              {(onPointMove || onPointAdd) && (
+                <div className={styles.directionalControls}>
+                  {onPointMove && (
+                    <>
+                      <button
+                        className={styles.directionButton}
+                        onClick={() => moveSelectedPoints('north')}
+                        title="Move selected points 1m north (↑ or W)"
+                      >
+                        ↑
+                      </button>
+                      <div className={styles.directionRow}>
+                        <button
+                          className={styles.directionButton}
+                          onClick={() => moveSelectedPoints('west')}
+                          title="Move selected points 1m west (← or A)"
+                        >
+                          ←
+                        </button>
+                        <button
+                          className={styles.directionButton}
+                          onClick={() => moveSelectedPoints('east')}
+                          title="Move selected points 1m east (→ or D)"
+                        >
+                          →
+                        </button>
+                      </div>
+                      <button
+                        className={styles.directionButton}
+                        onClick={() => moveSelectedPoints('south')}
+                        title="Move selected points 1m south (↓ or S)"
+                      >
+                        ↓
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+              {onPointAdd && (
+                <button
+                  className={styles.addAfterButton}
+                  onClick={addAfterSelectedPoint}
+                  title="Add point after selected point (Enter or +)"
+                >
+                  + Add After
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {onPointAdd && (
           <div className={styles.addPointSection}>
             {!showAddForm ? (
@@ -614,68 +733,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   <td className={styles.distanceCell}>
                     {formatDistance(point.cumulativeDistance)}
                   </td>
-                  {onPointMove && (
-                    <td className={styles.moveCell}>
-                      <div className={styles.directionalControls}>
-                        <button
-                          className={styles.directionButton}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            movePointDirection(point.index, 'north', 1);
-                          }}
-                          title="Move 1m north"
-                        >
-                          ↑
-                        </button>
-                        <div className={styles.directionRow}>
-                          <button
-                            className={styles.directionButton}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              movePointDirection(point.index, 'west', 1);
-                            }}
-                            title="Move 1m west"
-                          >
-                            ←
-                          </button>
-                          <button
-                            className={styles.directionButton}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              movePointDirection(point.index, 'east', 1);
-                            }}
-                            title="Move 1m east"
-                          >
-                            →
-                          </button>
-                        </div>
-                        <button
-                          className={styles.directionButton}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            movePointDirection(point.index, 'south', 1);
-                          }}
-                          title="Move 1m south"
-                        >
-                          ↓
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                  {onPointAdd && (
-                    <td className={styles.actionCell}>
-                      <button
-                        className={styles.addAfterButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddAfterPoint(point.index);
-                        }}
-                        title={`Add point after point ${point.index + 1}`}
-                      >
-                        + Add After
-                      </button>
-                    </td>
-                  )}
                 </tr>
               );
             })}
