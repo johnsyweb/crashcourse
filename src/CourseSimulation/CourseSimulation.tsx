@@ -430,8 +430,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     <Map
                       gpsPoints={coursePoints}
                       centerOnPoint={
-                        selectedPoint && 
-                        typeof selectedPoint.latitude === 'number' && 
+                        selectedPoint &&
+                        typeof selectedPoint.latitude === 'number' &&
                         typeof selectedPoint.longitude === 'number'
                           ? [selectedPoint.latitude, selectedPoint.longitude]
                           : undefined
@@ -521,8 +521,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   <Map
                     gpsPoints={coursePoints}
                     centerOnPoint={
-                      selectedPoint && 
-                      typeof selectedPoint.latitude === 'number' && 
+                      selectedPoint &&
+                      typeof selectedPoint.latitude === 'number' &&
                       typeof selectedPoint.longitude === 'number'
                         ? [selectedPoint.latitude, selectedPoint.longitude]
                         : undefined
