@@ -35,10 +35,10 @@ const createSelectedPointIcon = () => {
   });
 };
 
-const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({ 
-  point, 
-  onPointMove, 
-  draggable = false 
+const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
+  point,
+  onPointMove,
+  draggable = false,
 }) => {
   if (!point) {
     return null;
@@ -46,10 +46,10 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
 
   const handleDragEnd = (e: L.DragEndEvent) => {
     if (!onPointMove) return;
-    
+
     const marker = e.target;
     const newPosition = marker.getLatLng();
-    
+
     try {
       onPointMove(point.index, [newPosition.lat, newPosition.lng]);
     } catch (error) {
@@ -59,8 +59,8 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
   };
 
   return (
-    <Marker 
-      position={[point.latitude, point.longitude]} 
+    <Marker
+      position={[point.latitude, point.longitude]}
       icon={createSelectedPointIcon()}
       draggable={draggable}
       eventHandlers={{
@@ -79,7 +79,9 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
             <strong>Longitude:</strong> {point.longitude.toFixed(6)}
           </p>
           {draggable && (
-            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+            <p
+              style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}
+            >
               Drag to move this point
             </p>
           )}

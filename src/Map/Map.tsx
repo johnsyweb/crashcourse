@@ -28,7 +28,11 @@ const Map: React.FC<MapProps> = ({
   const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
-    if (centerOnPoint && mapRef.current) {
+    if (centerOnPoint && mapRef.current && 
+        Array.isArray(centerOnPoint) && 
+        centerOnPoint.length === 2 && 
+        typeof centerOnPoint[0] === 'number' && 
+        typeof centerOnPoint[1] === 'number') {
       mapRef.current.setView(centerOnPoint, zoomLevel);
     }
   }, [centerOnPoint, zoomLevel]);
@@ -36,7 +40,15 @@ const Map: React.FC<MapProps> = ({
   return (
     <div className={`${styles.mapWrapper} ${className || ''}`}>
       <MapContainer
-        center={centerOnPoint || initialCenter}
+        center={
+          centerOnPoint && 
+          Array.isArray(centerOnPoint) && 
+          centerOnPoint.length === 2 && 
+          typeof centerOnPoint[0] === 'number' && 
+          typeof centerOnPoint[1] === 'number'
+            ? centerOnPoint
+            : initialCenter
+        }
         zoom={centerOnPoint ? zoomLevel : initialZoom}
         className={styles.mapContainer}
         scrollWheelZoom={true}

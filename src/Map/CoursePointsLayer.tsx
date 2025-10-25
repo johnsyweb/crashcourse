@@ -29,10 +29,10 @@ const createSubtlePointIcon = () => {
   });
 };
 
-const CoursePointsLayer: React.FC<CoursePointsLayerProps> = ({ 
-  points, 
+const CoursePointsLayer: React.FC<CoursePointsLayerProps> = ({
+  points,
   selectedIndex,
-  showAllPoints = true 
+  showAllPoints = true,
 }) => {
   if (!showAllPoints) {
     return null;

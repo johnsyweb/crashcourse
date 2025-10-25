@@ -427,22 +427,28 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
               <div className={styles.mapPanel}>
                 <div className={styles.mapContainer}>
                   {course && (
-                    <Map 
+                    <Map
                       gpsPoints={coursePoints}
-                      centerOnPoint={selectedPoint ? [selectedPoint.latitude, selectedPoint.longitude] : undefined}
+                      centerOnPoint={
+                        selectedPoint && 
+                        typeof selectedPoint.latitude === 'number' && 
+                        typeof selectedPoint.longitude === 'number'
+                          ? [selectedPoint.latitude, selectedPoint.longitude]
+                          : undefined
+                      }
                       zoomLevel={selectedPoint ? 18 : undefined}
                     >
                       <CourseDisplay course={course} />
                       {participants.map((participant) => (
                         <ParticipantDisplay key={participant.getId()} participant={participant} />
                       ))}
-                      <CoursePointsLayer 
-                        points={coursePoints} 
+                      <CoursePointsLayer
+                        points={coursePoints}
                         selectedIndex={selectedPoint?.index}
                         showAllPoints={!!selectedPoint}
                       />
-                      <SelectedPointMarker 
-                        point={selectedPoint} 
+                      <SelectedPointMarker
+                        point={selectedPoint}
                         onPointMove={handlePointMove}
                         draggable={!!selectedPoint}
                       />
@@ -512,22 +518,28 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
             <div className={styles.mobileMapPanel}>
               <div className={styles.mapContainer}>
                 {course && (
-                  <Map 
+                  <Map
                     gpsPoints={coursePoints}
-                    centerOnPoint={selectedPoint ? [selectedPoint.latitude, selectedPoint.longitude] : undefined}
+                    centerOnPoint={
+                      selectedPoint && 
+                      typeof selectedPoint.latitude === 'number' && 
+                      typeof selectedPoint.longitude === 'number'
+                        ? [selectedPoint.latitude, selectedPoint.longitude]
+                        : undefined
+                    }
                     zoomLevel={selectedPoint ? 18 : undefined}
                   >
                     <CourseDisplay course={course} />
                     {participants.map((participant) => (
                       <ParticipantDisplay key={participant.getId()} participant={participant} />
                     ))}
-                    <CoursePointsLayer 
-                      points={coursePoints} 
+                    <CoursePointsLayer
+                      points={coursePoints}
                       selectedIndex={selectedPoint?.index}
                       showAllPoints={!!selectedPoint}
                     />
-                    <SelectedPointMarker 
-                      point={selectedPoint} 
+                    <SelectedPointMarker
+                      point={selectedPoint}
                       onPointMove={handlePointMove}
                       draggable={!!selectedPoint}
                     />
