@@ -15,6 +15,15 @@ const lapColors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#17be
 
 const ParticipantDisplay: React.FC<ParticipantDisplayProps> = ({ participant }) => {
   const position = participant.getPosition();
+  
+  // Validate position before rendering
+  if (!Array.isArray(position) || position.length !== 2 || 
+      typeof position[0] !== 'number' || typeof position[1] !== 'number' ||
+      isNaN(position[0]) || isNaN(position[1])) {
+    console.warn('Invalid participant position:', position);
+    return null;
+  }
+
   const properties = participant.getProperties();
   const lap = typeof properties.lap === 'number' ? (properties.lap as number) : 1;
   const bearing = typeof properties.bearing === 'number' ? (properties.bearing as number) : 0;

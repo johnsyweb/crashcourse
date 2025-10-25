@@ -67,9 +67,14 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
       const position = course.getPositionAtDistance(distance);
 
       // Validate position before rendering
-      if (Array.isArray(position) && position.length === 2 && 
-          typeof position[0] === 'number' && typeof position[1] === 'number' &&
-          !isNaN(position[0]) && !isNaN(position[1])) {
+      if (
+        Array.isArray(position) &&
+        position.length === 2 &&
+        typeof position[0] === 'number' &&
+        typeof position[1] === 'number' &&
+        !isNaN(position[0]) &&
+        !isNaN(position[1])
+      ) {
         markers.push(
           <Marker key={`km-${km}`} position={position} icon={kmMarkerIcon}>
             <Popup>{km} km</Popup>
@@ -83,16 +88,30 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
 
   // Helper function to validate coordinates
   const isValidPosition = (position: LatLngTuple): boolean => {
-    return Array.isArray(position) && position.length === 2 && 
-           typeof position[0] === 'number' && typeof position[1] === 'number' &&
-           !isNaN(position[0]) && !isNaN(position[1]);
+    return (
+      Array.isArray(position) &&
+      position.length === 2 &&
+      typeof position[0] === 'number' &&
+      typeof position[1] === 'number' &&
+      !isNaN(position[0]) &&
+      !isNaN(position[1])
+    );
+  };
+
+  // Helper function to validate coordinate arrays
+  const isValidPositions = (positions: LatLngTuple[]): boolean => {
+    return Array.isArray(positions) && positions.every(pos => isValidPosition(pos));
   };
 
   return (
     <>
-      <Polyline positions={course.getPoints()} color={lineColor} weight={lineWeight} />
+      {isValidPositions(course.getPoints()) && (
+        <Polyline positions={course.getPoints()} color={lineColor} weight={lineWeight} />
+      )}
       {/* Right edge of the course (2m offset) */}
-      <Polyline positions={rightEdge} color="gray" weight={lineWeight} dashArray="8 8" />
+      {isValidPositions(rightEdge) && (
+        <Polyline positions={rightEdge} color="gray" weight={lineWeight} dashArray="8 8" />
+      )}
 
       {/* Start marker */}
       {isValidPosition(course.startPoint) && (
