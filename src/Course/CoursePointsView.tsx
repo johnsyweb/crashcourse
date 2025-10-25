@@ -210,6 +210,66 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     return directions[index];
   };
 
+  // Utility functions for calculating point positions
+  const calculateMidpoint = (
+    point1: [number, number],
+    point2: [number, number]
+  ): [number, number] => {
+    const lat = (point1[0] + point2[0]) / 2;
+    const lng = (point1[1] + point2[1]) / 2;
+    return [lat, lng];
+  };
+
+  const extendPoint = (
+    fromPoint: [number, number],
+    toPoint: [number, number],
+    distanceMeters: number
+  ): [number, number] => {
+    const bearing = turf.bearing(
+      turf.point([fromPoint[1], fromPoint[0]]),
+      turf.point([toPoint[1], toPoint[0]])
+    );
+    const destination = turf.destination(
+      turf.point([fromPoint[1], fromPoint[0]]),
+      distanceMeters / 1000,
+      bearing,
+      { units: 'kilometers' }
+    );
+    return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
+  };
+
+  const getPrepopulatedCoordinates = (insertIndex: number): [number, number] => {
+    if (!course) return [0, 0];
+
+    const points = course.getPoints();
+
+    if (insertIndex === 0) {
+      // Insert before first point - extend 10m from start towards second point
+      if (points.length >= 2) {
+        return extendPoint([points[0][0], points[0][1]], [points[1][0], points[1][1]], -10); // Negative distance to go backwards
+      }
+      return [points[0][0], points[0][1]]; // Fallback if only one point
+    }
+
+    if (insertIndex === points.length) {
+      // Insert after last point - extend 10m from end
+      if (points.length >= 2) {
+        return extendPoint(
+          [points[points.length - 2][0], points[points.length - 2][1]],
+          [points[points.length - 1][0], points[points.length - 1][1]],
+          10
+        );
+      }
+      return [points[points.length - 1][0], points[points.length - 1][1]]; // Fallback if only one point
+    }
+
+    // Insert between points - use midpoint
+    return calculateMidpoint(
+      [points[insertIndex - 1][0], points[insertIndex - 1][1]],
+      [points[insertIndex][0], points[insertIndex][1]]
+    );
+  };
+
   const handleAddPoint = () => {
     if (!onPointAdd) return;
 
@@ -240,7 +300,28 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   };
 
   const handleAddAfterPoint = (index: number) => {
-    setAddAtIndex(index + 1);
+    const insertIndex = index + 1;
+    const [lat, lng] = getPrepopulatedCoordinates(insertIndex);
+    setAddAtIndex(insertIndex);
+    setNewPointLat(lat.toFixed(6));
+    setNewPointLng(lng.toFixed(6));
+    setShowAddForm(true);
+  };
+
+  const handleAddBeforeFirst = () => {
+    const [lat, lng] = getPrepopulatedCoordinates(0);
+    setAddAtIndex(0);
+    setNewPointLat(lat.toFixed(6));
+    setNewPointLng(lng.toFixed(6));
+    setShowAddForm(true);
+  };
+
+  const handleAddAtEnd = () => {
+    const insertIndex = coursePoints.length;
+    const [lat, lng] = getPrepopulatedCoordinates(insertIndex);
+    setAddAtIndex(insertIndex);
+    setNewPointLat(lat.toFixed(6));
+    setNewPointLng(lng.toFixed(6));
     setShowAddForm(true);
   };
 
@@ -263,13 +344,29 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
         {onPointAdd && (
           <div className={styles.addPointSection}>
             {!showAddForm ? (
-              <button
-                className={styles.addPointButton}
-                onClick={() => setShowAddForm(true)}
-                title="Add a new point to the course"
-              >
-                + Add Point
-              </button>
+              <div className={styles.addPointButtons}>
+                <button
+                  className={styles.addPointButton}
+                  onClick={handleAddBeforeFirst}
+                  title="Add a point before the first point"
+                >
+                  + Add Before First
+                </button>
+                <button
+                  className={styles.addPointButton}
+                  onClick={handleAddAtEnd}
+                  title="Add a point at the end of the course"
+                >
+                  + Add At End
+                </button>
+                <button
+                  className={styles.addPointButton}
+                  onClick={() => setShowAddForm(true)}
+                  title="Add a new point at a specific location"
+                >
+                  + Add Point (Custom)
+                </button>
+              </div>
             ) : (
               <div className={styles.addPointForm}>
                 <div className={styles.formRow}>

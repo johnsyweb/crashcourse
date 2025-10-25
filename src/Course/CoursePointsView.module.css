@@ -347,6 +347,12 @@
   border: 1px solid #e9ecef;
 }
 
+.addPointButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .addPointButton {
   background-color: #28a745;
   color: white;
@@ -357,6 +363,8 @@
   font-size: 0.9rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  flex: 1;
+  min-width: 120px;
 }
 
 .addPointButton:hover {
@@ -478,6 +486,15 @@
 
 /* Mobile responsiveness for add point form */
 @media (max-width: 768px) {
+  .addPointButtons {
+    flex-direction: column;
+  }
+
+  .addPointButton {
+    width: 100%;
+    min-width: auto;
+  }
+
   .formRow {
     flex-direction: column;
     gap: 0.5rem;
