@@ -1,6 +1,7 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import { latitudeToNumber, longitudeToNumber } from '../../utils/coordinates';
 
 interface SelectedPointMarkerProps {
   point: { latitude: number; longitude: number; index: number } | null;
@@ -44,7 +45,10 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
     return null;
   }
 
-  // Coordinates are already validated by the CoursePoint type, so we can safely use them
+  // Convert branded types to plain numbers for Leaflet
+  const lat = latitudeToNumber(point.latitude);
+  const lng = longitudeToNumber(point.longitude);
+
   const handleDragEnd = (e: L.DragEndEvent) => {
     if (!onPointMove) return;
 
@@ -61,7 +65,7 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
 
   return (
     <Marker
-      position={[point.latitude, point.longitude]}
+      position={[lat, lng]}
       icon={createSelectedPointIcon()}
       draggable={draggable}
       eventHandlers={{
@@ -74,10 +78,10 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
             Course Point #{point.index + 1}
           </h3>
           <p style={{ margin: '4px 0', fontSize: '14px' }}>
-            <strong>Latitude:</strong> {point.latitude.toFixed(6)}
+            <strong>Latitude:</strong> {lat.toFixed(6)}
           </p>
           <p style={{ margin: '4px 0', fontSize: '14px' }}>
-            <strong>Longitude:</strong> {point.longitude.toFixed(6)}
+            <strong>Longitude:</strong> {lng.toFixed(6)}
           </p>
           {draggable && (
             <p

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CircleMarker } from 'react-leaflet';
 import { CoursePoint } from '../../Course/CoursePointsView';
+import { latitudeToNumber, longitudeToNumber } from '../../utils/coordinates';
 
 interface CoursePointsLayerProps {
   points: CoursePoint[];
@@ -25,11 +26,14 @@ const CoursePointsLayer: React.FC<CoursePointsLayerProps> = ({
           return null;
         }
 
-        // Coordinates are already validated by the CoursePoint type, so we can safely use them
+        // Convert branded types to plain numbers for Leaflet
+        const lat = latitudeToNumber(point.latitude);
+        const lng = longitudeToNumber(point.longitude);
+
         return (
           <CircleMarker
             key={index}
-            center={[point.latitude, point.longitude]}
+            center={[lat, lng]}
             radius={3}
             pathOptions={{
               color: '#666',
