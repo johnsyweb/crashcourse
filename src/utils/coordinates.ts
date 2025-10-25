@@ -77,3 +77,4 @@ export function latitudeToNumber(latitude: Latitude): number {
 export function longitudeToNumber(longitude: Longitude): number {
   return longitude;
 }
+
