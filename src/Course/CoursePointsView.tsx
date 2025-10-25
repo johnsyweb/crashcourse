@@ -48,7 +48,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPointLat, setNewPointLat] = useState('');
   const [newPointLng, setNewPointLng] = useState('');
-  const [addAtIndex, setAddAtIndex] = useState<number | null>(null);
+  const [addAtIndex, setAddAtIndex] = useState<number>(0);
 
   // Use external selectedPointIndex if provided, otherwise use internal state
   const selectedIndex =
@@ -282,11 +282,11 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     }
 
     try {
-      onPointAdd([lat, lng], addAtIndex || undefined);
+      onPointAdd([lat, lng], addAtIndex);
       setShowAddForm(false);
       setNewPointLat('');
       setNewPointLng('');
-      setAddAtIndex(null);
+      setAddAtIndex(0);
     } catch (error) {
       alert(`Error adding point: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -296,7 +296,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setShowAddForm(false);
     setNewPointLat('');
     setNewPointLng('');
-    setAddAtIndex(null);
+    setAddAtIndex(0);
   };
 
   const handleAddAfterPoint = (index: number) => {
@@ -310,7 +310,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
   const handleAddBeforeFirst = () => {
     const [lat, lng] = getPrepopulatedCoordinates(0);
-    setAddAtIndex(0);
+    setAddAtIndex(0); // Internal logic stays 0-based
     setNewPointLat(lat.toFixed(6));
     setNewPointLng(lng.toFixed(6));
     setShowAddForm(true);
@@ -348,20 +348,23 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                 <button
                   className={styles.addPointButton}
                   onClick={handleAddBeforeFirst}
-                  title="Add a point before the first point"
+                  title="Add a point at position 0 (becomes new first point)"
                 >
-                  + Add Before First
+                  + Add at Position 0
                 </button>
                 <button
                   className={styles.addPointButton}
                   onClick={handleAddAtEnd}
                   title="Add a point at the end of the course"
                 >
-                  + Add At End
+                  + Add at End
                 </button>
                 <button
                   className={styles.addPointButton}
-                  onClick={() => setShowAddForm(true)}
+                  onClick={() => {
+                    setAddAtIndex(coursePoints.length); // Default to end
+                    setShowAddForm(true);
+                  }}
                   title="Add a new point at a specific location"
                 >
                   + Add Point (Custom)
@@ -396,17 +399,24 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                 <div className={styles.formRow}>
                   <label className={styles.formLabel}>
                     Insert at index:
-                    <input
-                      type="number"
-                      min="0"
-                      max={coursePoints.length}
-                      value={addAtIndex || ''}
-                      onChange={(e) =>
-                        setAddAtIndex(e.target.value ? parseInt(e.target.value) : null)
-                      }
-                      placeholder={`${coursePoints.length} (end)`}
-                      className={styles.formInput}
-                    />
+    <input
+      type="number"
+      min="0"
+      max={coursePoints.length}
+      value={addAtIndex}
+      onChange={(e) =>
+        setAddAtIndex(parseInt(e.target.value) || 0)
+      }
+      placeholder="0"
+      className={styles.formInput}
+    />
+                    <small className={styles.formHelp}>
+                      {addAtIndex === 0
+                        ? 'Will insert at position 0 (becomes new first point)'
+                        : addAtIndex === coursePoints.length
+                          ? 'Will insert at end (after last point)'
+                          : `Will insert at position ${addAtIndex} (between points ${addAtIndex} and ${addAtIndex + 1})`}
+                    </small>
                   </label>
                 </div>
                 <div className={styles.formActions}>

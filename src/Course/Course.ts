@@ -277,6 +277,9 @@ export class Course {
    * @throws Error if the point is invalid or if the index is out of bounds
    */
   addPoint(point: LatLngTuple, index?: number): void {
+    console.log('Course.addPoint called with:', { point, index, currentPointsLength: this.points.length });
+    console.log('Current points before add:', this.points.map((p, i) => `${i}: [${p[0]}, ${p[1]}]`));
+
     if (
       !point ||
       point.length !== 2 ||
@@ -296,6 +299,8 @@ export class Course {
 
     const insertIndex = index !== undefined ? index : this.points.length;
 
+    console.log('Calculated insertIndex:', insertIndex);
+
     if (insertIndex < 0 || insertIndex > this.points.length) {
       throw new Error(
         `Invalid insert index: ${insertIndex}. Must be between 0 and ${this.points.length}`
@@ -304,9 +309,11 @@ export class Course {
 
     // Insert the point
     this.points.splice(insertIndex, 0, point);
+    console.log('After splice - points:', this.points.map((p, i) => `${i}: [${p[0]}, ${p[1]}]`));
 
     // Remove consecutive duplicates (in case the new point is the same as adjacent points)
     this.points = Course.removeConsecutiveDuplicatePoints(this.points);
+    console.log('After removeConsecutiveDuplicatePoints - points:', this.points.map((p, i) => `${i}: [${p[0]}, ${p[1]}]`));
 
     // Recalculate the course
     this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
@@ -322,6 +329,8 @@ export class Course {
     // Recalculate cached values
     this.precalculateWidths();
     this.computeLapCrossings();
+
+    console.log('Final points after addPoint:', this.points.map((p, i) => `${i}: [${p[0]}, ${p[1]}]`));
   }
 
   /**

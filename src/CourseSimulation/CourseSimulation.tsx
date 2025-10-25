@@ -287,12 +287,18 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         return;
       }
 
-      // Create a new course with the point added
-      const newCoursePoints = [...coursePoints];
-      const insertIndex = index !== undefined ? index : newCoursePoints.length;
-      newCoursePoints.splice(insertIndex, 0, point);
-
-      onCoursePointsChange(newCoursePoints);
+      try {
+        // Create a temporary course to validate the point and get proper insertion logic
+        const tempCourse = new Course(coursePoints);
+        tempCourse.addPoint(point, index);
+        
+        // Get the updated points from the temporary course
+        const updatedPoints = tempCourse.getPoints();
+        onCoursePointsChange(updatedPoints);
+      } catch (error) {
+        console.error('Error adding point:', error);
+        alert(`Error adding point: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     },
     [coursePoints, onCoursePointsChange]
   );

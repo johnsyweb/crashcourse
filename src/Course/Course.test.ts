@@ -1,5 +1,6 @@
 import { Course } from './Course';
 import { LatLngTuple } from 'leaflet';
+import * as turf from '@turf/turf';
 
 describe('Course', () => {
   const samplePoints: LatLngTuple[] = [
@@ -298,6 +299,58 @@ describe('Course', () => {
 
       // Should not increase the length since duplicates are removed
       expect(course.getPoints()).toHaveLength(samplePoints.length);
+    });
+
+    it('should recalculate distances and bearings correctly when adding at position 0', () => {
+      // Create a simple 2-point course for testing
+      const twoPointCourse = [
+        [-37.816715, 144.876736], // Point 0
+        [-37.816893, 144.876788], // Point 1
+      ];
+      const course = new Course(twoPointCourse);
+
+      // Get original bearing from point 0 to point 1
+      const originalBearing = course.getBearingAtDistance(0);
+
+      // Calculate a point 10m before the original start point
+      // Using turf.js to extend backwards from point 0 towards point 1
+      const bearing = turf.bearing(
+        turf.point([twoPointCourse[0][1], twoPointCourse[0][0]]),
+        turf.point([twoPointCourse[1][1], twoPointCourse[1][0]])
+      );
+      const destination = turf.destination(
+        turf.point([twoPointCourse[0][1], twoPointCourse[0][0]]),
+        -0.01, // -10m in kilometers (negative to go backwards)
+        bearing,
+        { units: 'kilometers' }
+      );
+      const newPoint: LatLngTuple = [
+        destination.geometry.coordinates[1],
+        destination.geometry.coordinates[0],
+      ];
+
+      // Add the new point at position 0
+      course.addPoint(newPoint, 0);
+
+      // Verify the course now has 3 points
+      expect(course.getPoints()).toHaveLength(3);
+
+      // Verify the new point is at position 0
+      expect(course.getPoints()[0]).toEqual(newPoint);
+
+      // Verify the original first point is now at position 1
+      expect(course.getPoints()[1]).toEqual(twoPointCourse[0]);
+
+      // Verify the original second point is now at position 2
+      expect(course.getPoints()[2]).toEqual(twoPointCourse[1]);
+
+      // Verify distance from new point 0 to original point 0 (now point 1) is approximately 10m
+      const distanceToOriginalStart = course['cumulativeDistances'][1];
+      expect(distanceToOriginalStart).toBeCloseTo(10, 1); // Within 0.1m
+
+      // Verify bearing from new point 0 to original point 0 (now point 1) matches original bearing
+      const newBearing = course.getBearingAtDistance(0);
+      expect(newBearing).toBeCloseTo(originalBearing, 1); // Within 0.1 degrees
     });
   });
 });
