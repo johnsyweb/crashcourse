@@ -100,7 +100,7 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
 
   // Helper function to validate coordinate arrays
   const isValidPositions = (positions: LatLngTuple[]): boolean => {
-    return Array.isArray(positions) && positions.every(pos => isValidPosition(pos));
+    return Array.isArray(positions) && positions.every((pos) => isValidPosition(pos));
   };
 
   return (
