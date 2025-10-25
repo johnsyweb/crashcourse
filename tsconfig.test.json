@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
+    "strict": true,
     "types": ["jest", "node", "@testing-library/jest-dom"],
     "typeRoots": ["./node_modules/@types"]
   },
