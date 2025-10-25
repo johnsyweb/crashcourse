@@ -252,13 +252,21 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     }
 
     if (insertIndex === points.length) {
-      // Insert after last point - extend 10m from end
+      // Insert after last point - extend 10m from the last point
       if (points.length >= 2) {
-        return extendPoint(
-          [points[points.length - 2][0], points[points.length - 2][1]],
-          [points[points.length - 1][0], points[points.length - 1][1]],
-          10
+        const lastPoint = [points[points.length - 1][0], points[points.length - 1][1]];
+        const secondLastPoint = [points[points.length - 2][0], points[points.length - 2][1]];
+        const bearing = turf.bearing(
+          turf.point([secondLastPoint[1], secondLastPoint[0]]),
+          turf.point([lastPoint[1], lastPoint[0]])
         );
+        const destination = turf.destination(
+          turf.point([lastPoint[1], lastPoint[0]]),
+          0.01, // 10m in kilometers
+          bearing,
+          { units: 'kilometers' }
+        );
+        return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
       }
       return [points[points.length - 1][0], points[points.length - 1][1]]; // Fallback if only one point
     }
@@ -345,13 +353,13 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           <div className={styles.addPointSection}>
             {!showAddForm ? (
               <div className={styles.addPointButtons}>
-      <button
-        className={styles.addPointButton}
-        onClick={handleAddBeforeFirst}
-        title="Add a point at the start of the course (becomes new first point)"
-      >
-        + Add at Start
-      </button>
+                <button
+                  className={styles.addPointButton}
+                  onClick={handleAddBeforeFirst}
+                  title="Add a point at the start of the course (becomes new first point)"
+                >
+                  + Add at Start
+                </button>
                 <button
                   className={styles.addPointButton}
                   onClick={handleAddAtEnd}
