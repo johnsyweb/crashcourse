@@ -16,10 +16,7 @@ import Results from '../Results/Results';
 import { usePersistentState } from '../utils/usePersistentState';
 import { downloadGPX, generateGPXFilename } from '../GPXFile';
 import * as turf from '@turf/turf';
-import {
-  createLatitude,
-  createLongitude,
-} from '../utils/coordinates';
+import { createLatitude, createLongitude } from '../utils/coordinates';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -663,6 +660,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       selectedPointIndices={selectedPoints.map((p) => p.index)}
                       onPointsDelete={handlePointsDelete}
                       onPointAdd={handlePointAdd}
+                      onPointMove={handlePointMove}
+                      onBatchPointMove={handleBatchPointMove}
                       undo={undo}
                       redo={redo}
                       canUndo={canUndo}
