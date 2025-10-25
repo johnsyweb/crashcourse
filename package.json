@@ -64,12 +64,6 @@
     "typescript-eslint": "^8.46.0",
     "vite": "^7.1.11"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged",
-      "pre-push": "pnpm check"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "prettier --write",

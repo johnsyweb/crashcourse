@@ -15,6 +15,11 @@ import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
 import { usePersistentState } from '../utils/usePersistentState';
 import { downloadGPX, generateGPXFilename } from '../GPXFile';
+import * as turf from '@turf/turf';
+import {
+  createLatitude,
+  createLongitude,
+} from '../utils/coordinates';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -96,6 +101,45 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   const parsePaceToSeconds = useCallback((pace: string): number => {
     const [minutes, seconds] = pace.split(':').map(Number);
     return minutes * 60 + seconds;
+  }, []);
+
+  // Convert LatLngTuple[] to CoursePoint[] for CoursePointsLayer
+  const convertToCoursePoints = useCallback((points: LatLngTuple[]): CoursePoint[] => {
+    const coursePoints: CoursePoint[] = [];
+
+    points.forEach((point, index) => {
+      const [latitude, longitude] = point;
+      let distanceFromPrevious = 0;
+      let bearingFromPrevious: number | null = null;
+
+      if (index > 0) {
+        const previousPoint = points[index - 1];
+        const [prevLat, prevLon] = previousPoint;
+
+        // Calculate distance using turf.js
+        const from = turf.point([prevLon, prevLat]);
+        const to = turf.point([longitude, latitude]);
+        distanceFromPrevious = turf.distance(from, to, { units: 'meters' });
+
+        // Calculate bearing using turf.js
+        bearingFromPrevious = turf.bearing(from, to);
+      }
+
+      // Calculate cumulative distance
+      const cumulativeDistance =
+        coursePoints.reduce((sum, cp) => sum + cp.distanceFromPrevious, 0) + distanceFromPrevious;
+
+      coursePoints.push({
+        index,
+        latitude: createLatitude(latitude),
+        longitude: createLongitude(longitude),
+        distanceFromPrevious,
+        bearingFromPrevious,
+        cumulativeDistance,
+      });
+    });
+
+    return coursePoints;
   }, []);
 
   const formatSecondsAsPace = useCallback((totalSeconds: number): string => {
@@ -443,7 +487,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         <ParticipantDisplay key={participant.getId()} participant={participant} />
                       ))}
                       <CoursePointsLayer
-                        points={coursePoints}
+                        points={convertToCoursePoints(coursePoints)}
                         selectedIndex={selectedPoint?.index}
                         showAllPoints={!!selectedPoint}
                       />
@@ -534,7 +578,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       <ParticipantDisplay key={participant.getId()} participant={participant} />
                     ))}
                     <CoursePointsLayer
-                      points={coursePoints}
+                      points={convertToCoursePoints(coursePoints)}
                       selectedIndex={selectedPoint?.index}
                       showAllPoints={!!selectedPoint}
                     />

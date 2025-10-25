@@ -1,4 +1,19 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run full project checks to catch cross-file type errors
+echo "🔍 Running pre-commit checks on full project..."
+
+echo "📝 Formatting code..."
 pnpm format
+
+echo "🔍 Linting code..."
 pnpm lint
+
+echo "🔧 Type checking..."
 pnpm typecheck
+
+echo "🧪 Running tests..."
 pnpm test
+
+echo "✅ All pre-commit checks passed!"
