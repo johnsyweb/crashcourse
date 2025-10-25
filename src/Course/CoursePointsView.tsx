@@ -384,8 +384,8 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     if (!onPointMove) return;
 
     const point = coursePoints[index];
-    const currentLat = point.lat;
-    const currentLng = point.lng;
+    const currentLat = point.latitude;
+    const currentLng = point.longitude;
 
     // Convert distance to degrees (rough approximation)
     const latOffset = distanceMeters / 111000; // ~111km per degree latitude
@@ -419,7 +419,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const moveSelectedPoints = (direction: 'north' | 'south' | 'east' | 'west') => {
     if (!onPointMove || selectedIndices.length === 0) return;
 
-    selectedIndices.forEach(index => {
+    selectedIndices.forEach((index) => {
       movePointDirection(index, direction, 1);
     });
   };
@@ -436,7 +436,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle shortcuts when no input is focused
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA'
+      ) {
         return;
       }
 
@@ -662,7 +665,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               <th className={styles.distanceColumn}>Distance from Previous</th>
               <th className={styles.bearingColumn}>Bearing from Previous</th>
               <th className={styles.distanceColumn}>Cumulative Distance</th>
-              {onPointAdd && <th className={styles.actionColumn}>Actions</th>}
             </tr>
           </thead>
           <tbody>
