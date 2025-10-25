@@ -116,7 +116,7 @@ describe('Course', () => {
       course.movePoint(1, newPoint);
 
       // The course should still be valid with recalculated distances
-      expect(course.totalLength).toBeGreaterThan(0);
+      expect(course.length).toBeGreaterThan(0);
       expect(course.getPoints()).toHaveLength(3);
     });
 
@@ -125,7 +125,7 @@ describe('Course', () => {
 
       expect(() => course.movePoint(1, [91, -0.11])).toThrow('Invalid latitude');
       expect(() => course.movePoint(1, [51.52, 181])).toThrow('Invalid longitude');
-      expect(() => course.movePoint(1, [51.52])).toThrow('Invalid point');
+      expect(() => course.movePoint(1, [51.52] as unknown as LatLngTuple)).toThrow('Invalid point');
     });
 
     it('should throw error for invalid index', () => {
@@ -351,7 +351,7 @@ describe('Course', () => {
 
     it('should recalculate distances and bearings correctly when adding at position 0', () => {
       // Create a simple 2-point course for testing
-      const twoPointCourse = [
+      const twoPointCourse: LatLngTuple[] = [
         [-37.816715, 144.876736], // Point 0
         [-37.816893, 144.876788], // Point 1
       ];
