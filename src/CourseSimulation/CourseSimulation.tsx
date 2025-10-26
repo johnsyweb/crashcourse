@@ -538,7 +538,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         selectedPointIndices={selectedPoints.map((p) => p.index)}
                         onPointsDelete={handlePointsDelete}
                         onPointAdd={handlePointAdd}
-                        onPointMove={handlePointMove}
                         onBatchPointMove={handleBatchPointMove}
                         undo={undo}
                         redo={redo}
@@ -660,7 +659,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       selectedPointIndices={selectedPoints.map((p) => p.index)}
                       onPointsDelete={handlePointsDelete}
                       onPointAdd={handlePointAdd}
-                      onPointMove={handlePointMove}
                       onBatchPointMove={handleBatchPointMove}
                       undo={undo}
                       redo={redo}

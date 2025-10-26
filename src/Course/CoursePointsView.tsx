@@ -29,7 +29,6 @@ interface CoursePointsViewProps {
   selectedPointIndices?: number[];
   onPointsDelete?: (pointIndices: number[]) => void;
   onPointAdd?: (point: [number, number], index?: number) => void;
-  onPointMove?: (index: number, point: [number, number]) => void;
   onBatchPointMove?: (updates: Array<{ index: number; point: [number, number] }>) => void;
   undo?: () => void;
   redo?: () => void;
@@ -47,7 +46,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   selectedPointIndices,
   onPointsDelete,
   onPointAdd,
-  onPointMove,
   onBatchPointMove,
   undo,
   redo,
@@ -441,7 +439,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndices, onPointMove, onPointAdd]);
+  }, [selectedIndices, onBatchPointMove, onPointAdd]);
 
   return (
     <div className={styles.container}>
@@ -464,9 +462,9 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
         {selectedIndices.length > 0 && (
           <div className={styles.selectedControls}>
             <div className={styles.controlButtons}>
-              {(onPointMove || onPointAdd) && (
+              {(onBatchPointMove || onPointAdd) && (
                 <div className={styles.directionalControls}>
-                  {onPointMove && (
+                  {onBatchPointMove && (
                     <>
                       <button
                         className={styles.directionButton}
