@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulationApp.module.css';
@@ -26,12 +26,24 @@ const CourseSimulationApp: React.FC = () => {
     clear: clearMetadataHistory,
   } = useUndoRedo<{ name?: string; description?: string }>({}, 100);
 
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(true);
+
+  const handleCourseDataImported = (
+    points: LatLngTuple[],
+    metadata?: { name?: string; description?: string }
+  ) => {
+    setCoursePoints(points);
+    if (metadata) {
+      setCourseMetadata(metadata);
+    }
+  };
+
   // Enable keyboard shortcuts for undo/redo
   useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);
 
   // Auto-load course data from URL if present
   useEffect(() => {
-    if (coursePoints.length === 0) {
+    if (coursePoints.length === 0 && isLoadingFromUrl) {
       const sharedCourseData = extractCourseDataFromUrl();
       if (sharedCourseData) {
         handleCourseDataImported(sharedCourseData.points, sharedCourseData.metadata);
@@ -53,8 +65,9 @@ const CourseSimulationApp: React.FC = () => {
         url.searchParams.delete('course');
         window.history.replaceState({}, '', url.toString());
       }
+      setIsLoadingFromUrl(false);
     }
-  }, []); // Only run on mount
+  }, [isLoadingFromUrl, coursePoints.length, handleCourseDataImported]);
 
   // Update document title based on application state
   useDocumentTitle(
@@ -65,16 +78,6 @@ const CourseSimulationApp: React.FC = () => {
         : 'Course Simulation'
       : 'Import Course Data'
   );
-
-  const handleCourseDataImported = (
-    points: LatLngTuple[],
-    metadata?: { name?: string; description?: string }
-  ) => {
-    setCoursePoints(points);
-    if (metadata) {
-      setCourseMetadata(metadata);
-    }
-  };
 
   const handleResetSimulation = () => {
     setCoursePoints([]);
