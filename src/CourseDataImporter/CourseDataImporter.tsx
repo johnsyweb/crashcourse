@@ -4,10 +4,17 @@ import styles from './CourseDataImporter.module.css';
 import FileUploadSection from '../FileUploadSection';
 import GPXFile, { GPXData } from '../GPXFile';
 
+export interface LapDetectionParams {
+  stepMeters?: number;
+  bearingToleranceDeg?: number;
+  crossingToleranceMeters?: number;
+}
+
 interface CourseDataImporterProps {
   onCourseDataImported: (
     points: LatLngTuple[],
-    metadata?: { name?: string; description?: string }
+    metadata?: { name?: string; description?: string },
+    lapDetectionParams?: LapDetectionParams
   ) => void;
 }
 
@@ -39,7 +46,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
         description: data.description,
       };
 
-      onCourseDataImported(points, metadata);
+      onCourseDataImported(points, metadata, data.lapDetectionParams);
     } else if (data.errorMessage) {
       setImportError(data.errorMessage);
     }

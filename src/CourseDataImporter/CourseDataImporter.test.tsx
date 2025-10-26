@@ -117,7 +117,8 @@ describe('CourseDataImporter', () => {
         {
           name: 'Test Track',
           description: 'Test Description',
-        }
+        },
+        undefined // lapDetectionParams
       );
     });
   });

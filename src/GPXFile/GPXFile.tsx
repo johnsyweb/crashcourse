@@ -10,6 +10,12 @@ export interface GPXPoint {
   time?: string;
 }
 
+export interface LapDetectionParams {
+  stepMeters?: number;
+  bearingToleranceDeg?: number;
+  crossingToleranceMeters?: number;
+}
+
 export interface GPXData {
   name?: string;
   description?: string;
@@ -18,6 +24,7 @@ export interface GPXData {
   endPoint?: GPXPoint;
   isValid: boolean;
   errorMessage?: string;
+  lapDetectionParams?: LapDetectionParams;
 }
 
 interface GPXFileProps {
@@ -81,6 +88,27 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
       const trackName = track.name || track.n || file.name.replace(/\.[^/.]+$/, '');
       const trackDescription = track.desc || track.description || '';
 
+      // Extract lap detection parameters from metadata extensions
+      let lapDetectionParams: LapDetectionParams | undefined;
+      if (result?.gpx?.metadata?.extensions?.['lapDetection:params']) {
+        const params = result.gpx.metadata.extensions['lapDetection:params'];
+        lapDetectionParams = {};
+
+        if (params['lapDetection:stepMeters']) {
+          lapDetectionParams.stepMeters = parseFloat(params['lapDetection:stepMeters']);
+        }
+        if (params['lapDetection:bearingToleranceDeg']) {
+          lapDetectionParams.bearingToleranceDeg = parseFloat(
+            params['lapDetection:bearingToleranceDeg']
+          );
+        }
+        if (params['lapDetection:crossingToleranceMeters']) {
+          lapDetectionParams.crossingToleranceMeters = parseFloat(
+            params['lapDetection:crossingToleranceMeters']
+          );
+        }
+      }
+
       const gpxData: GPXData = {
         name: trackName,
         description: trackDescription,
@@ -88,6 +116,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
         startPoint: points.length > 0 ? points[0] : undefined,
         endPoint: points.length > 0 ? points[points.length - 1] : undefined,
         isValid: true,
+        lapDetectionParams,
       };
 
       onDataParsed(gpxData);

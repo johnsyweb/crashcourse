@@ -1,11 +1,18 @@
 import { LatLngTuple } from 'leaflet';
 
+export interface LapDetectionParams {
+  stepMeters?: number;
+  bearingToleranceDeg?: number;
+  crossingToleranceMeters?: number;
+}
+
 export interface GPXExportOptions {
   name?: string;
   description?: string;
   author?: string;
   includeElevation?: boolean;
   includeTimestamps?: boolean;
+  lapDetectionParams?: LapDetectionParams;
 }
 
 /**
@@ -21,6 +28,7 @@ export function exportToGPX(points: LatLngTuple[], options: GPXExportOptions = {
     author = 'Crash Course Simulator',
     includeElevation = false,
     includeTimestamps = false,
+    lapDetectionParams,
   } = options;
 
   if (points.length === 0) {
@@ -48,6 +56,36 @@ export function exportToGPX(points: LatLngTuple[], options: GPXExportOptions = {
     })
     .join('\n');
 
+  // Generate extensions XML for lap detection parameters
+  let extensionsXml = '';
+  if (lapDetectionParams) {
+    const lapParams = [];
+    if (lapDetectionParams.stepMeters !== undefined) {
+      lapParams.push(
+        `<lapDetection:stepMeters>${lapDetectionParams.stepMeters}</lapDetection:stepMeters>`
+      );
+    }
+    if (lapDetectionParams.bearingToleranceDeg !== undefined) {
+      lapParams.push(
+        `<lapDetection:bearingToleranceDeg>${lapDetectionParams.bearingToleranceDeg}</lapDetection:bearingToleranceDeg>`
+      );
+    }
+    if (lapDetectionParams.crossingToleranceMeters !== undefined) {
+      lapParams.push(
+        `<lapDetection:crossingToleranceMeters>${lapDetectionParams.crossingToleranceMeters}</lapDetection:crossingToleranceMeters>`
+      );
+    }
+
+    if (lapParams.length > 0) {
+      extensionsXml = `
+    <extensions>
+      <lapDetection:params xmlns:lapDetection="https://johnsy.com/crashcourse/lapdetection">
+${lapParams.map((p) => '        ' + p).join('\n')}
+      </lapDetection:params>
+    </extensions>`;
+    }
+  }
+
   // Generate GPX XML
   const gpxXml = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="${author}" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
@@ -60,7 +98,7 @@ export function exportToGPX(points: LatLngTuple[], options: GPXExportOptions = {
         <text>Crash Course Simulator</text>
       </link>
     </author>
-    <time>${new Date().toISOString()}</time>
+    <time>${new Date().toISOString()}</time>${extensionsXml}
   </metadata>
   <trk>
     <name>${escapeXml(name)}</name>

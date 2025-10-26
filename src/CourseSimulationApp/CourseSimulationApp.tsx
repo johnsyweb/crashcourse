@@ -33,11 +33,25 @@ const CourseSimulationApp: React.FC = () => {
 
   const handleCourseDataImported = (
     points: LatLngTuple[],
-    metadata?: { name?: string; description?: string }
+    metadata?: { name?: string; description?: string },
+    lapDetectionParams?: {
+      stepMeters?: number;
+      bearingToleranceDeg?: number;
+      crossingToleranceMeters?: number;
+    }
   ) => {
     setCoursePoints(points);
     if (metadata) {
       setCourseMetadata(metadata);
+    }
+
+    // Store lap detection params in localStorage
+    if (lapDetectionParams) {
+      try {
+        localStorage.setItem('lapDetectionParams', JSON.stringify(lapDetectionParams));
+      } catch {
+        // Ignore storage errors
+      }
     }
   };
 

@@ -404,6 +404,12 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   const handleExportGPX = useCallback(
     (courseName?: string) => {
       try {
+        // Get lap detection parameters if available
+        let lapDetectionParams: LapDetectionParams | undefined;
+        if (hasLapDetection(course)) {
+          lapDetectionParams = course.getLapDetectionParams();
+        }
+
         const filename = generateGPXFilename(courseName || courseMetadata?.name);
         downloadGPX(coursePoints, filename, {
           name: courseName || courseMetadata?.name || 'Course',
@@ -411,13 +417,14 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
           author: 'Crash Course Simulator',
           includeElevation: false,
           includeTimestamps: false,
+          lapDetectionParams,
         });
       } catch (error) {
         console.error('Failed to export GPX:', error);
         setError(error instanceof Error ? error.message : 'Failed to export GPX file');
       }
     },
-    [coursePoints, courseMetadata]
+    [coursePoints, courseMetadata, course]
   );
 
   const handleShareCourse = useCallback(async () => {
