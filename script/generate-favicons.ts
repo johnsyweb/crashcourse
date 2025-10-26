@@ -3,6 +3,10 @@
 import puppeteer, { Browser } from 'puppeteer';
 import * as path from 'path';
 import * as fs from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 interface IconConfig {
   name: string;
@@ -82,8 +86,26 @@ async function generateFavicons(): Promise<void> {
       console.log(`✅ Generated: ${screenshotPath}`);
     }
 
+    // Generate favicon.ico from the PNG files using ImageMagick
+    console.log('🔧 Generating favicon.ico from PNG files...');
+    try {
+      const icoPath = path.join(process.cwd(), 'public', 'favicon.ico');
+      const png16Path = path.join(process.cwd(), 'public', 'favicon-ico-16.png');
+      const png32Path = path.join(process.cwd(), 'public', 'favicon-ico-32.png');
+
+      // Use ImageMagick to combine the 16x16 and 32x32 PNG files into a single ICO file
+      const command = `convert ${png16Path} ${png32Path} ${icoPath}`;
+      await execAsync(command);
+
+      console.log(`✅ Generated: ${icoPath}`);
+    } catch (error) {
+      console.warn(
+        '⚠️  Could not generate favicon.ico. Make sure ImageMagick is installed: brew install imagemagick'
+      );
+      console.warn('Error:', error instanceof Error ? error.message : String(error));
+    }
+
     console.log('🎉 All favicons generated successfully!');
-    console.log('💡 Note: favicon.ico will need to be created manually or with a tool like ImageMagick');
   } catch (error) {
     console.error('❌ Error generating favicons:', error);
     process.exit(1);
