@@ -1,6 +1,6 @@
 import React from 'react';
 import { Polyline, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+import L, { LatLngTuple } from 'leaflet';
 import { Course } from './Course';
 
 // Import assets for markers

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { latitudeToNumber, longitudeToNumber } from '../utils/coordinates';
 
 interface SelectedPointMarkerProps {
   point: { latitude: number; longitude: number; index: number } | null;
@@ -45,9 +44,8 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
     return null;
   }
 
-  // Convert branded types to plain numbers for Leaflet
-  const lat = latitudeToNumber(point.latitude);
-  const lng = longitudeToNumber(point.longitude);
+  const lat = point.latitude;
+  const lng = point.longitude;
 
   const handleDragEnd = (e: L.DragEndEvent) => {
     if (!onPointMove) return;
