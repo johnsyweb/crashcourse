@@ -674,28 +674,60 @@ const Simulator: React.FC<SimulatorProps> = ({
           <div className={styles.shortcutsHeader}>Keyboard Shortcuts</div>
           <div className={styles.shortcutsTable}>
             <div className={styles.shortcutRow}>
-              <kbd>[</kbd> <span>decrease participants</span>
-              <kbd>]</kbd> <span>increase participants</span>
+              <div className={styles.shortcutItem}>
+                <kbd>[</kbd> <span>decrease participants</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>]</kbd> <span>increase participants</span>
+              </div>
             </div>
             <div className={styles.shortcutRow}>
-              <kbd>p</kbd> <span>play/pause</span>
-              <kbd>r</kbd> <span>reset</span>
+              <div className={styles.shortcutItem}>
+                <kbd>p</kbd> <span>play/pause</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>r</kbd> <span>reset</span>
+              </div>
             </div>
             <div className={styles.shortcutRow}>
-              <kbd>-</kbd> <span>decrease speed</span>
-              <kbd>+</kbd> <span>increase speed</span>
+              <div className={styles.shortcutItem}>
+                <kbd>-</kbd> <span>decrease speed</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>+</kbd> <span>increase speed</span>
+              </div>
             </div>
             <div className={styles.shortcutRow}>
-              <kbd>q</kbd> <span>min pace slower</span>
-              <kbd>w</kbd> <span>min pace faster</span>
+              <div className={styles.shortcutItem}>
+                <kbd>q</kbd> <span>min pace slower</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>w</kbd> <span>min pace faster</span>
+              </div>
             </div>
             <div className={styles.shortcutRow}>
-              <kbd>a</kbd> <span>max pace slower</span>
-              <kbd>s</kbd> <span>max pace faster</span>
+              <div className={styles.shortcutItem}>
+                <kbd>a</kbd> <span>max pace slower</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>s</kbd> <span>max pace faster</span>
+              </div>
             </div>
             <div className={styles.shortcutRow}>
-              <kbd>c</kbd> <span>toggle controls (collapse/expand)</span>
-              <kbd>C</kbd> <span>expand all controls</span>
+              <div className={styles.shortcutItem}>
+                <kbd>c</kbd> <span>toggle controls</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>C</kbd> <span>expand all controls</span>
+              </div>
+            </div>
+            <div className={styles.shortcutRow}>
+              <div className={styles.shortcutItem}>
+                <kbd>Ctrl+Z</kbd> <span>undo</span>
+              </div>
+              <div className={styles.shortcutItem}>
+                <kbd>Ctrl+Y</kbd> <span>redo</span>
+              </div>
             </div>
           </div>
         </div>

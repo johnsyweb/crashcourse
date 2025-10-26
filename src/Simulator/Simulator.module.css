@@ -239,13 +239,20 @@
 }
 
 .shortcutRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.shortcutItem {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
 }
 
-.shortcutRow kbd {
+.shortcutItem kbd {
   background-color: #f8f9fa;
   border: 1px solid #d3d3d3;
   border-radius: 3px;
@@ -258,13 +265,12 @@
   line-height: 1;
   padding: 0.2rem 0.4rem;
   white-space: nowrap;
-  min-width: 1.2rem;
+  min-width: 2rem;
   text-align: center;
 }
 
-.shortcutRow span {
+.shortcutItem span {
   color: #4a4a4a;
-  margin-right: 1rem;
   font-size: 0.75rem;
 }
 
