@@ -35,6 +35,7 @@ interface CoursePointsViewProps {
   canUndo?: boolean;
   canRedo?: boolean;
   onExportGPX?: (courseName?: string) => void;
+  onShareCourse?: () => void;
 }
 
 const CoursePointsView: React.FC<CoursePointsViewProps> = ({
@@ -52,6 +53,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   canUndo,
   canRedo,
   onExportGPX,
+  onShareCourse,
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState<number | null>(null);
   const [internalSelectedIndices, setInternalSelectedIndices] = useState<number[]>([]);
@@ -550,15 +552,26 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
             </button>
           </div>
         )}
-        {onExportGPX && (
+        {(onExportGPX || onShareCourse) && (
           <div className={styles.exportActions}>
-            <button
-              className={styles.exportButton}
-              onClick={() => onExportGPX(courseMetadata?.name)}
-              title="Export course as GPX file"
-            >
-              📥 Export GPX
-            </button>
+            {onShareCourse && (
+              <button
+                className={styles.exportButton}
+                onClick={onShareCourse}
+                title="Generate shareable link with course data"
+              >
+                🔗 Share Course
+              </button>
+            )}
+            {onExportGPX && (
+              <button
+                className={styles.exportButton}
+                onClick={() => onExportGPX(courseMetadata?.name)}
+                title="Export course as GPX file"
+              >
+                📥 Export GPX
+              </button>
+            )}
           </div>
         )}
       </div>

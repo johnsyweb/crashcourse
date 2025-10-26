@@ -97,10 +97,7 @@ describe('courseSharing', () => {
         sampleCourseData,
         { points: [[51.505, -0.09] as LatLngTuple], version: '1.0' },
         {
-          points: [
-            [51.505, -0.09] as LatLngTuple,
-            [51.51, -0.1] as LatLngTuple,
-          ],
+          points: [[51.505, -0.09] as LatLngTuple, [51.51, -0.1] as LatLngTuple],
           metadata: { name: 'Simple Course' },
           version: '1.0',
         },

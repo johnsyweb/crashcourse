@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulationApp.module.css';
@@ -6,6 +6,7 @@ import CourseDataImporter from '../CourseDataImporter';
 import CourseSimulation from '../CourseSimulation';
 import { useUndoRedo, useUndoRedoKeyboard } from '../utils/useUndoRedo';
 import { useDocumentTitle } from '../utils/useDocumentTitle';
+import { extractCourseDataFromUrl } from '../utils/courseSharing';
 
 // Removed empty interface and using React.FC without props type
 const CourseSimulationApp: React.FC = () => {
@@ -27,6 +28,21 @@ const CourseSimulationApp: React.FC = () => {
 
   // Enable keyboard shortcuts for undo/redo
   useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);
+
+  // Auto-load course data from URL if present
+  useEffect(() => {
+    if (coursePoints.length === 0) {
+      const sharedCourseData = extractCourseDataFromUrl();
+      if (sharedCourseData) {
+        handleCourseDataImported(sharedCourseData.points, sharedCourseData.metadata);
+
+        // Clear the URL parameter after loading
+        const url = new URL(window.location.href);
+        url.searchParams.delete('course');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, []); // Only run on mount
 
   // Update document title based on application state
   useDocumentTitle(

@@ -17,6 +17,9 @@ import { usePersistentState } from '../utils/usePersistentState';
 import { downloadGPX, generateGPXFilename } from '../GPXFile';
 import * as turf from '@turf/turf';
 import { createLatitude, createLongitude } from '../utils/coordinates';
+import { createShareableUrl } from '../utils/courseSharing';
+import { hasLapDetection } from '../Course/CourseWithLapDetection';
+import type { LapDetectionParams } from '../Course/CourseWithLapDetection';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -417,6 +420,31 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [coursePoints, courseMetadata]
   );
 
+  const handleShareCourse = useCallback(() => {
+    try {
+      // Get lap detection parameters if available
+      let lapDetectionParams: LapDetectionParams | undefined;
+      if (hasLapDetection(course)) {
+        lapDetectionParams = course.getLapDetectionParams();
+      }
+
+      const shareUrl = createShareableUrl({
+        points: coursePoints,
+        metadata: courseMetadata,
+        lapDetectionParams,
+        version: '1.0',
+      });
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Shareable URL copied to clipboard!\n\nYou can paste this link to share the course.');
+      });
+    } catch (error) {
+      console.error('Failed to share course:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate shareable URL');
+    }
+  }, [course, coursePoints, courseMetadata]);
+
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
   }
@@ -544,6 +572,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         canUndo={canUndo}
                         canRedo={canRedo}
                         onExportGPX={handleExportGPX}
+                        onShareCourse={handleShareCourse}
                       />
                     )}
                   </div>
@@ -665,6 +694,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       canUndo={canUndo}
                       canRedo={canRedo}
                       onExportGPX={handleExportGPX}
+                      onShareCourse={handleShareCourse}
                     />
                   )}
                 </div>
