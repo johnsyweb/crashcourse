@@ -36,8 +36,23 @@ export function encodeCourseData(data: ShareableCourseData): string {
  * Decodes a base64-encoded course data string
  */
 export function decodeCourseData(encoded: string): ShareableCourseData {
-  const jsonString = atob(encoded);
-  const data = JSON.parse(jsonString) as ShareableCourseData;
+  let jsonString: string;
+  try {
+    jsonString = atob(encoded);
+  } catch (error) {
+    throw new Error(
+      'Invalid base64 encoding: ' + (error instanceof Error ? error.message : 'Unknown error')
+    );
+  }
+
+  let data: ShareableCourseData;
+  try {
+    data = JSON.parse(jsonString) as ShareableCourseData;
+  } catch (error) {
+    throw new Error(
+      'Invalid JSON data: ' + (error instanceof Error ? error.message : 'Unknown error')
+    );
+  }
 
   // Validate version
   if (!data.version) {
@@ -79,6 +94,9 @@ export function extractCourseDataFromUrl(): ShareableCourseData | null {
     return decodeCourseData(encoded);
   } catch (error) {
     console.error('Failed to decode course data from URL:', error);
+    console.error('Encoded data length:', encoded.length);
+    console.error('Encoded data (first 100 chars):', encoded.substring(0, 100));
+    console.error('Encoded data (last 100 chars):', encoded.substring(encoded.length - 100));
     return null;
   }
 }
