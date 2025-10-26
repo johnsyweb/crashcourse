@@ -435,10 +435,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         version: '1.0',
       });
 
-      // Log the URL for debugging (can be removed in production)
-      console.log('Share URL:', shareUrl);
-      console.log('URL contains space?', shareUrl.includes(' '));
-
       // Try using native Web Share API if available (mobile, modern browsers)
       if (navigator.share) {
         try {
