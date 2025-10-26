@@ -420,7 +420,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [coursePoints, courseMetadata]
   );
 
-  const handleShareCourse = useCallback(() => {
+  const handleShareCourse = useCallback(async () => {
     try {
       // Get lap detection parameters if available
       let lapDetectionParams: LapDetectionParams | undefined;
@@ -435,10 +435,34 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         version: '1.0',
       });
 
-      // Copy to clipboard
-      navigator.clipboard.writeText(shareUrl).then(() => {
+      // Try using native Web Share API if available (mobile, modern browsers)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: courseMetadata?.name || 'Shared Course',
+            text: courseMetadata?.description || 'Check out this course!',
+            url: shareUrl,
+          });
+          return; // Successfully shared via native share
+        } catch (shareError) {
+          // User cancelled or error occurred, fall back to clipboard
+          if ((shareError as Error).name !== 'AbortError') {
+            console.warn('Native share failed, falling back to clipboard:', shareError);
+          } else {
+            // User cancelled, don't show error
+            return;
+          }
+        }
+      }
+
+      // Fall back to clipboard for browsers without native share
+      try {
+        await navigator.clipboard.writeText(shareUrl);
         alert('Shareable URL copied to clipboard!\n\nYou can paste this link to share the course.');
-      });
+      } catch {
+        // Clipboard API not available, show URL in alert
+        alert(`Share this URL:\n\n${shareUrl}`);
+      }
     } catch (error) {
       console.error('Failed to share course:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate shareable URL');
