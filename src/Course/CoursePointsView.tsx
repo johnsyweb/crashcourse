@@ -458,61 +458,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           )}
         </div>
 
-        {/* Selected Points Controls */}
-        {selectedIndices.length > 0 && (
-          <div className={styles.selectedControls}>
-            <div className={styles.controlButtons}>
-              {(onBatchPointMove || onPointAdd) && (
-                <div className={styles.directionalControls}>
-                  {onBatchPointMove && (
-                    <>
-                      <button
-                        className={styles.directionButton}
-                        onClick={() => moveSelectedPoints('north')}
-                        title="Move selected points 1m north (↑ or W)"
-                      >
-                        ↑
-                      </button>
-                      <div className={styles.directionRow}>
-                        <button
-                          className={styles.directionButton}
-                          onClick={() => moveSelectedPoints('west')}
-                          title="Move selected points 1m west (← or A)"
-                        >
-                          ←
-                        </button>
-                        <button
-                          className={styles.directionButton}
-                          onClick={() => moveSelectedPoints('east')}
-                          title="Move selected points 1m east (→ or D)"
-                        >
-                          →
-                        </button>
-                      </div>
-                      <button
-                        className={styles.directionButton}
-                        onClick={() => moveSelectedPoints('south')}
-                        title="Move selected points 1m south (↓ or S)"
-                      >
-                        ↓
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-              {onPointAdd && (
-                <button
-                  className={styles.addAfterButton}
-                  onClick={addAfterSelectedPoint}
-                  title="Add point after selected point (Enter or +)"
-                >
-                  + Add After
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         {onPointAdd && (
           <div className={styles.addPointSection}>
             {!showAddForm ? (
@@ -617,6 +562,61 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Selected Points Controls */}
+      {selectedIndices.length > 0 && (
+        <div className={styles.selectedControls}>
+          <div className={styles.controlButtons}>
+            {(onBatchPointMove || onPointAdd) && (
+              <div className={styles.directionalControls}>
+                {onBatchPointMove && (
+                  <>
+                    <button
+                      className={styles.directionButton}
+                      onClick={() => moveSelectedPoints('north')}
+                      title="Move selected points 1m north (↑ or W)"
+                    >
+                      ↑
+                    </button>
+                    <div className={styles.directionRow}>
+                      <button
+                        className={styles.directionButton}
+                        onClick={() => moveSelectedPoints('west')}
+                        title="Move selected points 1m west (← or A)"
+                      >
+                        ←
+                      </button>
+                      <button
+                        className={styles.directionButton}
+                        onClick={() => moveSelectedPoints('east')}
+                        title="Move selected points 1m east (→ or D)"
+                      >
+                        →
+                      </button>
+                    </div>
+                    <button
+                      className={styles.directionButton}
+                      onClick={() => moveSelectedPoints('south')}
+                      title="Move selected points 1m south (↓ or S)"
+                    >
+                      ↓
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+            {onPointAdd && (
+              <button
+                className={styles.addAfterButton}
+                onClick={addAfterSelectedPoint}
+                title="Add point after selected point (Enter or +)"
+              >
+                + Add After
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className={styles.tableContainer}>
         <table className={styles.table}>
