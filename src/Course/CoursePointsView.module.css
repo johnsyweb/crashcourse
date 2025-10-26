@@ -62,12 +62,13 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  height: 2.5rem;
 }
 
 .batchDeleteButton:hover {
@@ -91,12 +92,13 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  height: 2.5rem;
 }
 
 .undoButton:hover:not(:disabled),
@@ -360,11 +362,12 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
   flex: 1;
   min-width: 120px;
+  height: 2.5rem;
 }
 
 .addPointButton:hover {
@@ -428,9 +431,10 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  height: 2.5rem;
 }
 
 .addButton:hover:not(:disabled) {
@@ -449,9 +453,10 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  height: 2.5rem;
 }
 
 .cancelButton:hover {
@@ -587,6 +592,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
+  height: 2.5rem;
 }
 
 .addAfterButton:hover {
