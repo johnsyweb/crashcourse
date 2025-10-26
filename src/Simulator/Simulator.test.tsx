@@ -123,6 +123,8 @@ describe('Simulator Component', () => {
     expect(screen.getByLabelText(/Maximum pace/i)).toBeInTheDocument();
   });
 
+  // TODO: This test needs a better approach - setTimeout in useEffect makes testing difficult
+  // The Simulator component needs a refactor to properly handle async state updates
   it.skip('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
     render(
       <Simulator
@@ -138,23 +140,18 @@ describe('Simulator Component', () => {
     // Use our mocked elapsed time control
     const timeControl = screen.getByTestId('elapsed-time-control');
 
-    act(() => {
-      fireEvent.click(timeControl);
-      // We need to wait for the effect to run
-      jest.runAllTimers();
-    });
-
-    // Wait for the setTimeout in useEffect to complete
-    // We need to wait longer here because updateParticipants is called in setTimeout
+    // Trigger elapsed time change and wait for async operations
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      fireEvent.click(timeControl);
+      // Wait for setTimeout to complete
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
-
-    // Verify that onParticipantUpdate was called
-    expect(mockParticipantUpdate).toHaveBeenCalled();
 
     // Verify that onElapsedTimeChange was called
     expect(mockElapsedTimeChange).toHaveBeenCalled();
+
+    // Verify that onParticipantUpdate was called
+    expect(mockParticipantUpdate).toHaveBeenCalled();
 
     // Verify that move was called on all participants
     mockParticipants.forEach((participant) => {
