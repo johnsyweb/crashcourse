@@ -9,6 +9,7 @@ How accessible is this 5km course? Will participants and the public be able to e
 3. Given a default path width, adjust it and specify narrower and wider sections.
 4. Run simulations of walkers, joggers, and runners of varying paces and numbers following this course and highlight any areas of congestion. Add in some public path users with prams and bikes for good measure.
 5. Tweak your course for accessibility, following the visualisations.
+6. Share your course with others via a shareable URL that includes all course data, metadata, and lap detection parameters.
 
 ## Developing
 
@@ -151,6 +152,16 @@ A model representing a participant in the simulation. Features include:
 ### FitBounds
 
 A utility component that automatically adjusts the map view to fit all GPS points within the visible area.
+
+### Course Sharing
+
+Shareable course functionality that allows users to share courses via URL. Features include:
+
+- Encodes course data (points, metadata, lap detection parameters) into a base64-encoded URL parameter
+- Automatically loads course data from URL when app starts
+- Generates shareable links that work across browsers
+- Includes complete course configuration including lap detection settings
+- Versioned data format for future compatibility
 
 ### Component Relationships
 
