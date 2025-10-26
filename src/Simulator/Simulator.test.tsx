@@ -123,8 +123,8 @@ describe('Simulator Component', () => {
     expect(screen.getByLabelText(/Maximum pace/i)).toBeInTheDocument();
   });
 
-  // TODO: This test needs a better approach - setTimeout in useEffect makes testing difficult
-  // The Simulator component needs a refactor to properly handle async state updates
+  // TODO: This test fails because updateParticipants is called with setTimeout in handleElapsedTimeChange
+  // Need to refactor how participant updates are triggered to make testing easier
   it.skip('updates participants and calls onParticipantUpdate when elapsed time changes', async () => {
     render(
       <Simulator

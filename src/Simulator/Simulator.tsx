@@ -113,8 +113,6 @@ const Simulator: React.FC<SimulatorProps> = ({
     [course, lapStepMeters, lapBearingTolerance, lapCrossingTolerance]
   );
 
-  // Use a ref to track if we need to update participants
-  const participantsNeedUpdate = useRef(false);
   const lastElapsedTimeRef = useRef(0);
 
   // Use refs to track previous values to prevent infinite loops
@@ -214,18 +212,8 @@ const Simulator: React.FC<SimulatorProps> = ({
     [participants, onParticipantUpdate, course]
   );
 
-  // Handle elapsed time changes
+  // Handle elapsed time changes - check if all participants have finished
   useEffect(() => {
-    if (participantsNeedUpdate.current) {
-      // Use setTimeout to defer the call - this is necessary because updateParticipants
-      // calls onParticipantUpdate which causes cascading state updates
-      const timeoutId = setTimeout(() => {
-        updateParticipants(elapsedTime);
-        participantsNeedUpdate.current = false;
-      }, 0);
-      return () => clearTimeout(timeoutId);
-    }
-
     // Check if all participants have finished when elapsed time changes
     if (!simulationStopped && participants.length > 0) {
       const allFinished = participants.every((p) => {
@@ -239,7 +227,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [elapsedTime, updateParticipants, participants, simulationStopped]);
+  }, [elapsedTime, participants, simulationStopped]);
 
   const handleElapsedTimeChange = useCallback(
     (time: number) => {
@@ -265,11 +253,13 @@ const Simulator: React.FC<SimulatorProps> = ({
         onElapsedTimeChange(time);
       }
 
-      // Mark that participants need updating based on new time
-      // The actual update will happen in the useEffect above
-      participantsNeedUpdate.current = true;
+      // Update participants immediately (not in useEffect to avoid cascading renders)
+      // Use setTimeout to defer the update to avoid calling setState during render
+      setTimeout(() => {
+        updateParticipants(time);
+      }, 0);
     },
-    [simulationStopped, elapsedTime, onElapsedTimeChange]
+    [simulationStopped, elapsedTime, onElapsedTimeChange, updateParticipants]
   );
 
   // Function to increase participant count
