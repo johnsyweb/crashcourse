@@ -26,7 +26,10 @@ const CourseSimulationApp: React.FC = () => {
     clear: clearMetadataHistory,
   } = useUndoRedo<{ name?: string; description?: string }>({}, 100);
 
-  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(true);
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(() => {
+    // Check if URL has course data synchronously on mount
+    return !!extractCourseDataFromUrl();
+  });
 
   const handleCourseDataImported = (
     points: LatLngTuple[],
@@ -93,6 +96,11 @@ const CourseSimulationApp: React.FC = () => {
   const handleCourseMetadataChange = (newMetadata: { name?: string; description?: string }) => {
     setCourseMetadata(newMetadata);
   };
+
+  // Don't show import screen while loading course data from URL
+  if (isLoadingFromUrl && coursePoints.length === 0) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className={styles.courseSimulationApp}>
