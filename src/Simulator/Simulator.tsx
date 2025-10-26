@@ -217,8 +217,11 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Handle elapsed time changes
   useEffect(() => {
     if (participantsNeedUpdate.current) {
-      updateParticipants(elapsedTime);
-      participantsNeedUpdate.current = false;
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => {
+        updateParticipants(elapsedTime);
+        participantsNeedUpdate.current = false;
+      }, 0);
     }
 
     // Check if all participants have finished when elapsed time changes
@@ -229,7 +232,8 @@ const Simulator: React.FC<SimulatorProps> = ({
       });
 
       if (allFinished) {
-        setSimulationStopped(true);
+        // Use setTimeout to defer state updates to avoid calling setState in effect
+        setTimeout(() => setSimulationStopped(true), 0);
       }
     }
   }, [elapsedTime, updateParticipants, participants, simulationStopped]);

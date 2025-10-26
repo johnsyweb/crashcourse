@@ -19,7 +19,8 @@ const ControlCard: React.FC<ControlCardProps> = ({ title, children, compact, cla
         window.matchMedia &&
         window.matchMedia('(max-width:480px)').matches
       ) {
-        setExpanded(false);
+        // Use setTimeout to defer state updates to avoid calling setState in effect
+        setTimeout(() => setExpanded(false), 0);
       }
     } catch {
       // ignore

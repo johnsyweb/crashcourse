@@ -35,14 +35,10 @@ export function useUndoRedo<T>(
 
   const maxHistoryRef = useRef(maxHistorySize);
 
-  // Update canUndo and canRedo flags
-  useEffect(() => {
-    setState((prev) => ({
-      ...prev,
-      canUndo: prev.historyIndex > 0,
-      canRedo: prev.historyIndex < prev.history.length - 1,
-    }));
-  }, [state.historyIndex, state.history.length]);
+  // The canUndo and canRedo flags are derived values, not state
+  // They are calculated directly from the state values in setState calls
+  const canUndo = state.historyIndex > 0;
+  const canRedo = state.historyIndex < state.history.length - 1;
 
   const setNewState = useCallback((newState: T) => {
     setState((prev) => {
@@ -118,7 +114,11 @@ export function useUndoRedo<T>(
   }, [initialState]);
 
   return {
-    ...state,
+    current: state.current,
+    history: state.history,
+    historyIndex: state.historyIndex,
+    canUndo,
+    canRedo,
     setState: setNewState,
     undo,
     redo,

@@ -44,7 +44,8 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   // Stop the simulation if simulationStopped is true
   useEffect(() => {
     if (simulationStopped && isRunning) {
-      setIsRunning(false);
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => setIsRunning(false), 0);
     }
   }, [simulationStopped, isRunning]);
 

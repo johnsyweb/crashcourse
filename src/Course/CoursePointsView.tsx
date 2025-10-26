@@ -106,74 +106,6 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
   const coursePoints = course ? calculateCoursePoints(course) : [];
 
-  const handlePointClick = (point: CoursePoint, event: React.MouseEvent) => {
-    const isCtrlKey = event.ctrlKey || event.metaKey; // Support both Ctrl and Cmd (Mac)
-    const isShiftKey = event.shiftKey;
-
-    if (isShiftKey && selectedIndices.length > 0) {
-      // Range selection: select all points between last selected and current
-      const lastSelected = selectedIndices[selectedIndices.length - 1];
-      const start = Math.min(lastSelected, point.index);
-      const end = Math.max(lastSelected, point.index);
-      const rangeIndices = [];
-
-      for (let i = start; i <= end; i++) {
-        rangeIndices.push(i);
-      }
-
-      const newSelectedIndices = [...new Set([...selectedIndices, ...rangeIndices])].sort(
-        (a, b) => a - b
-      );
-
-      if (selectedPointIndices === undefined) {
-        setInternalSelectedIndices(newSelectedIndices);
-      }
-
-      if (onPointsSelect) {
-        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
-        onPointsSelect(selectedPoints);
-      }
-    } else if (isCtrlKey) {
-      // Toggle selection: add or remove point from selection
-      const newSelectedIndices = selectedIndices.includes(point.index)
-        ? selectedIndices.filter((i) => i !== point.index)
-        : [...selectedIndices, point.index].sort((a, b) => a - b);
-
-      if (selectedPointIndices === undefined) {
-        setInternalSelectedIndices(newSelectedIndices);
-      }
-
-      if (onPointsSelect) {
-        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
-        onPointsSelect(selectedPoints);
-      }
-    } else {
-      // Single selection: clear multi-selection and select single point
-      const newSelectedIndex = selectedIndex === point.index ? null : point.index;
-
-      if (selectedPointIndex === undefined) {
-        setInternalSelectedIndex(newSelectedIndex);
-        setInternalSelectedIndices([]);
-      }
-
-      onPointSelect?.(newSelectedIndex !== null ? point : null);
-
-      if (onPointsSelect) {
-        onPointsSelect(newSelectedIndex !== null ? [point] : []);
-      }
-    }
-  };
-
-  if (!course) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.noCourseMessage}>
-          No course loaded. Please upload a GPX file to view course points.
-        </div>
-      </div>
-    );
-  }
-
   const formatCoordinate = (value: number, precision: number = 6): string => {
     return value.toFixed(precision);
   };
@@ -436,6 +368,74 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndices, onBatchPointMove, onPointAdd]);
+
+  if (!course) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.noCourseMessage}>
+          No course loaded. Please upload a GPX file to view course points.
+        </div>
+      </div>
+    );
+  }
+
+  const handlePointClick = (point: CoursePoint, event: React.MouseEvent) => {
+    const isCtrlKey = event.ctrlKey || event.metaKey; // Support both Ctrl and Cmd (Mac)
+    const isShiftKey = event.shiftKey;
+
+    if (isShiftKey && selectedIndices.length > 0) {
+      // Range selection: select all points between last selected and current
+      const lastSelected = selectedIndices[selectedIndices.length - 1];
+      const start = Math.min(lastSelected, point.index);
+      const end = Math.max(lastSelected, point.index);
+      const rangeIndices = [];
+
+      for (let i = start; i <= end; i++) {
+        rangeIndices.push(i);
+      }
+
+      const newSelectedIndices = [...new Set([...selectedIndices, ...rangeIndices])].sort(
+        (a, b) => a - b
+      );
+
+      if (selectedPointIndices === undefined) {
+        setInternalSelectedIndices(newSelectedIndices);
+      }
+
+      if (onPointsSelect) {
+        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
+        onPointsSelect(selectedPoints);
+      }
+    } else if (isCtrlKey) {
+      // Toggle selection: add or remove point from selection
+      const newSelectedIndices = selectedIndices.includes(point.index)
+        ? selectedIndices.filter((i) => i !== point.index)
+        : [...selectedIndices, point.index].sort((a, b) => a - b);
+
+      if (selectedPointIndices === undefined) {
+        setInternalSelectedIndices(newSelectedIndices);
+      }
+
+      if (onPointsSelect) {
+        const selectedPoints = coursePoints.filter((cp) => newSelectedIndices.includes(cp.index));
+        onPointsSelect(selectedPoints);
+      }
+    } else {
+      // Single selection: clear multi-selection and select single point
+      const newSelectedIndex = selectedIndex === point.index ? null : point.index;
+
+      if (selectedPointIndex === undefined) {
+        setInternalSelectedIndex(newSelectedIndex);
+        setInternalSelectedIndices([]);
+      }
+
+      onPointSelect?.(newSelectedIndex !== null ? point : null);
+
+      if (onPointsSelect) {
+        onPointsSelect(newSelectedIndex !== null ? [point] : []);
+      }
+    }
+  };
 
   return (
     <div className={styles.container}>

@@ -163,12 +163,18 @@ describe('CourseSimulation', () => {
     expect(Participant).toHaveBeenCalledTimes(200);
   });
 
-  it('should show error message when course creation fails', () => {
+  it('should show error message when course creation fails', async () => {
     (Course as unknown as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Course creation failed');
     });
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
-    expect(screen.getByText('Course creation failed')).toBeInTheDocument();
+
+    // Wait for the setTimeout to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    expect(screen.getByText('Failed to create course')).toBeInTheDocument();
   });
 
   it('should update participants when simulator triggers update', () => {
@@ -182,8 +188,14 @@ describe('CourseSimulation', () => {
     expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(2); // 1 participant × 2 layouts
   });
 
-  it('should preserve existing participants when adding new ones', () => {
+  it('should preserve existing participants when adding new ones', async () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
+
+    // Wait for the setTimeout in useEffect to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
 
     act(() => {
@@ -211,8 +223,14 @@ describe('CourseSimulation', () => {
     expect(screen.getAllByTestId('mock-participant-display')).toHaveLength(6); // 3 participants × 2 layouts
   });
 
-  it('should recreate participants when pace range changes', () => {
+  it('should recreate participants when pace range changes', async () => {
     render(<CourseSimulation coursePoints={mockCoursePoints} />);
+
+    // Wait for the setTimeout in useEffect to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
     expect(screen.getAllByTestId('mock-participant-display')).toBeTruthy();
 
     act(() => {

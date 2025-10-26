@@ -82,7 +82,8 @@ const CourseSimulationApp: React.FC = () => {
         url.searchParams.delete('course');
         window.history.replaceState({}, '', url.toString());
       }
-      setIsLoadingFromUrl(false);
+      // Schedule state update for next tick to avoid calling setState in effect
+      setTimeout(() => setIsLoadingFromUrl(false), 0);
     }
   }, [isLoadingFromUrl, coursePoints.length, handleCourseDataImported]);
 

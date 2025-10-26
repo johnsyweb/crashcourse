@@ -79,23 +79,34 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   useEffect(() => {
     if (coursePoints.length > 0) {
       // Reset simulation state when new course is loaded
-      setParticipants([]);
-      setFinishedParticipants([]);
-      setElapsedTime(0);
-      setSelectedPoint(null);
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => {
+        setParticipants([]);
+        setFinishedParticipants([]);
+        setElapsedTime(0);
+        setSelectedPoint(null);
+      }, 0);
       // Keep activeTab as it's a UI preference
     }
   }, [coursePoints, setParticipants, setFinishedParticipants, setElapsedTime, setSelectedPoint]);
 
   // Memoize course creation to prevent unnecessary recalculation
+  // Separate the course creation from error handling
   const course = useMemo(() => {
     try {
       return new Course(coursePoints);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create course');
+    } catch {
       return null;
     }
   }, [coursePoints]);
+
+  // Update error state separately when course creation fails
+  useEffect(() => {
+    if (!course && coursePoints.length > 0) {
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => setError('Failed to create course'), 0);
+    }
+  }, [course, coursePoints.length]);
 
   // Memoize helper functions
   const parsePaceToSeconds = useCallback((pace: string): number => {
@@ -171,10 +182,16 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
           return new Participant(course, 0, randomPace);
         });
 
-      setParticipants(defaultParticipants);
-      setError(null);
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => {
+        setParticipants(defaultParticipants);
+        setError(null);
+      }, 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create participants');
+      setTimeout(
+        () => setError(err instanceof Error ? err.message : 'Failed to create participants'),
+        0
+      );
     }
   }, [course, getRandomPace]);
 

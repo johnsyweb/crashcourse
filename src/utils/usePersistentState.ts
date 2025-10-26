@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { saveToStorage, loadFromStorage, STORAGE_KEYS } from './persistence';
 
 /**
@@ -27,13 +27,10 @@ export function usePersistentState<T>(
     [key]
   );
 
-  // Load from storage on mount (in case of external changes)
-  useEffect(() => {
-    const storedValue = loadFromStorage(STORAGE_KEYS[key], defaultValue);
-    if (JSON.stringify(storedValue) !== JSON.stringify(value)) {
-      setValue(storedValue);
-    }
-  }, [key, defaultValue, value]);
+  // Note: We removed the useEffect that synced with localStorage
+  // because it required calling setState in an effect, which is not recommended in React 19
+  // The initial value is loaded correctly via the useState initializer
+  // For loading external changes during component lifecycle, consider using an event listener or similar pattern
 
   return [value, setPersistentValue];
 }
@@ -65,13 +62,9 @@ export function usePersistentStateWithClear<T>(
     saveToStorage(STORAGE_KEYS[key], defaultValue);
   }, [key, defaultValue]);
 
-  // Load from storage on mount (in case of external changes)
-  useEffect(() => {
-    const storedValue = loadFromStorage(STORAGE_KEYS[key], defaultValue);
-    if (JSON.stringify(storedValue) !== JSON.stringify(value)) {
-      setValue(storedValue);
-    }
-  }, [key, defaultValue, value]);
+  // Note: We removed the useEffect that synced with localStorage
+  // because it required calling setState in an effect, which is not recommended in React 19
+  // The initial value is loaded correctly via the useState initializer
 
   return [value, setPersistentValue, clearValue];
 }

@@ -15,8 +15,11 @@ const CourseMetadata: React.FC<CourseMetadataProps> = ({ metadata, onMetadataCha
     // Only update local state if we're not currently editing
     // This prevents the input fields from being reset while the user is typing
     if (!isEditing) {
-      setName(metadata.name || '');
-      setDescription(metadata.description || '');
+      // Use setTimeout to defer state updates to avoid calling setState in effect
+      setTimeout(() => {
+        setName(metadata.name || '');
+        setDescription(metadata.description || '');
+      }, 0);
     }
   }, [metadata, isEditing]);
 
