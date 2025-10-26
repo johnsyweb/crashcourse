@@ -36,6 +36,18 @@ const CourseSimulationApp: React.FC = () => {
       if (sharedCourseData) {
         handleCourseDataImported(sharedCourseData.points, sharedCourseData.metadata);
 
+        // Store lap detection params if included
+        if (sharedCourseData.lapDetectionParams) {
+          try {
+            localStorage.setItem(
+              'lapDetectionParams',
+              JSON.stringify(sharedCourseData.lapDetectionParams)
+            );
+          } catch {
+            // Ignore storage errors
+          }
+        }
+
         // Clear the URL parameter after loading
         const url = new URL(window.location.href);
         url.searchParams.delete('course');
