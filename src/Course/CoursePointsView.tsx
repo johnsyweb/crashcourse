@@ -454,65 +454,62 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
           )}
         </div>
 
-        {onPointAdd && (
-          <div className={styles.addPointSection}>
-            {!showAddForm ? (
-              <div className={styles.addPointButtons}>
-                <button
-                  className={styles.addPointButton}
-                  onClick={handleAddBeforeFirst}
-                  title="Add a point at the start of the course (becomes new first point)"
-                >
-                  + Add at Start
-                </button>
-                <button
-                  className={styles.addPointButton}
-                  onClick={handleAddAtEnd}
-                  title="Add a point at the end of the course"
-                >
-                  + Add at End
-                </button>
-              </div>
-            ) : (
-              <div className={styles.addPointForm}>
-                <div className={styles.formRow}>
-                  <label className={styles.formLabel}>
-                    Latitude:
-                    <input
-                      type="number"
-                      step="any"
-                      value={newPointLat}
-                      onChange={(e) => setNewPointLat(e.target.value)}
-                      placeholder="e.g., 51.505"
-                      className={styles.formInput}
-                    />
-                  </label>
-                  <label className={styles.formLabel}>
-                    Longitude:
-                    <input
-                      type="number"
-                      step="any"
-                      value={newPointLng}
-                      onChange={(e) => setNewPointLng(e.target.value)}
-                      placeholder="e.g., -0.127"
-                      className={styles.formInput}
-                    />
-                  </label>
-                </div>
-                <div className={styles.formActions}>
-                  <button
-                    className={styles.addButton}
-                    onClick={handleAddPoint}
-                    disabled={!newPointLat || !newPointLng}
-                  >
-                    Add Point
-                  </button>
-                  <button className={styles.cancelButton} onClick={handleCancelAdd}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
+        {onPointAdd && !showAddForm && (
+          <div className={styles.addPointButtons}>
+            <button
+              className={styles.addPointButton}
+              onClick={handleAddBeforeFirst}
+              title="Add a point at the start of the course (becomes new first point)"
+            >
+              + Add at Start
+            </button>
+            <button
+              className={styles.addPointButton}
+              onClick={handleAddAtEnd}
+              title="Add a point at the end of the course"
+            >
+              + Add at End
+            </button>
+          </div>
+        )}
+        {onPointAdd && showAddForm && (
+          <div className={styles.addPointForm}>
+            <div className={styles.formRow}>
+              <label className={styles.formLabel}>
+                Latitude:
+                <input
+                  type="number"
+                  step="any"
+                  value={newPointLat}
+                  onChange={(e) => setNewPointLat(e.target.value)}
+                  placeholder="e.g., 51.505"
+                  className={styles.formInput}
+                />
+              </label>
+              <label className={styles.formLabel}>
+                Longitude:
+                <input
+                  type="number"
+                  step="any"
+                  value={newPointLng}
+                  onChange={(e) => setNewPointLng(e.target.value)}
+                  placeholder="e.g., -0.127"
+                  className={styles.formInput}
+                />
+              </label>
+            </div>
+            <div className={styles.formActions}>
+              <button
+                className={styles.addButton}
+                onClick={handleAddPoint}
+                disabled={!newPointLat || !newPointLng}
+              >
+                Add Point
+              </button>
+              <button className={styles.cancelButton} onClick={handleCancelAdd}>
+                Cancel
+              </button>
+            </div>
           </div>
         )}
         {selectedIndices.length > 0 && onPointsDelete && (
