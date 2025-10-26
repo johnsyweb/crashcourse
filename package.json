@@ -13,7 +13,8 @@
     "typecheck": "tsc -b",
     "test": "NODE_OPTIONS='--no-warnings' jest",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "og-images": "ts-node script/generate-og-images.ts"
   },
   "dependencies": {
     "@turf/turf": "^7.2.0",
@@ -58,6 +59,7 @@
     "lint-staged": "^16.2.3",
     "prettier": "^3.6.2",
     "pretty-quick": "^4.2.2",
+    "puppeteer": "^24.26.1",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
