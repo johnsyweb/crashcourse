@@ -132,11 +132,9 @@ async function generateOGImages(): Promise<void> {
 }
 
 // Run the script
-if (require.main === module) {
-  generateOGImages().catch((error) => {
-    console.error('❌ Script failed:', error);
-    process.exit(1);
-  });
-}
+generateOGImages().catch((error) => {
+  console.error('❌ Script failed:', error);
+  process.exit(1);
+});
 
 export { generateOGImages };
