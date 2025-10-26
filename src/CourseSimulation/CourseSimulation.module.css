@@ -155,10 +155,18 @@
   border-bottom: 1px solid #e0e0e0;
   background-color: white;
   flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.controlsHeaderRow {
+  display: flex;
+  gap: 8px;
 }
 
 .resetButton {
-  width: 100%;
+  flex: 1;
   padding: 8px 16px;
   background-color: #f0f0f0;
   border: 1px solid #ddd;
@@ -166,6 +174,26 @@
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: #e0e0e0;
+}
+
+.actionButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
 }
 
 .resetButton:hover {

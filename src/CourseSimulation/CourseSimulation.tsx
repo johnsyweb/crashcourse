@@ -494,13 +494,29 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
             <div className={styles.controlsSection}>
               <div className={styles.controlsContainer}>
                 <div className={styles.controlsHeader}>
-                  <button
-                    className={styles.resetButton}
-                    onClick={onReset}
-                    data-testid="reset-button"
-                  >
-                    Import Different Course
-                  </button>
+                  <div className={styles.controlsHeaderRow}>
+                    <button
+                      className={styles.resetButton}
+                      onClick={onReset}
+                      data-testid="reset-button"
+                    >
+                      Import
+                    </button>
+                    <button
+                      className={styles.actionButton}
+                      onClick={() => handleExportGPX(courseMetadata?.name)}
+                      title="Export course as GPX file"
+                    >
+                      Export
+                    </button>
+                    <button
+                      className={styles.actionButton}
+                      onClick={handleShareCourse}
+                      title="Generate shareable link with course data"
+                    >
+                      Share
+                    </button>
+                  </div>
                 </div>
                 {courseMetadata && onCourseMetadataChange && (
                   <CourseMetadata
@@ -590,7 +606,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     {activeTab === 'coursePoints' && course && (
                       <CoursePointsView
                         course={course}
-                        courseMetadata={courseMetadata}
                         onPointSelect={handlePointSelect}
                         selectedPointIndex={selectedPoint?.index}
                         onPointsSelect={handlePointsSelect}
@@ -602,8 +617,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         redo={redo}
                         canUndo={canUndo}
                         canRedo={canRedo}
-                        onExportGPX={handleExportGPX}
-                        onShareCourse={handleShareCourse}
                       />
                     )}
                   </div>
@@ -652,13 +665,29 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
             <div className={styles.mobileControlsPanel}>
               <div className={styles.controlsContainer}>
                 <div className={styles.controlsHeader}>
-                  <button
-                    className={styles.resetButton}
-                    onClick={onReset}
-                    data-testid="reset-button"
-                  >
-                    Import Different Course
-                  </button>
+                  <div className={styles.controlsHeaderRow}>
+                    <button
+                      className={styles.resetButton}
+                      onClick={onReset}
+                      data-testid="reset-button"
+                    >
+                      Import
+                    </button>
+                    <button
+                      className={styles.actionButton}
+                      onClick={() => handleExportGPX(courseMetadata?.name)}
+                      title="Export course as GPX file"
+                    >
+                      Export
+                    </button>
+                    <button
+                      className={styles.actionButton}
+                      onClick={handleShareCourse}
+                      title="Generate shareable link with course data"
+                    >
+                      Share
+                    </button>
+                  </div>
                 </div>
                 {courseMetadata && onCourseMetadataChange && (
                   <CourseMetadata
@@ -712,7 +741,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   {activeTab === 'coursePoints' && course && (
                     <CoursePointsView
                       course={course}
-                      courseMetadata={courseMetadata}
                       onPointSelect={handlePointSelect}
                       selectedPointIndex={selectedPoint?.index}
                       onPointsSelect={handlePointsSelect}
@@ -724,8 +752,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       redo={redo}
                       canUndo={canUndo}
                       canRedo={canRedo}
-                      onExportGPX={handleExportGPX}
-                      onShareCourse={handleShareCourse}
                     />
                   )}
                 </div>
