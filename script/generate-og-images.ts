@@ -86,28 +86,31 @@ async function generateOGImages(): Promise<void> {
         await new Promise((resolve) => setTimeout(resolve, config.waitForTimeout));
       }
 
-      // For the course-specific screenshot, we might want to inject some sample data
+      // For the course-specific screenshot, wait for the map to load
       if (config.name === 'og-image-with-course') {
-        // Inject sample course data via localStorage
-        await page.evaluate(() => {
-          const sampleCourse = {
-            points: [
-              [-37.8136, 144.9631], // Melbourne
-              [-37.8142, 144.9625],
-              [-37.8148, 144.9619],
-              [-37.8154, 144.9613],
-              [-37.816, 144.9607],
-            ],
-            metadata: {
-              name: 'Sample Running Course',
-              description: 'A demonstration course for the crash course simulator',
-            },
-          };
-          localStorage.setItem('sampleCourse', JSON.stringify(sampleCourse));
+        // Wait for the map container to be visible
+        try {
+          await page.waitForSelector('.leaflet-container', {
+            timeout: 10000,
+          });
+        } catch {
+          console.warn('⚠️  Map container not found, continuing...');
+        }
+        
+        // Wait for map tiles to load
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        
+        // Verify the course is loaded by checking for course points
+        const courseLoaded = await page.evaluate(() => {
+          // Check if there are any polyline elements (the course route)
+          const polylines = document.querySelectorAll('.leaflet-pane .leaflet-overlay-pane svg path');
+          return polylines.length > 0;
         });
-        // Reload to pick up the changes
-        await page.reload();
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        
+        if (!courseLoaded) {
+          console.warn('⚠️  Course not loaded, waiting longer...');
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
       }
 
       // Take screenshot
