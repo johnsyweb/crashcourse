@@ -96,17 +96,19 @@ async function generateOGImages(): Promise<void> {
         } catch {
           console.warn('⚠️  Map container not found, continuing...');
         }
-        
+
         // Wait for map tiles to load
         await new Promise((resolve) => setTimeout(resolve, 5000));
-        
+
         // Verify the course is loaded by checking for course points
         const courseLoaded = await page.evaluate(() => {
           // Check if there are any polyline elements (the course route)
-          const polylines = document.querySelectorAll('.leaflet-pane .leaflet-overlay-pane svg path');
+          const polylines = document.querySelectorAll(
+            '.leaflet-pane .leaflet-overlay-pane svg path'
+          );
           return polylines.length > 0;
         });
-        
+
         if (!courseLoaded) {
           console.warn('⚠️  Course not loaded, waiting longer...');
           await new Promise((resolve) => setTimeout(resolve, 5000));
