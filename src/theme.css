@@ -21,7 +21,7 @@
 body {
   background-color: var(--base3);
   color: var(--base00);
-  font-family: "Atkinson Hyperlegible", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 button {
