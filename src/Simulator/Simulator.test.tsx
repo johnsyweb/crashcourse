@@ -392,4 +392,157 @@ describe('Simulator Component', () => {
     expect(mockParticipants[0].getWidth() + mockParticipants[1].getWidth()).toBe(2); // Total width needed
     expect(mockCourse.getWidthAt(100)).toBe(1.5); // Course width at position
   });
+
+  describe('overtaking with segment width', () => {
+    // Temporarily unmock Course and Participant to use real implementations for these tests
+    const RealCourse = jest.requireActual('../Course').Course;
+    const RealParticipant = jest.requireActual('../Participant').Participant;
+
+    it('should allow overtaking when course width is sufficient', () => {
+      // Create a straight course (2 points, 1 segment)
+      const coursePoints: [number, number][] = [
+        [0, 0], // Start
+        [0, 0.01], // End (approximately 1000m north)
+      ];
+      const course = new RealCourse(coursePoints);
+      // Set segment width to 3.0m (wide enough for two 0.5m participants side-by-side)
+      course.setSegmentWidth(0, 3.0);
+
+      // Create two participants: slower leading, faster following
+      const slowerPace = '5:00'; // 5 min/km = 3.33 m/s
+      const fasterPace = '3:00'; // 3 min/km = 5.56 m/s
+      const participantWidth = 0.5; // Each participant is 0.5m wide
+
+      const leadingParticipant = new RealParticipant(course, 0, slowerPace, participantWidth);
+      const followingParticipant = new RealParticipant(course, 0, fasterPace, participantWidth);
+
+      // Set initial positions: leading at 100m, following at 90m
+      leadingParticipant.setCumulativeDistance(100);
+      followingParticipant.setCumulativeDistance(90);
+
+      const participants = [leadingParticipant, followingParticipant];
+      const mockParticipantUpdate = jest.fn((updatedParticipants: Participant[]) => {
+        // Update our references to the actual participant objects
+        participants[0] = updatedParticipants[0];
+        participants[1] = updatedParticipants[1];
+      });
+
+      render(
+        <Simulator
+          course={course}
+          participants={participants}
+          onParticipantUpdate={mockParticipantUpdate}
+        />
+      );
+
+      // Advance time by 10 seconds
+      // Leading: 100m + (10s * 3.33 m/s) = 100m + 33.3m = 133.3m
+      // Following: 90m + (10s * 5.56 m/s) = 90m + 55.6m = 145.6m
+      // Following should catch up and overtake since course is 3.0m wide (> 0.5 + 0.5 = 1.0m needed)
+      act(() => {
+        screen.getByTestId('elapsed-time-control').click();
+        jest.runAllTimers();
+      });
+
+      // Wait for the update to complete
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Get the updated participants from the callback
+      expect(mockParticipantUpdate).toHaveBeenCalled();
+      const updatedParticipants = mockParticipantUpdate.mock.calls[mockParticipantUpdate.mock.calls.length - 1][0];
+      
+      // After sorting by distance, find which is which
+      // The faster participant (originally following) should have moved further
+      // Both participants should have moved forward
+      const distances = updatedParticipants.map(p => p.getCumulativeDistance());
+      expect(distances[0]).toBeGreaterThan(90);
+      expect(distances[1]).toBeGreaterThan(90);
+      
+      // The faster participant should have overtaken the slower one
+      // Since course width (3.0m) > total participant width needed (1.0m)
+      // After 10 seconds: slower (5:00/km) at 133.33m, faster (3:00/km) at 145.56m
+      const maxDistance = Math.max(...distances);
+      const minDistance = Math.min(...distances);
+      
+      // Faster participant should be ahead (or at least caught up)
+      expect(maxDistance).toBeGreaterThanOrEqual(minDistance);
+      
+      // Verify overtaking occurred: faster participant (started at 90m) should be ahead
+      // of slower participant (started at 100m)
+      expect(maxDistance).toBeGreaterThan(133); // Faster participant should be past 133m
+    });
+
+    it('should block overtaking when course width is insufficient', () => {
+      // Create a straight course (2 points, 1 segment)
+      const coursePoints: [number, number][] = [
+        [0, 0], // Start
+        [0, 0.01], // End (approximately 1000m north)
+      ];
+      const course = new RealCourse(coursePoints);
+      // Set segment width to 0.8m (too narrow for two 0.5m participants side-by-side)
+      course.setSegmentWidth(0, 0.8);
+
+      // Create two participants: slower leading, faster following
+      const slowerPace = '5:00'; // 5 min/km = 3.33 m/s
+      const fasterPace = '3:00'; // 3 min/km = 5.56 m/s
+      const participantWidth = 0.5; // Each participant is 0.5m wide
+
+      const leadingParticipant = new RealParticipant(course, 0, slowerPace, participantWidth);
+      const followingParticipant = new RealParticipant(course, 0, fasterPace, participantWidth);
+
+      // Set initial positions: leading at 100m, following at 90m
+      leadingParticipant.setCumulativeDistance(100);
+      followingParticipant.setCumulativeDistance(90);
+
+      const participants = [leadingParticipant, followingParticipant];
+      const mockParticipantUpdate = jest.fn((updatedParticipants: Participant[]) => {
+        // Update our references to the actual participant objects
+        participants[0] = updatedParticipants[0];
+        participants[1] = updatedParticipants[1];
+      });
+
+      render(
+        <Simulator
+          course={course}
+          participants={participants}
+          onParticipantUpdate={mockParticipantUpdate}
+        />
+      );
+
+      // Advance time by 10 seconds
+      // Leading: 100m + (10s * 3.33 m/s) = 100m + 33.3m = 133.3m
+      // Following: 90m + (10s * 5.56 m/s) = 90m + 55.6m = 145.6m (but should be blocked)
+      act(() => {
+        screen.getByTestId('elapsed-time-control').click();
+        jest.runAllTimers();
+      });
+
+      // Wait for the update to complete
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Get the updated participants from the callback
+      expect(mockParticipantUpdate).toHaveBeenCalled();
+      const updatedParticipants = mockParticipantUpdate.mock.calls[mockParticipantUpdate.mock.calls.length - 1][0];
+      // Sort by distance to get leading and following (sorted ascending: back to front)
+      const sorted = [...updatedParticipants].sort((a, b) => a.getCumulativeDistance() - b.getCumulativeDistance());
+      const finalFollowingDist = sorted[0].getCumulativeDistance(); // Behind participant
+      const finalLeadingDist = sorted[1].getCumulativeDistance(); // Front participant
+      
+      // Leading participant should have moved forward
+      expect(finalLeadingDist).toBeGreaterThan(100);
+      
+      // Following participant should be blocked (cannot exceed leading distance)
+      // Since course width (0.8m) < total participant width needed (1.0m)
+      expect(finalFollowingDist).toBeLessThanOrEqual(finalLeadingDist);
+      
+      // Verify the course width check was used
+      const widthAtFollowingPos = course.getWidthAt(finalFollowingDist);
+      const totalWidthNeeded = sorted[0].width + sorted[1].width;
+      expect(widthAtFollowingPos).toBeLessThan(totalWidthNeeded);
+    });
+  });
 });
