@@ -401,4 +401,134 @@ describe('Course', () => {
       expect(newBearing).toBeCloseTo(originalBearing, 1); // Within 0.1 degrees
     });
   });
+
+  describe('segment widths', () => {
+    it('should initialize all segment widths with default width', () => {
+      const course = new Course(samplePoints);
+      // Course has 3 points, so 2 segments
+      expect(course.getSegmentWidth(0)).toBe(2.0);
+      expect(course.getSegmentWidth(1)).toBe(2.0);
+    });
+
+    it('should return default width for invalid point index', () => {
+      const course = new Course(samplePoints);
+      expect(course.getSegmentWidth(-1)).toBe(2.0);
+      expect(course.getSegmentWidth(10)).toBe(2.0);
+    });
+
+    it('should get and set segment width', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 3.5);
+      expect(course.getSegmentWidth(0)).toBe(3.5);
+      expect(course.getSegmentWidth(1)).toBe(2.0); // Other segment unchanged
+    });
+
+    it('should throw error when setting invalid width', () => {
+      const course = new Course(samplePoints);
+      expect(() => course.setSegmentWidth(0, -1)).toThrow('Width must be positive');
+      expect(() => course.setSegmentWidth(0, 0)).toThrow('Width must be positive');
+    });
+
+    it('should throw error when setting width for invalid point index', () => {
+      const course = new Course(samplePoints);
+      expect(() => course.setSegmentWidth(-1, 3.0)).toThrow('Invalid point index');
+      expect(() => course.setSegmentWidth(10, 3.0)).toThrow('Invalid point index');
+    });
+
+    it('should use segment width in getWidthAt', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 1.5);
+
+      // Width at start of first segment should use first segment width
+      expect(course.getWidthAt(0)).toBe(5.0);
+
+      // Width in middle of first segment should use first segment width
+      const firstSegmentDistance = course['cumulativeDistances'][1] / 2;
+      expect(course.getWidthAt(firstSegmentDistance)).toBe(5.0);
+
+      // Width at start of second segment should use second segment width
+      const secondSegmentStart = course['cumulativeDistances'][1];
+      expect(course.getWidthAt(secondSegmentStart)).toBe(1.5);
+
+      // Width in middle of second segment should use second segment width
+      const secondSegmentMiddle =
+        (course['cumulativeDistances'][1] + course['cumulativeDistances'][2]) / 2;
+      expect(course.getWidthAt(secondSegmentMiddle)).toBe(1.5);
+    });
+
+    it('should reinitialize segment widths when adding a point', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 3.0);
+
+      course.addPoint([51.515, -0.13], 1);
+
+      // All widths should be reset to default
+      expect(course.getSegmentWidth(0)).toBe(2.0);
+      expect(course.getSegmentWidth(1)).toBe(2.0);
+      expect(course.getSegmentWidth(2)).toBe(2.0);
+    });
+
+    it('should preserve segment widths when moving a point', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 3.0);
+
+      course.movePoint(1, [51.51, -0.105]);
+
+      // Widths should be preserved if no segments were removed
+      expect(course.getSegmentWidth(0)).toBe(5.0);
+      expect(course.getSegmentWidth(1)).toBe(3.0);
+    });
+
+    it('should remove segment width when deleting a point', () => {
+      const course = new Course([
+        [51.505, -0.09],
+        [51.51, -0.1],
+        [51.51, -0.12],
+        [51.515, -0.13],
+      ]);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 3.0);
+      course.setSegmentWidth(2, 4.0);
+
+      course.deletePoint(1);
+
+      // Segment widths should be adjusted
+      expect(course.getSegmentWidth(0)).toBe(5.0);
+      expect(course.getSegmentWidth(1)).toBe(4.0);
+    });
+
+    it('should update getCourseEdges to use segment widths', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 1.0);
+
+      const { leftEdge, rightEdge } = course.getCourseEdges();
+
+      expect(leftEdge).toHaveLength(3);
+      expect(rightEdge).toHaveLength(3);
+
+      // Right edge should be offset by the segment widths
+      // We can't easily test exact positions, but we can verify they're different
+      expect(rightEdge[0]).not.toEqual(leftEdge[0]);
+      expect(rightEdge[1]).not.toEqual(leftEdge[1]);
+      expect(rightEdge[2]).not.toEqual(leftEdge[2]);
+    });
+
+    it('should update getCourseWidthInfo to use segment widths', () => {
+      const course = new Course(samplePoints);
+      course.setSegmentWidth(0, 5.0);
+      course.setSegmentWidth(1, 1.0);
+
+      const { narrowestWidth, widestWidth, narrowestPoint, widestPoint } =
+        course.getCourseWidthInfo();
+
+      expect(narrowestWidth).toBe(1.0);
+      expect(widestWidth).toBe(5.0);
+      expect(narrowestPoint).toEqual(samplePoints[1]); // Point where narrowest segment starts
+      expect(widestPoint).toEqual(samplePoints[0]); // Point where widest segment starts
+    });
+  });
 });

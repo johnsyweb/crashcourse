@@ -252,11 +252,11 @@
 }
 
 .tabContent {
-  flex: 1;
+  flex: 1 1 0;
+  height: 0;
   padding: 0;
   background-color: white;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;

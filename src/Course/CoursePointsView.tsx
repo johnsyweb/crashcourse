@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Course } from './Course';
 import * as turf from '@turf/turf';
 import styles from './CoursePointsView.module.css';
@@ -18,6 +18,7 @@ export interface CoursePoint {
   distanceFromPrevious: number;
   bearingFromPrevious: number | null;
   cumulativeDistance: number;
+  segmentWidth: number; // Width of the segment starting at this point
 }
 
 interface CoursePointsViewProps {
@@ -29,6 +30,8 @@ interface CoursePointsViewProps {
   onPointsDelete?: (pointIndices: number[]) => void;
   onPointAdd?: (point: [number, number], index?: number) => void;
   onBatchPointMove?: (updates: Array<{ index: number; point: [number, number] }>) => void;
+  onSegmentWidthChange?: (pointIndex: number, width: number) => void;
+  onBatchSegmentWidthChange?: (pointIndices: number[], width: number) => void;
   undo?: () => void;
   redo?: () => void;
   canUndo?: boolean;
@@ -44,6 +47,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   onPointsDelete,
   onPointAdd,
   onBatchPointMove,
+  onBatchSegmentWidthChange,
   undo,
   redo,
   canUndo,
@@ -55,6 +59,10 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   const [newPointLat, setNewPointLat] = useState('');
   const [newPointLng, setNewPointLng] = useState('');
   const [addAtIndex, setAddAtIndex] = useState<number>(0);
+  const [widthInputValue, setWidthInputValue] = useState<string>('');
+
+  // Refs for table rows to enable scroll-into-view
+  const rowRefs = useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   // Use external selectedPointIndex if provided, otherwise use internal state
   const selectedIndex =
@@ -91,6 +99,9 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
       const cumulativeDistance =
         coursePoints.reduce((sum, cp) => sum + cp.distanceFromPrevious, 0) + distanceFromPrevious;
 
+      // Get segment width (width of segment starting at this point, or null for last point)
+      const segmentWidth = index < points.length - 1 ? course.getSegmentWidth(index) : 0;
+
       coursePoints.push({
         index,
         latitude: createLatitude(latitude),
@@ -98,6 +109,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
         distanceFromPrevious,
         bearingFromPrevious,
         cumulativeDistance,
+        segmentWidth,
       });
     });
 
@@ -321,6 +333,81 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     // Use the first selected point for adding after
     const index = selectedIndices[0];
     handleAddAfterPoint(index);
+  };
+
+  // Get selected points that have segments (exclude last point)
+  const getSelectableSegmentIndices = (): number[] => {
+    if (!course) return [];
+    const maxIndex = course.getPoints().length - 1;
+    return selectedIndices.filter((idx) => idx < maxIndex);
+  };
+
+  const selectableSegmentIndices = getSelectableSegmentIndices();
+
+  // Get the current width of selected segments (if all have the same width)
+  const getSelectedSegmentWidth = (): number | null => {
+    if (selectableSegmentIndices.length === 0 || !course) return null;
+    const firstWidth = course.getSegmentWidth(selectableSegmentIndices[0]);
+    const allSame = selectableSegmentIndices.every(
+      (idx) => course.getSegmentWidth(idx) === firstWidth
+    );
+    return allSame ? firstWidth : null;
+  };
+
+  // Initialize width input when selection changes
+  // Update width input value when selection changes
+  useEffect(() => {
+    const selectable = getSelectableSegmentIndices();
+    if (selectable.length > 0) {
+      const firstWidth = course ? course.getSegmentWidth(selectable[0]) : null;
+      const allSame =
+        firstWidth !== null &&
+        course &&
+        selectable.every((idx) => course.getSegmentWidth(idx) === firstWidth);
+      const newValue = allSame ? firstWidth.toFixed(1) : '';
+      // Only update if value changed to avoid unnecessary renders
+      if (widthInputValue !== newValue) {
+        setWidthInputValue(newValue);
+      }
+    } else {
+      if (widthInputValue !== '') {
+        setWidthInputValue('');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedIndices.join(','), course]); // Re-run when selection or course changes
+
+  // Scroll selected row into view when selectedIndex changes
+  useEffect(() => {
+    if (selectedIndex !== null && selectedIndex !== undefined) {
+      const rowElement = rowRefs.current.get(selectedIndex);
+      if (rowElement) {
+        // Use setTimeout to ensure the DOM has updated (especially after tab switch)
+        setTimeout(() => {
+          rowElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest',
+          });
+        }, 100);
+      }
+    }
+  }, [selectedIndex]);
+
+  const handleWidthChange = () => {
+    if (!onBatchSegmentWidthChange || selectableSegmentIndices.length === 0) return;
+
+    const newWidth = parseFloat(widthInputValue);
+    if (isNaN(newWidth) || newWidth <= 0) {
+      // Reset to current value if invalid
+      const currentWidth = getSelectedSegmentWidth();
+      if (currentWidth !== null) {
+        setWidthInputValue(currentWidth.toFixed(1));
+      }
+      return;
+    }
+
+    onBatchSegmentWidthChange(selectableSegmentIndices, newWidth);
   };
 
   // Keyboard shortcuts
@@ -596,6 +683,38 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                 + Add After
               </button>
             )}
+            {selectableSegmentIndices.length > 0 && onBatchSegmentWidthChange && (
+              <div className={styles.widthControl}>
+                <label className={styles.widthLabel} htmlFor="segment-width-input">
+                  Segment Width (m):
+                </label>
+                <input
+                  id="segment-width-input"
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  value={widthInputValue}
+                  onChange={(e) => setWidthInputValue(e.target.value)}
+                  onBlur={handleWidthChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleWidthChange();
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className={styles.widthControlInput}
+                  title={`Set width for ${selectableSegmentIndices.length} selected segment${selectableSegmentIndices.length !== 1 ? 's' : ''}`}
+                />
+                <button
+                  className={styles.widthApplyButton}
+                  onClick={handleWidthChange}
+                  title="Apply width to selected segments"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -608,6 +727,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               <th className={styles.coordinateColumn}>Latitude</th>
               <th className={styles.coordinateColumn}>Longitude</th>
               <th className={styles.distanceColumn}>Distance from Previous</th>
+              <th className={styles.widthColumn}>Segment Width (m)</th>
               <th className={styles.bearingColumn}>Bearing from Previous</th>
               <th className={styles.distanceColumn}>Cumulative Distance</th>
             </tr>
@@ -621,6 +741,13 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
               return (
                 <tr
                   key={point.index}
+                  ref={(el) => {
+                    if (el) {
+                      rowRefs.current.set(point.index, el);
+                    } else {
+                      rowRefs.current.delete(point.index);
+                    }
+                  }}
                   className={`${styles.tableRow} ${isAnySelected ? styles.selectedRow : ''}`}
                   onClick={(e) => handlePointClick(point, e)}
                   role="button"
@@ -666,6 +793,18 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
                   <td className={styles.coordinateCell}>{formatCoordinate(point.longitude)}</td>
                   <td className={styles.distanceCell}>
                     {formatDistance(point.distanceFromPrevious)}
+                  </td>
+                  <td className={styles.widthCell}>
+                    {point.index < (course?.getPoints().length || 0) - 1 ? (
+                      <span
+                        className={styles.widthValue}
+                        title="Width of the segment starting at this point"
+                      >
+                        {point.segmentWidth.toFixed(1)} m
+                      </span>
+                    ) : (
+                      <span className={styles.noWidth}>—</span>
+                    )}
                   </td>
                   <td className={styles.bearingCell}>
                     <span className={styles.bearingValue}>

@@ -14,6 +14,7 @@ interface CourseDisplayProps {
   showKilometerMarkers?: boolean;
   lineColor?: string;
   lineWeight?: number;
+  onSegmentClick?: (segmentIndex: number) => void;
 }
 
 const CourseDisplay: React.FC<CourseDisplayProps> = ({
@@ -21,6 +22,7 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
   showKilometerMarkers = true,
   lineColor = 'blue',
   lineWeight = 3,
+  onSegmentClick,
 }) => {
   const startIcon = new L.Icon({
     iconUrl: flagIcon,
@@ -103,11 +105,38 @@ const CourseDisplay: React.FC<CourseDisplayProps> = ({
     return Array.isArray(positions) && positions.every((pos) => isValidPosition(pos));
   };
 
+  const points = course.getPoints();
+
+  // Render individual segments so we can detect clicks on each segment
+  const renderCourseSegments = () => {
+    if (!isValidPositions(points) || points.length < 2) return null;
+
+    return points.slice(0, -1).map((point, index) => {
+      const segmentPoints: LatLngTuple[] = [point, points[index + 1]];
+
+      const handleSegmentClick = (_e: L.LeafletMouseEvent) => {
+        if (onSegmentClick) {
+          onSegmentClick(index);
+        }
+      };
+
+      return (
+        <Polyline
+          key={`segment-${index}`}
+          positions={segmentPoints}
+          color={lineColor}
+          weight={lineWeight}
+          eventHandlers={{
+            click: handleSegmentClick,
+          }}
+        />
+      );
+    });
+  };
+
   return (
     <>
-      {isValidPositions(course.getPoints()) && (
-        <Polyline positions={course.getPoints()} color={lineColor} weight={lineWeight} />
-      )}
+      {renderCourseSegments()}
       {/* Right edge of the course (2m offset) */}
       {isValidPositions(rightEdge) && (
         <Polyline positions={rightEdge} color="gray" weight={lineWeight} dashArray="8 8" />

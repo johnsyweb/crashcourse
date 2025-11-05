@@ -1,11 +1,12 @@
 .container {
   padding: 16px;
   max-width: 100%;
-  height: 100%;
+  width: 100%;
+  height: 0;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -17,6 +18,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .title {
@@ -172,11 +174,36 @@
   border-radius: 4px;
   box-shadow: none;
   overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1;
+  overflow-x: auto;
+  height: 0;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
+  /* Firefox scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+/* Ensure scrollbars are visible in Chrome/Firefox */
+.tableContainer::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .table {
@@ -236,6 +263,11 @@
   text-align: right;
 }
 
+.widthColumn {
+  width: 110px;
+  text-align: center;
+}
+
 .bearingColumn {
   width: 100px;
   text-align: center;
@@ -255,6 +287,45 @@
 
 .distanceCell {
   text-align: right;
+  font-weight: 500;
+  color: #495057;
+}
+
+.widthCell {
+  text-align: center;
+  padding: 0.25rem;
+}
+
+.widthInput {
+  width: 70px;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-align: center;
+  font-weight: 500;
+  color: #495057;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.widthInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.widthInput:hover {
+  border-color: #adb5bd;
+}
+
+.noWidth {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.widthValue {
   font-weight: 500;
   color: #495057;
 }
@@ -313,6 +384,10 @@
 
   .distanceColumn {
     width: 100px;
+  }
+
+  .widthColumn {
+    width: 90px;
   }
 
   .bearingColumn {
@@ -531,6 +606,7 @@
   padding: 0.75rem;
   margin-bottom: 1rem;
   flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .controlButtons {
@@ -622,5 +698,85 @@
   .addAfterButton {
     padding: 0.375rem 0.75rem;
     font-size: 0.75rem;
+  }
+}
+
+/* Width Control Styles */
+.widthControl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.widthLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.widthControlInput {
+  width: 80px;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  text-align: center;
+  font-weight: 500;
+  color: #495057;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.widthControlInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.widthApplyButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.widthApplyButton:hover {
+  background: #0056b3;
+}
+
+.widthApplyButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+}
+
+.widthApplyButton:active {
+  background: #004085;
+}
+
+@media (max-width: 768px) {
+  .widthControl {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .widthLabel {
+    text-align: center;
+  }
+
+  .widthControlInput {
+    width: 100%;
   }
 }

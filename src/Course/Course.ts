@@ -28,6 +28,7 @@ export class Course {
   private cumulativeDistances: number[] = [];
   private totalLength: number;
   private lineString: Feature<LineString>;
+  private segmentWidths: number[] = []; // Width for each segment (indexed by starting point)
   private widthCache: Map<number, number> = new Map();
   private segmentCache: Map<number, number> = new Map(); // Cache for current segment lookups
   private cacheHits: number = 0;
@@ -85,6 +86,8 @@ export class Course {
     this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
+    // Initialize segment widths with default width (width[i] applies to segment starting at point i)
+    this.segmentWidths = new Array(Math.max(0, this.points.length - 1)).fill(Course.DEFAULT_WIDTH);
     this.precalculateWidths();
     // compute lap crossings for multi-lap courses
     this.computeLapCrossings();
@@ -243,20 +246,49 @@ export class Course {
   public getWidthAt(distance: number): number {
     distance = this.clipDistance(distance);
 
-    // Round to nearest cache interval
-    const cachedDistance =
-      Math.round(distance / Course.WIDTH_CACHE_INTERVAL) * Course.WIDTH_CACHE_INTERVAL;
+    // Find which segment this distance falls on
+    const segmentIndex = this.findSegmentIndex(distance);
 
-    // Check cache
-    const cachedWidth = this.widthCache.get(cachedDistance);
-    if (cachedWidth !== undefined) {
-      this.cacheHits++;
-      return cachedWidth;
+    // Return the width for this segment
+    if (segmentIndex >= 0 && segmentIndex < this.segmentWidths.length) {
+      return this.segmentWidths[segmentIndex];
     }
 
-    // Cache miss - calculate and cache the width
-    this.cacheMisses++;
-    return this.calculateAndCacheWidth(cachedDistance);
+    // Fallback to default width if segment not found
+    return Course.DEFAULT_WIDTH;
+  }
+
+  /**
+   * Gets the width of a segment starting at a given point index
+   * @param pointIndex Index of the starting point of the segment
+   * @returns Width in meters
+   */
+  public getSegmentWidth(pointIndex: number): number {
+    if (pointIndex < 0 || pointIndex >= this.segmentWidths.length) {
+      return Course.DEFAULT_WIDTH;
+    }
+    return this.segmentWidths[pointIndex];
+  }
+
+  /**
+   * Sets the width of a segment starting at a given point index
+   * @param pointIndex Index of the starting point of the segment
+   * @param width Width in meters (must be positive)
+   * @throws Error if pointIndex is invalid or width is not positive
+   */
+  public setSegmentWidth(pointIndex: number, width: number): void {
+    if (pointIndex < 0 || pointIndex >= this.segmentWidths.length) {
+      throw new Error(
+        `Invalid point index: ${pointIndex}. Must be between 0 and ${this.segmentWidths.length - 1}`
+      );
+    }
+    if (width <= 0) {
+      throw new Error(`Invalid width: ${width}. Width must be positive`);
+    }
+    this.segmentWidths[pointIndex] = width;
+
+    // Clear width cache since we've changed the widths
+    this.widthCache.clear();
   }
 
   /**
@@ -342,6 +374,9 @@ export class Course {
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
 
+    // Reinitialize segment widths array (new segment gets default width)
+    this.segmentWidths = new Array(Math.max(0, this.points.length - 1)).fill(Course.DEFAULT_WIDTH);
+
     // Clear caches since the course structure has changed
     this.widthCache.clear();
     this.segmentCache.clear();
@@ -392,6 +427,12 @@ export class Course {
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
 
+    // Reinitialize segment widths array if points were removed due to duplicates
+    const expectedSegments = Math.max(0, this.points.length - 1);
+    if (this.segmentWidths.length !== expectedSegments) {
+      this.segmentWidths = new Array(expectedSegments).fill(Course.DEFAULT_WIDTH);
+    }
+
     // Clear caches since the course structure has changed
     this.widthCache.clear();
     this.segmentCache.clear();
@@ -422,10 +463,27 @@ export class Course {
     // Remove the point
     this.points.splice(index, 1);
 
+    // Remove corresponding segment width (the segment starting at the deleted point)
+    if (index < this.segmentWidths.length) {
+      this.segmentWidths.splice(index, 1);
+    } else if (index === this.segmentWidths.length && this.segmentWidths.length > 0) {
+      // If deleting the last point, remove the last segment width
+      this.segmentWidths.pop();
+    }
+
     // Recalculate the course
     this.lineString = turf.lineString(this.points.map(([lat, lon]) => [lon, lat]));
     this.totalLength = turf.length(this.lineString, { units: 'meters' });
     this.calculateDistances();
+
+    // Ensure segmentWidths array matches the number of segments
+    const expectedSegments = Math.max(0, this.points.length - 1);
+    if (this.segmentWidths.length < expectedSegments) {
+      // Add default widths for any missing segments
+      while (this.segmentWidths.length < expectedSegments) {
+        this.segmentWidths.push(Course.DEFAULT_WIDTH);
+      }
+    }
 
     // Clear caches since the course structure has changed
     this.widthCache.clear();
@@ -642,16 +700,23 @@ export class Course {
 
       // Determine bearing along path at this point
       let bearing: number;
+      let width: number;
       if (idx < this.points.length - 1) {
         const [lat2, lon2] = this.points[idx + 1];
         bearing = turf.bearing([lon, lat], [lon2, lat2]);
+        // Use the width for the segment starting at this point
+        width = this.getSegmentWidth(idx);
       } else {
         const [lat0, lon0] = this.points[idx - 1];
         bearing = turf.bearing([lon0, lat0], [lon, lat]);
+        // For the last point, use the width of the last segment
+        width = idx > 0 ? this.getSegmentWidth(idx - 1) : Course.DEFAULT_WIDTH;
       }
 
-      // Calculate point 2m to the right
-      const dest = turf.destination([lon, lat], 0.002, bearing + 90, { units: 'kilometers' });
+      // Calculate point at the specified width to the right (convert meters to kilometers)
+      const dest = turf.destination([lon, lat], width / 1000, bearing + 90, {
+        units: 'kilometers',
+      });
       return [dest.geometry.coordinates[1], dest.geometry.coordinates[0]];
     });
 
@@ -667,39 +732,31 @@ export class Course {
     narrowestPoint: LatLngTuple;
     widestPoint: LatLngTuple;
   } {
-    // Use cached values instead of recalculating
+    // Use stored segment widths
     let narrowestWidth = Infinity;
     let widestWidth = -Infinity;
     let narrowestPoint = this.startPoint;
     let widestPoint = this.startPoint;
 
-    // Only check cached values
-    this.widthCache.forEach((width, distance) => {
+    // Check each segment
+    for (let i = 0; i < this.segmentWidths.length; i++) {
+      const width = this.segmentWidths[i];
+      const position = this.points[i];
+
       if (width < narrowestWidth) {
         narrowestWidth = width;
-        narrowestPoint = this.getPositionAtDistance(distance);
+        narrowestPoint = position;
       }
       if (width > widestWidth) {
         widestWidth = width;
-        widestPoint = this.getPositionAtDistance(distance);
+        widestPoint = position;
       }
-    });
+    }
 
-    // If no cached values, calculate a minimal set
+    // If no segments, use default values
     if (narrowestWidth === Infinity || widestWidth === -Infinity) {
-      const step = Course.WIDTH_CACHE_INTERVAL;
-      for (let distance = 0; distance <= this.totalLength; distance += step) {
-        const width = this.getWidthAt(distance);
-        const position = this.getPositionAtDistance(distance);
-        if (width < narrowestWidth) {
-          narrowestWidth = width;
-          narrowestPoint = position;
-        }
-        if (width > widestWidth) {
-          widestWidth = width;
-          widestPoint = position;
-        }
-      }
+      narrowestWidth = Course.DEFAULT_WIDTH;
+      widestWidth = Course.DEFAULT_WIDTH;
     }
 
     return {

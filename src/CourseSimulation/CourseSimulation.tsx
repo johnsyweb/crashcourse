@@ -74,6 +74,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     'SELECTED_POINTS',
     [] as CoursePoint[]
   );
+  const [widthUpdateCounter, setWidthUpdateCounter] = useState(0);
 
   // Clear persistent state when course points change (new course loaded)
   useEffect(() => {
@@ -115,43 +116,52 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   }, []);
 
   // Convert LatLngTuple[] to CoursePoint[] for CoursePointsLayer
-  const convertToCoursePoints = useCallback((points: LatLngTuple[]): CoursePoint[] => {
-    const coursePoints: CoursePoint[] = [];
+  // Include widthUpdateCounter in dependencies to force recalculation when widths change
+  const convertToCoursePoints = useCallback(
+    (points: LatLngTuple[]): CoursePoint[] => {
+      const coursePoints: CoursePoint[] = [];
 
-    points.forEach((point, index) => {
-      const [latitude, longitude] = point;
-      let distanceFromPrevious = 0;
-      let bearingFromPrevious: number | null = null;
+      points.forEach((point, index) => {
+        const [latitude, longitude] = point;
+        let distanceFromPrevious = 0;
+        let bearingFromPrevious: number | null = null;
 
-      if (index > 0) {
-        const previousPoint = points[index - 1];
-        const [prevLat, prevLon] = previousPoint;
+        if (index > 0) {
+          const previousPoint = points[index - 1];
+          const [prevLat, prevLon] = previousPoint;
 
-        // Calculate distance using turf.js
-        const from = turf.point([prevLon, prevLat]);
-        const to = turf.point([longitude, latitude]);
-        distanceFromPrevious = turf.distance(from, to, { units: 'meters' });
+          // Calculate distance using turf.js
+          const from = turf.point([prevLon, prevLat]);
+          const to = turf.point([longitude, latitude]);
+          distanceFromPrevious = turf.distance(from, to, { units: 'meters' });
 
-        // Calculate bearing using turf.js
-        bearingFromPrevious = turf.bearing(from, to);
-      }
+          // Calculate bearing using turf.js
+          bearingFromPrevious = turf.bearing(from, to);
+        }
 
-      // Calculate cumulative distance
-      const cumulativeDistance =
-        coursePoints.reduce((sum, cp) => sum + cp.distanceFromPrevious, 0) + distanceFromPrevious;
+        // Calculate cumulative distance
+        const cumulativeDistance =
+          coursePoints.reduce((sum, cp) => sum + cp.distanceFromPrevious, 0) + distanceFromPrevious;
 
-      coursePoints.push({
-        index,
-        latitude: createLatitude(latitude),
-        longitude: createLongitude(longitude),
-        distanceFromPrevious,
-        bearingFromPrevious,
-        cumulativeDistance,
+        // Get segment width from course if available
+        const segmentWidth =
+          course && index < points.length - 1 ? course.getSegmentWidth(index) : 0;
+
+        coursePoints.push({
+          index,
+          latitude: createLatitude(latitude),
+          longitude: createLongitude(longitude),
+          distanceFromPrevious,
+          bearingFromPrevious,
+          cumulativeDistance,
+          segmentWidth,
+        });
       });
-    });
 
-    return coursePoints;
-  }, []);
+      return coursePoints;
+    },
+    [course, widthUpdateCounter]
+  );
 
   const formatSecondsAsPace = useCallback((totalSeconds: number): string => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -303,13 +313,43 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [course, elapsedTime, finishedParticipants]
   );
 
-  const handlePointSelect = (point: CoursePoint | null) => {
-    setSelectedPoint(point);
-  };
+  const handlePointSelect = useCallback(
+    (point: CoursePoint | null) => {
+      setSelectedPoint(point);
+    },
+    [setSelectedPoint]
+  );
 
-  const handlePointsSelect = useCallback((points: CoursePoint[]) => {
-    setSelectedPoints(points);
-  }, []);
+  const handlePointsSelect = useCallback(
+    (points: CoursePoint[]) => {
+      setSelectedPoints(points);
+    },
+    [setSelectedPoints]
+  );
+
+  const handleSegmentClick = useCallback(
+    (segmentIndex: number) => {
+      if (!course) return;
+
+      const points = course.getPoints();
+      if (segmentIndex < 0 || segmentIndex >= points.length - 1) return;
+
+      // Switch to coursePoints tab if not already on it
+      if (activeTab !== 'coursePoints') {
+        setActiveTab('coursePoints');
+      }
+
+      // Find the corresponding CoursePoint from the segment index
+      // The segment index corresponds to the starting point index
+      const point = convertToCoursePoints(points).find((cp) => cp.index === segmentIndex);
+      if (point) {
+        handlePointSelect(point);
+        // Also update the points selection to just this point
+        handlePointsSelect([point]);
+      }
+    },
+    [course, convertToCoursePoints, handlePointSelect, handlePointsSelect, activeTab, setActiveTab]
+  );
 
   const handlePointsDelete = useCallback(
     (pointIndices: number[]) => {
@@ -412,6 +452,51 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
       }
     },
     [coursePoints, onCoursePointsChange]
+  );
+
+  const handleSegmentWidthChange = useCallback(
+    (pointIndex: number, width: number) => {
+      if (!course) {
+        console.warn('Course not available - cannot change segment width');
+        return;
+      }
+
+      try {
+        course.setSegmentWidth(pointIndex, width);
+        // Force a re-render by incrementing counter
+        // This ensures CoursePointsView recalculates coursePoints with the new width
+        setWidthUpdateCounter((prev) => prev + 1);
+      } catch (error) {
+        console.error('Error changing segment width:', error);
+        alert(
+          `Error changing segment width: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    },
+    [course]
+  );
+
+  const handleBatchSegmentWidthChange = useCallback(
+    (pointIndices: number[], width: number) => {
+      if (!course) {
+        console.warn('Course not available - cannot change segment widths');
+        return;
+      }
+
+      try {
+        pointIndices.forEach((pointIndex) => {
+          course.setSegmentWidth(pointIndex, width);
+        });
+        // Force a re-render by incrementing counter
+        setWidthUpdateCounter((prev) => prev + 1);
+      } catch (error) {
+        console.error('Error changing segment widths:', error);
+        alert(
+          `Error changing segment widths: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    },
+    [course]
   );
 
   const handleResetResults = useCallback(() => {
@@ -571,7 +656,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       }
                       zoomLevel={selectedPoint ? 18 : undefined}
                     >
-                      <CourseDisplay course={course} />
+                      <CourseDisplay course={course} onSegmentClick={handleSegmentClick} />
                       {participants.map((participant) => (
                         <ParticipantDisplay key={participant.getId()} participant={participant} />
                       ))}
@@ -630,6 +715,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointsDelete={handlePointsDelete}
                         onPointAdd={handlePointAdd}
                         onBatchPointMove={handleBatchPointMove}
+                        onSegmentWidthChange={handleSegmentWidthChange}
+                        onBatchSegmentWidthChange={handleBatchSegmentWidthChange}
                         undo={undo}
                         redo={redo}
                         canUndo={canUndo}
@@ -659,7 +746,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     }
                     zoomLevel={selectedPoint ? 18 : undefined}
                   >
-                    <CourseDisplay course={course} />
+                    <CourseDisplay course={course} onSegmentClick={handleSegmentClick} />
                     {participants.map((participant) => (
                       <ParticipantDisplay key={participant.getId()} participant={participant} />
                     ))}
@@ -765,6 +852,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       onPointsDelete={handlePointsDelete}
                       onPointAdd={handlePointAdd}
                       onBatchPointMove={handleBatchPointMove}
+                      onSegmentWidthChange={handleSegmentWidthChange}
+                      onBatchSegmentWidthChange={handleBatchSegmentWidthChange}
                       undo={undo}
                       redo={redo}
                       canUndo={canUndo}

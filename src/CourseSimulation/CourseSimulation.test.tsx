@@ -19,6 +19,7 @@ jest.mock('../Course', () => ({
       [0, 0],
       [1, 1],
     ],
+    getSegmentWidth: jest.fn((_index: number) => 2.0),
   })),
 }));
 

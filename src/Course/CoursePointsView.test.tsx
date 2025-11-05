@@ -12,6 +12,7 @@ jest.mock('./Course', () => ({
       [51.51, -0.12],
       [51.505, -0.13],
     ]),
+    getSegmentWidth: jest.fn((_: number) => 2.0),
     length: 1000,
   })),
 }));
@@ -19,6 +20,7 @@ jest.mock('./Course', () => ({
 // Mock course type for testing
 interface MockCourse {
   getPoints: () => LatLngTuple[];
+  getSegmentWidth: (index: number) => number;
   length: number;
 }
 
@@ -32,6 +34,7 @@ describe('CoursePointsView', () => {
 
   const createMockCourse = (): MockCourse => ({
     getPoints: jest.fn(() => samplePoints),
+    getSegmentWidth: jest.fn((_: number) => 2.0),
     length: 1000,
   });
 
