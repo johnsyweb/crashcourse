@@ -473,6 +473,13 @@ const Simulator: React.FC<SimulatorProps> = ({
                   ({course.getLapCount()} laps)
                 </span>
               ) : null}
+              {course && typeof course.getCourseWidthInfo === 'function' ? (
+                <span className={styles.infoValue} style={{ marginLeft: '8px' }}>
+                  Width: min {course.getCourseWidthInfo().narrowestWidth.toFixed(1)} m, max {course
+                    .getCourseWidthInfo()
+                    .widestWidth.toFixed(1)} m
+                </span>
+              ) : null}
             </span>
           </div>
         </div>
