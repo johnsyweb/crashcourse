@@ -6,6 +6,7 @@ interface ElapsedTimeProps {
   initialElapsedTime?: number;
   simulationStopped?: boolean;
   updateIntervalMs?: number; // For testability: allow custom interval
+  onResetSimulator?: () => void; // Optional callback to reset entire simulator (timer, results, participants)
 }
 
 const ElapsedTime: React.FC<ElapsedTimeProps> = ({
@@ -13,6 +14,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
   initialElapsedTime = 0,
   simulationStopped = false,
   updateIntervalMs = 100,
+  onResetSimulator,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(initialElapsedTime);
   const [isRunning, setIsRunning] = useState(false);
@@ -98,6 +100,9 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
         }
       } else if (key === 'r') {
         resetTime();
+        if (onResetSimulator) {
+          onResetSimulator();
+        }
       } else if (key === '+' || key === '=') {
         // Use = as alternative for + since it's the same key without shift
         increaseSpeed();
@@ -197,8 +202,14 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
           </button>
           <button
             className={`${styles.simulationButton} ${styles.resetButton}`}
-            onClick={resetTime}
-            aria-label="Reset timer"
+            onClick={() => {
+              resetTime();
+              if (onResetSimulator) {
+                onResetSimulator();
+              }
+            }}
+            aria-label={onResetSimulator ? 'Reset Simulator' : 'Reset timer'}
+            title={onResetSimulator ? 'Reset timer, clear results, and return all participants to start' : 'Reset timer'}
           >
             🔄
           </button>

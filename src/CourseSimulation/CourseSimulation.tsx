@@ -499,9 +499,20 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [course]
   );
 
-  const handleResetResults = useCallback(() => {
+  const handleResetSimulator = useCallback(() => {
+    // Reset elapsed time
+    setElapsedTime(0);
+    // Clear finished participants
     setFinishedParticipants([]);
-  }, []);
+    // Reset all active participants back to start
+    setParticipants((prevParticipants) => {
+      const resetParticipants = prevParticipants.map((participant) => {
+        participant.reset();
+        return participant;
+      });
+      return resetParticipants;
+    });
+  }, [setElapsedTime]);
 
   const handleExportGPX = useCallback(
     (courseName?: string) => {
@@ -634,6 +645,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     onParticipantCountChange={handleParticipantCountChange}
                     onPaceRangeChange={handlePaceRangeChange}
                     onElapsedTimeChange={setElapsedTime}
+                    onResetSimulator={handleResetSimulator}
                   />
                 )}
               </div>
@@ -702,7 +714,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       <Results
                         participants={finishedParticipants}
                         elapsedTime={elapsedTime}
-                        onReset={handleResetResults}
                       />
                     )}
                     {activeTab === 'coursePoints' && course && (
@@ -807,6 +818,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     onParticipantCountChange={handleParticipantCountChange}
                     onPaceRangeChange={handlePaceRangeChange}
                     onElapsedTimeChange={setElapsedTime}
+                    onResetSimulator={handleResetSimulator}
                   />
                 )}
               </div>
@@ -839,7 +851,6 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     <Results
                       participants={finishedParticipants}
                       elapsedTime={elapsedTime}
-                      onReset={handleResetResults}
                     />
                   )}
                   {activeTab === 'coursePoints' && course && (

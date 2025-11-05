@@ -48,6 +48,7 @@ interface SimulatorProps {
   onParticipantCountChange?: (count: number) => void;
   onPaceRangeChange?: (minPace: string, maxPace: string) => void;
   onElapsedTimeChange?: (time: number) => void;
+  onResetSimulator?: () => void;
 }
 
 const Simulator: React.FC<SimulatorProps> = ({
@@ -57,6 +58,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   onParticipantCountChange,
   onPaceRangeChange,
   onElapsedTimeChange,
+  onResetSimulator,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = usePersistentState(
@@ -475,9 +477,8 @@ const Simulator: React.FC<SimulatorProps> = ({
               ) : null}
               {course && typeof course.getCourseWidthInfo === 'function' ? (
                 <span className={styles.infoValue} style={{ marginLeft: '8px' }}>
-                  Width: min {course.getCourseWidthInfo().narrowestWidth.toFixed(1)} m, max {course
-                    .getCourseWidthInfo()
-                    .widestWidth.toFixed(1)} m
+                  Width: min {course.getCourseWidthInfo().narrowestWidth.toFixed(1)} m, max{' '}
+                  {course.getCourseWidthInfo().widestWidth.toFixed(1)} m
                 </span>
               ) : null}
             </span>
@@ -669,6 +670,7 @@ const Simulator: React.FC<SimulatorProps> = ({
               onElapsedTimeChange={handleElapsedTimeChange}
               initialElapsedTime={0}
               simulationStopped={simulationStopped}
+              onResetSimulator={onResetSimulator}
             />
           </ControlCard>
         </div>
