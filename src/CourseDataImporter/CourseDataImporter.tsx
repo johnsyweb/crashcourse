@@ -25,7 +25,27 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      console.log('CourseDataImporter: No file selected');
+      return;
+    }
+
+    console.log(
+      'CourseDataImporter: File selected:',
+      selectedFile.name,
+      selectedFile.size,
+      'bytes'
+    );
+    console.log(
+      'CourseDataImporter: File type/extension:',
+      selectedFile.type,
+      selectedFile.name.toLowerCase()
+    );
+
+    const isFITFile =
+      selectedFile.name.toLowerCase().endsWith('.fit') ||
+      selectedFile.name.toLowerCase().endsWith('.fit.gz');
+    console.log('CourseDataImporter: Is FIT file?', isFITFile);
 
     setFile(selectedFile);
     setImportError(null);
@@ -54,16 +74,24 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
   };
 
   const handleFITDataParsed = (data: FITData) => {
+    console.log('CourseDataImporter: FIT data parsed', {
+      isValid: data.isValid,
+      pointsCount: data.points.length,
+      errorMessage: data.errorMessage,
+      name: data.name,
+    });
+
     if (data.isValid && data.points.length > 0) {
-      // Convert FITPoint array to LatLngTuple array
       const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
 
       if (points.length < 2) {
-        setImportError('Course must contain at least 2 GPS points.');
+        const error = 'Course must contain at least 2 GPS points.';
+        console.warn('CourseDataImporter:', error);
+        setImportError(error);
         return;
       }
 
-      // Pass metadata along with points
+      console.log('CourseDataImporter: Importing course with', points.length, 'points');
       const metadata = {
         name: data.name,
         description: data.description,
@@ -71,7 +99,17 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
       onCourseDataImported(points, metadata, data.lapDetectionParams);
     } else if (data.errorMessage) {
-      setImportError(data.errorMessage);
+      console.error('CourseDataImporter: FIT import error:', data.errorMessage);
+
+      const isNoGPSError = data.errorMessage.includes('No GPS position data found');
+      const errorWithHelp = isNoGPSError
+        ? `${data.errorMessage}\n\nFIT files with no GPS points may have been saved as an indoor activity.`
+        : data.errorMessage;
+
+      setImportError(errorWithHelp);
+    } else {
+      console.warn('CourseDataImporter: FIT data is invalid but no error message');
+      setImportError('Failed to import FIT file: No valid data found.');
     }
   };
 

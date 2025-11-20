@@ -184,6 +184,8 @@
   font-size: 0.9rem;
   margin-top: 0.5rem;
   border-left: 4px solid #dc322f; /* Solarized red */
+  white-space: pre-line; /* Allow line breaks in error messages */
+  line-height: 1.6;
 }
 
 /* Mobile responsiveness */

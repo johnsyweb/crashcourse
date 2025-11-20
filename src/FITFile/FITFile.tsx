@@ -3,7 +3,6 @@ import FitParser from 'fit-file-parser';
 import styles from './FITFile.module.css';
 import readFileAsArrayBuffer from './readFileAsArrayBuffer';
 
-// Type for parsed FIT data based on fit-file-parser library
 interface FitParsedData {
   records?: Array<{
     position_lat?: number;
@@ -56,14 +55,16 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
       return;
     }
 
+    console.log('FITFile: Starting parse for file:', file.name, file.size, 'bytes');
+
     try {
       setIsLoading(true);
       setError(null);
 
+      console.log('FITFile: Reading file as ArrayBuffer...');
       const arrayBuffer = await readFileAsArrayBuffer(file);
+      console.log('FITFile: File read, ArrayBuffer size:', arrayBuffer.byteLength, 'bytes');
 
-      // Create parser with mode 'list' to get flat records array
-      // fit-file-parser with mode: 'list' already converts semicircles to degrees
       const fitParser = new FitParser({
         force: true,
         speedUnit: 'm/s',
@@ -73,21 +74,34 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
         mode: 'list',
       });
 
-      // fit-file-parser uses a callback-based API
+      console.log('FITFile: Starting parser...');
       await new Promise<void>((resolve, reject) => {
         fitParser.parse(arrayBuffer, (error: string | null, parsedData?: FitParsedData) => {
+          console.log('FITFile: Parser callback called', { error, hasData: !!parsedData });
+
           if (error) {
+            console.error('FITFile: Parser error:', error);
             reject(new Error(error));
             return;
           }
 
+          console.log('FITFile: Parser returned data', {
+            hasData: !!parsedData,
+            hasRecords: !!parsedData?.records,
+            recordsCount: parsedData?.records?.length,
+          });
+
           if (!parsedData || !parsedData.records) {
+            console.error('FITFile: Invalid FIT format - missing records');
             reject(new Error('Invalid FIT format: missing records'));
             return;
           }
 
-          // Extract position records - records with lat/lon
-          // fit-file-parser with mode: 'list' converts semicircles to degrees in position_lat/long
+          console.log(
+            'FITFile: Filtering position records from',
+            parsedData.records.length,
+            'total records'
+          );
           const positionRecords = parsedData.records.filter((record: Record<string, unknown>) => {
             const hasPositionCoords =
               record.position_lat !== undefined && record.position_long !== undefined;
@@ -95,22 +109,23 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
 
             return hasPositionCoords || hasLatLonCoords;
           });
+          console.log('FITFile: Found', positionRecords.length, 'position records');
 
           if (positionRecords.length === 0) {
-            reject(new Error('Invalid FIT format: no position data found'));
+            const totalRecords = parsedData.records.length;
+            reject(
+              new Error(
+                `No GPS position data found in FIT file. File contains ${totalRecords} records, but none have position coordinates. This file may not contain GPS track data (e.g., indoor activities).`
+              )
+            );
             return;
           }
 
-          // Convert FIT records to FITPoint format
-          // fit-file-parser with mode: 'list' already converts semicircles to degrees
-          // So position_lat and position_long are already in degrees, not semicircles
           const points: FITPoint[] = positionRecords
             .map((record): FITPoint | null => {
               let lat: number;
               let lon: number;
 
-              // fit-file-parser with mode: 'list' already converts semicircles to degrees
-              // Check if we have latitude/longitude fields first (explicitly converted)
               if (
                 record.latitude !== undefined &&
                 typeof record.latitude === 'number' &&
@@ -123,7 +138,6 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
                 const positionLat = record.position_lat as number;
                 const positionLong = record.position_long as number;
 
-                // Validate values are numbers
                 if (
                   typeof positionLat !== 'number' ||
                   typeof positionLong !== 'number' ||
@@ -133,15 +147,12 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
                   return null;
                 }
 
-                // fit-file-parser with mode: 'list' already converts semicircles to degrees
-                // So position_lat/long are already in degrees
                 lat = positionLat;
                 lon = positionLong;
               } else {
                 return null;
               }
 
-              // Validate coordinates are valid (latitude: -90 to 90, longitude: -180 to 180)
               if (
                 !isFinite(lat) ||
                 !isFinite(lon) ||
@@ -176,13 +187,12 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
           if (points.length === 0) {
             reject(
               new Error(
-                'No valid position data found in FIT file after filtering invalid coordinates'
+                `No valid GPS coordinates found in FIT file. Found ${positionRecords.length} records with position fields, but all coordinates were invalid or out of range.`
               )
             );
             return;
           }
 
-          // Extract name from activity or file name
           const activityType = parsedData.activity?.sport;
           const activityName =
             parsedData.sessions && parsedData.sessions.length > 0
@@ -191,7 +201,6 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
           const trackName = activityName || activityType || file.name.replace(/\.[^/.]+$/, '');
           const trackDescription = activityType ? `Activity: ${activityType}` : '';
 
-          // Extract lap detection parameters (FIT files don't have custom extensions, so we use defaults)
           const lapDetectionParams: LapDetectionParams | undefined = undefined;
 
           const fitData: FITData = {
@@ -209,7 +218,10 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
         });
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to parse FIT file';
+      console.error('FITFile: Exception caught during parsing:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : `Failed to parse FIT file: ${String(err)}`;
+      console.error('FITFile: Setting error:', errorMessage);
       setError(errorMessage);
 
       onDataParsed({
@@ -218,6 +230,7 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
         errorMessage,
       });
     } finally {
+      console.log('FITFile: Parsing complete, setting loading to false');
       setIsLoading(false);
     }
   }, [file, onDataParsed]);
