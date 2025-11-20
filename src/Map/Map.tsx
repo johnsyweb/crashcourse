@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -55,12 +55,14 @@ const Map: React.FC<MapProps> = ({
         zoom={centerOnPoint ? zoomLevel : initialZoom}
         className={styles.mapContainer}
         scrollWheelZoom={true}
+        zoomControl={false}
         ref={mapRef}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
+        <ZoomControl position="topright" />
         {children}
         {gpsPoints && gpsPoints.length > 0 && !centerOnPoint && <FitBounds gpsPoints={gpsPoints} />}
       </MapContainer>

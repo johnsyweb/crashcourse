@@ -82,6 +82,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     new globalThis.Map<string, CongestionPoint>()
   );
   const [selectedCongestionPointId, setSelectedCongestionPointId] = useState<string | null>(null);
+  const [isControlsOpen, setIsControlsOpen] = useState(false);
 
   // Clear persistent state when course points change (new course loaded)
   useEffect(() => {
@@ -658,31 +659,65 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   return (
     <div className={styles.container}>
       <ErrorBoundary>
+        {/* Hamburger Menu Button - Only visible on small screens */}
+        <button
+          className={`${styles.hamburgerButton} ${isControlsOpen ? styles.hamburgerOpen : ''}`}
+          onClick={() => setIsControlsOpen(!isControlsOpen)}
+          aria-label="Toggle controls menu"
+          aria-expanded={isControlsOpen}
+        >
+          <span className={styles.hamburgerIcon}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+
+        {/* Overlay - Only visible when controls are open on small screens */}
+        {isControlsOpen && (
+          <div
+            className={styles.overlay}
+            onClick={() => setIsControlsOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         <div className={styles.layout}>
           {/* Desktop/Tablet Layout */}
           <div className={styles.desktopLayout}>
             {/* Left Side - Controls Panel */}
-            <div className={styles.controlsSection}>
+            <div
+              className={`${styles.controlsSection} ${isControlsOpen ? styles.controlsOpen : ''}`}
+            >
               <div className={styles.controlsContainer}>
                 <div className={styles.controlsHeader}>
                   <div className={styles.controlsHeaderRow}>
                     <button
                       className={styles.resetButton}
-                      onClick={onReset}
+                      onClick={() => {
+                        onReset?.();
+                        setIsControlsOpen(false);
+                      }}
                       data-testid="reset-button"
                     >
                       Import
                     </button>
                     <button
                       className={styles.actionButton}
-                      onClick={() => handleExportGPX(courseMetadata?.name)}
+                      onClick={() => {
+                        handleExportGPX(courseMetadata?.name);
+                        setIsControlsOpen(false);
+                      }}
                       title="Export course as GPX file"
                     >
                       Export
                     </button>
                     <button
                       className={styles.actionButton}
-                      onClick={handleShareCourse}
+                      onClick={() => {
+                        handleShareCourse();
+                        setIsControlsOpen(false);
+                      }}
                       title="Generate shareable link with course data"
                     >
                       Share

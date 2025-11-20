@@ -42,18 +42,22 @@ interface TileLayerProps {
 
 // Mock react-leaflet components
 jest.mock('react-leaflet', () => ({
-  MapContainer: ({ children, center, zoom, className }: MapContainerProps) => (
+  MapContainer: ({ children, center, zoom, className, zoomControl }: MapContainerProps & { zoomControl?: boolean }) => (
     <div
       data-testid="map-container"
       data-center={JSON.stringify(center)}
       data-zoom={zoom}
       className={className}
+      data-zoom-control={zoomControl}
     >
       {children}
     </div>
   ),
   TileLayer: ({ url, attribution }: TileLayerProps) => (
     <div data-testid="tile-layer" data-url={url} data-attribution={attribution} />
+  ),
+  ZoomControl: ({ position }: { position?: string }) => (
+    <div data-testid="zoom-control" data-position={position} />
   ),
   // Mock useMap hook that FitBounds uses
   useMap: () => ({

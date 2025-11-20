@@ -79,6 +79,88 @@
   border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease-in-out;
+  z-index: 9999;
+}
+
+/* Hamburger Menu Button */
+.hamburgerButton {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10000;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s;
+}
+
+.hamburgerButton:hover {
+  background-color: #f0f0f0;
+}
+
+.hamburgerButton:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(66, 153, 225, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hamburgerIcon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 24px;
+  height: 18px;
+}
+
+.hamburgerIcon span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: #333;
+  transition: all 0.3s ease;
+  border-radius: 1px;
+}
+
+.hamburgerIcon span:first-child {
+  transform-origin: top left;
+}
+
+.hamburgerIcon span:nth-child(2) {
+  opacity: 1;
+}
+
+.hamburgerIcon span:last-child {
+  transform-origin: bottom left;
+}
+
+.hamburgerButton.hamburgerOpen .hamburgerIcon span:first-child {
+  transform: rotate(45deg) translate(4px, 2px);
+}
+
+.hamburgerButton.hamburgerOpen .hamburgerIcon span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburgerButton.hamburgerOpen .hamburgerIcon span:last-child {
+  transform: rotate(-45deg) translate(4px, -2px);
+}
+
+/* Overlay for mobile menu */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
 }
 
 /* Right Side - Map and Results */
@@ -271,7 +353,35 @@
   border-left: 4px solid #ef5350;
 }
 
-/* Responsive Design */
+/* Responsive Design - Small Laptop and Below */
+@media (max-width: 1280px) {
+  .hamburgerButton {
+    display: block;
+  }
+
+  .controlsSection {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .controlsSection.controlsOpen {
+    transform: translateX(0);
+  }
+
+  .overlay {
+    display: block;
+  }
+
+  .rightSection {
+    width: 100%;
+  }
+}
+
+/* Mobile Design */
 @media (max-width: 768px) {
   .desktopLayout {
     display: none; /* Hide desktop layout */
