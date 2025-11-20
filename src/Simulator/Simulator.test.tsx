@@ -5,6 +5,9 @@ import { Participant } from '../Participant';
 import '@testing-library/jest-dom';
 
 // Mock the ElapsedTime component to directly call onElapsedTimeChange
+// Use a module-level variable to track elapsed time across clicks
+let mockElapsedTime = 0;
+
 jest.mock('../ElapsedTime', () => {
   return function MockElapsedTime({
     onElapsedTimeChange,
@@ -16,7 +19,12 @@ jest.mock('../ElapsedTime', () => {
         <p>Mock ElapsedTime</p>
         <button
           data-testid="elapsed-time-control"
-          onClick={() => onElapsedTimeChange && onElapsedTimeChange(10)}
+          onClick={() => {
+            mockElapsedTime += 10;
+            if (onElapsedTimeChange) {
+              onElapsedTimeChange(mockElapsedTime);
+            }
+          }}
         >
           Control Time
         </button>
@@ -27,10 +35,11 @@ jest.mock('../ElapsedTime', () => {
 
 describe('Simulator Component', () => {
   // Create a simple straight course for testing (approximately 1000m)
+  // Using London coordinates for more realistic testing
   const createTestCourse = (): Course => {
     const coursePoints: [number, number][] = [
-      [0, 0], // Start
-      [0, 0.01], // End (approximately 1000m north)
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
     ];
     return new Course(coursePoints);
   };
@@ -46,6 +55,8 @@ describe('Simulator Component', () => {
     jest.useFakeTimers();
     // Clear localStorage to ensure clean state between tests
     localStorage.clear();
+    // Reset mock elapsed time counter for each test
+    mockElapsedTime = 0;
     testCourse = createTestCourse();
     mockParticipantUpdate = jest.fn();
     mockParticipantCountChange = jest.fn();
@@ -297,8 +308,8 @@ describe('Simulator Component', () => {
   it('should enforce collision and overtaking rules on a straight course', () => {
     // Create a course with a segment that allows overtaking (width 1.5m > 1.0m participant width)
     const coursePoints: [number, number][] = [
-      [0, 0], // Start
-      [0, 0.01], // End (approximately 1000m north)
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
     ];
     const course = new Course(coursePoints);
     // Set the width of the first segment to 1.5m (wide enough for overtaking)
@@ -346,8 +357,8 @@ describe('Simulator Component', () => {
   it('should allow overtaking when course width is sufficient', () => {
     // Create a course with a wide segment (width 3.0m) where overtaking should be allowed
     const coursePoints: [number, number][] = [
-      [0, 0], // Start
-      [0, 0.01], // End (approximately 1000m north)
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
     ];
     const wideCourse = new Course(coursePoints);
     // Set the width of the first segment to 3.0m (wide enough for overtaking)
@@ -405,8 +416,8 @@ describe('Simulator Component', () => {
   it('should block overtaking when course width is insufficient', () => {
     // Create a course with a narrow segment (width 0.8m) where overtaking should be blocked
     const coursePoints: [number, number][] = [
-      [0, 0], // Start
-      [0, 0.01], // End (approximately 1000m north)
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
     ];
     const narrowCourse = new Course(coursePoints);
     // Set the width of the first segment to 0.8m (narrow, less than 2 participants' width of 1.0m)
@@ -455,5 +466,154 @@ describe('Simulator Component', () => {
     // The leading participant (participant1 at 120m initially) should still be ahead or equal
     expect(participant1Dist).toBeGreaterThanOrEqual(participant2Dist);
     expect(narrowCourse.getWidthAt(participant2Dist)).toBe(0.8); // Course width at position (less than needed)
+  });
+
+  it('should call onCongestion when participant is blocked from overtaking', () => {
+    // Create a course with a narrow segment (width 0.8m) where overtaking should be blocked
+    // Using London coordinates for more realistic testing
+    const coursePoints: [number, number][] = [
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
+    ];
+    const narrowCourse = new Course(coursePoints);
+    // Set the width of the first segment to 0.8m (narrow, less than 2 participants' width of 1.0m)
+    narrowCourse.setSegmentWidth(0, 0.8);
+
+    // Create two participants: one leading at 120m, one following at 100m
+    // The faster participant is behind (at 100m) and wants to overtake
+    const participant1 = new Participant(narrowCourse, 0, '4:00', 0.5); // Leading, slower
+    const participant2 = new Participant(narrowCourse, 0, '3:30', 0.5); // Following, faster
+    // Set initial positions
+    participant1.setCumulativeDistance(120); // Leading participant
+    participant2.setCumulativeDistance(100); // Following participant
+
+    const participants = [participant1, participant2];
+    const mockParticipantUpdate = jest.fn();
+    const mockOnCongestion = jest.fn();
+
+    render(
+      <Simulator
+        course={narrowCourse}
+        participants={participants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onCongestion={mockOnCongestion}
+      />
+    );
+
+    // Trigger elapsed time change multiple times to allow participants to catch up
+    // Participant 2 catches up in ~35 seconds, so we need at least 4 clicks (40 seconds)
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        screen.getByTestId('elapsed-time-control').click();
+        jest.runAllTimers();
+      }
+    });
+
+    // Verify that onCongestion was called when the faster participant caught up and was blocked
+    expect(mockOnCongestion).toHaveBeenCalled();
+
+    // Verify it was called with distance and position
+    const congestionCall = mockOnCongestion.mock.calls[0];
+    expect(congestionCall).toHaveLength(2);
+    expect(typeof congestionCall[0]).toBe('number'); // distance
+    expect(Array.isArray(congestionCall[1])).toBe(true); // position [lat, lon]
+    expect(congestionCall[1]).toHaveLength(2);
+    expect(typeof congestionCall[1][0]).toBe('number'); // latitude
+    expect(typeof congestionCall[1][1]).toBe('number'); // longitude
+  });
+
+  it('should call onCongestion multiple times when congestion occurs repeatedly', () => {
+    // Create a course with a narrow segment
+    // Using London coordinates for more realistic testing
+    const coursePoints: [number, number][] = [
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
+    ];
+    const narrowCourse = new Course(coursePoints);
+    narrowCourse.setSegmentWidth(0, 0.8);
+
+    // Create two participants where the faster one is behind
+    const participant1 = new Participant(narrowCourse, 0, '4:00', 0.5); // Slower
+    const participant2 = new Participant(narrowCourse, 0, '3:30', 0.5); // Faster
+    participant1.setCumulativeDistance(120); // Leading participant
+    participant2.setCumulativeDistance(100); // Following participant, will catch up
+
+    const participants = [participant1, participant2];
+    const mockParticipantUpdate = jest.fn();
+    const mockOnCongestion = jest.fn();
+
+    render(
+      <Simulator
+        course={narrowCourse}
+        participants={participants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onCongestion={mockOnCongestion}
+      />
+    );
+
+    // Trigger multiple elapsed time changes to cause multiple congestion events
+    // Participant 2 catches up in ~35 seconds, so we need at least 4 clicks (40 seconds)
+    // Each call advances time by 10 seconds, and collision detection runs in 1-second increments
+    // So within each 10-second update, there are multiple opportunities for congestion
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        screen.getByTestId('elapsed-time-control').click();
+        jest.runAllTimers();
+      }
+    });
+
+    // Verify that onCongestion was called
+    // (It should be called each time the faster participant tries to overtake and is blocked)
+    expect(mockOnCongestion.mock.calls.length).toBeGreaterThan(0);
+
+    // Verify all calls have the correct structure
+    mockOnCongestion.mock.calls.forEach((call) => {
+      expect(call).toHaveLength(2);
+      expect(typeof call[0]).toBe('number'); // distance
+      expect(Array.isArray(call[1])).toBe(true); // position
+      expect(call[1]).toHaveLength(2);
+      expect(typeof call[1][0]).toBe('number'); // latitude
+      expect(typeof call[1][1]).toBe('number'); // longitude
+    });
+  });
+
+  it('should not call onCongestion when participants can overtake successfully', () => {
+    // Create a course with a wide segment (width 3.0m) where overtaking should be allowed
+    // Using London coordinates for more realistic testing
+    const coursePoints: [number, number][] = [
+      [51.5074, -0.1278], // Start in London
+      [51.5164, -0.1278], // End (approximately 1000m north)
+    ];
+    const wideCourse = new Course(coursePoints);
+    // Set the width of the first segment to 3.0m (wide enough for overtaking)
+    wideCourse.setSegmentWidth(0, 3.0);
+
+    // Create two participants: one leading at 120m, one following at 100m
+    const participant1 = new Participant(wideCourse, 0, '4:00', 0.5); // Leading, slower
+    const participant2 = new Participant(wideCourse, 0, '3:30', 0.5); // Following, faster
+    participant1.setCumulativeDistance(120);
+    participant2.setCumulativeDistance(100);
+
+    const participants = [participant1, participant2];
+    const mockParticipantUpdate = jest.fn();
+    const mockOnCongestion = jest.fn();
+
+    render(
+      <Simulator
+        course={wideCourse}
+        participants={participants}
+        onParticipantUpdate={mockParticipantUpdate}
+        onCongestion={mockOnCongestion}
+      />
+    );
+
+    // Trigger elapsed time change
+    act(() => {
+      screen.getByTestId('elapsed-time-control').click();
+      jest.runAllTimers();
+    });
+
+    // Verify that onCongestion was NOT called (no congestion, overtaking allowed)
+    expect(mockOnCongestion).not.toHaveBeenCalled();
   });
 });

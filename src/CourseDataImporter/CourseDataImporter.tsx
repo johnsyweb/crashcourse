@@ -3,6 +3,7 @@ import { LatLngTuple } from 'leaflet';
 import styles from './CourseDataImporter.module.css';
 import FileUploadSection from '../FileUploadSection';
 import GPXFile, { GPXData } from '../GPXFile';
+import FITFile, { FITData } from '../FITFile';
 
 export interface LapDetectionParams {
   stepMeters?: number;
@@ -52,6 +53,28 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
     }
   };
 
+  const handleFITDataParsed = (data: FITData) => {
+    if (data.isValid && data.points.length > 0) {
+      // Convert FITPoint array to LatLngTuple array
+      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
+
+      if (points.length < 2) {
+        setImportError('Course must contain at least 2 GPS points.');
+        return;
+      }
+
+      // Pass metadata along with points
+      const metadata = {
+        name: data.name,
+        description: data.description,
+      };
+
+      onCourseDataImported(points, metadata, data.lapDetectionParams);
+    } else if (data.errorMessage) {
+      setImportError(data.errorMessage);
+    }
+  };
+
   return (
     <div className={styles.courseDataImporter}>
       {/* Welcome Section */}
@@ -71,7 +94,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           <div className={styles.feature}>
             <div className={styles.featureIcon}>📁</div>
             <h3>Import Courses</h3>
-            <p>Upload GPX files from your GPS device or mapping software</p>
+            <p>Upload GPX or FIT files from your GPS device or mapping software</p>
           </div>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>✏️</div>
@@ -95,8 +118,8 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           <h2>Getting Started</h2>
           <ol className={styles.stepsList}>
             <li>
-              <strong>Upload a Course:</strong> Click the button below to select a GPX file from
-              your device
+              <strong>Upload a Course:</strong> Click the button below to select a GPX or FIT file
+              from your device
             </li>
             <li>
               <strong>Review & Edit:</strong> Examine course points, edit metadata, and make
@@ -114,12 +137,18 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
         {/* Supported Formats */}
         <div className={styles.supportedFormats}>
-          <h3>Supported File Format</h3>
+          <h3>Supported File Formats</h3>
           <div className={styles.formatList}>
             <div className={styles.format}>
               <span className={styles.formatIcon}>🗺️</span>
               <span>
                 <strong>GPX</strong> - GPS Exchange Format
+              </span>
+            </div>
+            <div className={styles.format}>
+              <span className={styles.formatIcon}>📊</span>
+              <span>
+                <strong>FIT</strong> - Flexible and Interoperable Data Transfer Format
               </span>
             </div>
           </div>
@@ -133,7 +162,12 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
       {importError && <div className={styles.errorMessage}>{importError}</div>}
 
-      {file && <GPXFile file={file} onDataParsed={handleGPXDataParsed} />}
+      {file &&
+        (file.name.toLowerCase().endsWith('.fit') || file.name.toLowerCase().endsWith('.fit.gz') ? (
+          <FITFile file={file} onDataParsed={handleFITDataParsed} />
+        ) : (
+          <GPXFile file={file} onDataParsed={handleGPXDataParsed} />
+        ))}
     </div>
   );
 };

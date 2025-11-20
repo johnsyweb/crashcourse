@@ -1,0 +1,17 @@
+.fitFile {
+  margin-top: 1rem;
+}
+
+.loadingIndicator {
+  padding: 0.5rem;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  color: #1976d2;
+}
+
+.errorMessage {
+  padding: 0.5rem;
+  background-color: #ffebee;
+  border-radius: 4px;
+  color: #c62828;
+}

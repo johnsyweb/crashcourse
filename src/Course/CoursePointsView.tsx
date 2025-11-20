@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Course } from './Course';
 import * as turf from '@turf/turf';
 import styles from './CoursePointsView.module.css';
@@ -116,7 +116,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     return coursePoints;
   };
 
-  const coursePoints = course ? calculateCoursePoints(course) : [];
+  const coursePoints = useMemo(() => (course ? calculateCoursePoints(course) : []), [course]);
 
   const formatCoordinate = (value: number, precision: number = 6): string => {
     return value.toFixed(precision);
@@ -161,72 +161,78 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
   };
 
   // Utility functions for calculating point positions
-  const calculateMidpoint = (
-    point1: [number, number],
-    point2: [number, number]
-  ): [number, number] => {
-    const lat = (point1[0] + point2[0]) / 2;
-    const lng = (point1[1] + point2[1]) / 2;
-    return [lat, lng];
-  };
+  const calculateMidpoint = useCallback(
+    (point1: [number, number], point2: [number, number]): [number, number] => {
+      const lat = (point1[0] + point2[0]) / 2;
+      const lng = (point1[1] + point2[1]) / 2;
+      return [lat, lng];
+    },
+    []
+  );
 
-  const extendPoint = (
-    fromPoint: [number, number],
-    toPoint: [number, number],
-    distanceMeters: number
-  ): [number, number] => {
-    const bearing = turf.bearing(
-      turf.point([fromPoint[1], fromPoint[0]]),
-      turf.point([toPoint[1], toPoint[0]])
-    );
-    const destination = turf.destination(
-      turf.point([fromPoint[1], fromPoint[0]]),
-      distanceMeters / 1000,
-      bearing,
-      { units: 'kilometers' }
-    );
-    return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
-  };
+  const extendPoint = useCallback(
+    (
+      fromPoint: [number, number],
+      toPoint: [number, number],
+      distanceMeters: number
+    ): [number, number] => {
+      const bearing = turf.bearing(
+        turf.point([fromPoint[1], fromPoint[0]]),
+        turf.point([toPoint[1], toPoint[0]])
+      );
+      const destination = turf.destination(
+        turf.point([fromPoint[1], fromPoint[0]]),
+        distanceMeters / 1000,
+        bearing,
+        { units: 'kilometers' }
+      );
+      return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
+    },
+    []
+  );
 
-  const getPrepopulatedCoordinates = (insertIndex: number): [number, number] => {
-    if (!course) return [0, 0];
+  const getPrepopulatedCoordinates = useCallback(
+    (insertIndex: number): [number, number] => {
+      if (!course) return [0, 0];
 
-    const points = course.getPoints();
+      const points = course.getPoints();
 
-    if (insertIndex === 0) {
-      // Insert before first point - extend 10m from start towards second point
-      if (points.length >= 2) {
-        return extendPoint([points[0][0], points[0][1]], [points[1][0], points[1][1]], -10); // Negative distance to go backwards
+      if (insertIndex === 0) {
+        // Insert before first point - extend 10m from start towards second point
+        if (points.length >= 2) {
+          return extendPoint([points[0][0], points[0][1]], [points[1][0], points[1][1]], -10); // Negative distance to go backwards
+        }
+        return [points[0][0], points[0][1]]; // Fallback if only one point
       }
-      return [points[0][0], points[0][1]]; // Fallback if only one point
-    }
 
-    if (insertIndex === points.length) {
-      // Insert after last point - extend 10m from the last point
-      if (points.length >= 2) {
-        const lastPoint = [points[points.length - 1][0], points[points.length - 1][1]];
-        const secondLastPoint = [points[points.length - 2][0], points[points.length - 2][1]];
-        const bearing = turf.bearing(
-          turf.point([secondLastPoint[1], secondLastPoint[0]]),
-          turf.point([lastPoint[1], lastPoint[0]])
-        );
-        const destination = turf.destination(
-          turf.point([lastPoint[1], lastPoint[0]]),
-          0.01, // 10m in kilometers
-          bearing,
-          { units: 'kilometers' }
-        );
-        return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
+      if (insertIndex === points.length) {
+        // Insert after last point - extend 10m from the last point
+        if (points.length >= 2) {
+          const lastPoint = [points[points.length - 1][0], points[points.length - 1][1]];
+          const secondLastPoint = [points[points.length - 2][0], points[points.length - 2][1]];
+          const bearing = turf.bearing(
+            turf.point([secondLastPoint[1], secondLastPoint[0]]),
+            turf.point([lastPoint[1], lastPoint[0]])
+          );
+          const destination = turf.destination(
+            turf.point([lastPoint[1], lastPoint[0]]),
+            0.01, // 10m in kilometers
+            bearing,
+            { units: 'kilometers' }
+          );
+          return [destination.geometry.coordinates[1], destination.geometry.coordinates[0]];
+        }
+        return [points[points.length - 1][0], points[points.length - 1][1]]; // Fallback if only one point
       }
-      return [points[points.length - 1][0], points[points.length - 1][1]]; // Fallback if only one point
-    }
 
-    // Insert between points - use midpoint
-    return calculateMidpoint(
-      [points[insertIndex - 1][0], points[insertIndex - 1][1]],
-      [points[insertIndex][0], points[insertIndex][1]]
-    );
-  };
+      // Insert between points - use midpoint
+      return calculateMidpoint(
+        [points[insertIndex - 1][0], points[insertIndex - 1][1]],
+        [points[insertIndex][0], points[insertIndex][1]]
+      );
+    },
+    [course, extendPoint, calculateMidpoint]
+  );
 
   const handleAddPoint = () => {
     if (!onPointAdd) return;
@@ -257,14 +263,17 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setAddAtIndex(0);
   };
 
-  const handleAddAfterPoint = (index: number) => {
-    const insertIndex = index + 1;
-    const [lat, lng] = getPrepopulatedCoordinates(insertIndex);
-    setAddAtIndex(insertIndex);
-    setNewPointLat(lat.toFixed(6));
-    setNewPointLng(lng.toFixed(6));
-    setShowAddForm(true);
-  };
+  const handleAddAfterPoint = useCallback(
+    (index: number) => {
+      const insertIndex = index + 1;
+      const [lat, lng] = getPrepopulatedCoordinates(insertIndex);
+      setAddAtIndex(insertIndex);
+      setNewPointLat(lat.toFixed(6));
+      setNewPointLng(lng.toFixed(6));
+      setShowAddForm(true);
+    },
+    [getPrepopulatedCoordinates]
+  );
 
   const handleAddBeforeFirst = () => {
     const [lat, lng] = getPrepopulatedCoordinates(0);
@@ -283,57 +292,60 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
     setShowAddForm(true);
   };
 
-  const moveSelectedPoints = (direction: 'north' | 'south' | 'east' | 'west') => {
-    if (!onBatchPointMove || selectedIndices.length === 0) return;
+  const moveSelectedPoints = useCallback(
+    (direction: 'north' | 'south' | 'east' | 'west') => {
+      if (!onBatchPointMove || selectedIndices.length === 0) return;
 
-    // Calculate new positions for all selected points
-    const updates: Array<{ index: number; point: [number, number] }> = [];
+      // Calculate new positions for all selected points
+      const updates: Array<{ index: number; point: [number, number] }> = [];
 
-    selectedIndices.forEach((index) => {
-      const point = coursePoints[index];
-      const currentLat = latitudeToNumber(point.latitude);
-      const currentLng = longitudeToNumber(point.longitude);
+      selectedIndices.forEach((index) => {
+        const point = coursePoints[index];
+        const currentLat = latitudeToNumber(point.latitude);
+        const currentLng = longitudeToNumber(point.longitude);
 
-      // Convert distance to degrees (rough approximation)
-      const latOffset = 1 / 111000; // ~111km per degree latitude
-      const lngOffset = 1 / (111000 * Math.cos((currentLat * Math.PI) / 180)); // Adjust for longitude
+        // Convert distance to degrees (rough approximation)
+        const latOffset = 1 / 111000; // ~111km per degree latitude
+        const lngOffset = 1 / (111000 * Math.cos((currentLat * Math.PI) / 180)); // Adjust for longitude
 
-      let newLat = currentLat;
-      let newLng = currentLng;
+        let newLat = currentLat;
+        let newLng = currentLng;
 
-      switch (direction) {
-        case 'north':
-          newLat = currentLat + latOffset;
-          break;
-        case 'south':
-          newLat = currentLat - latOffset;
-          break;
-        case 'east':
-          newLng = currentLng + lngOffset;
-          break;
-        case 'west':
-          newLng = currentLng - lngOffset;
-          break;
+        switch (direction) {
+          case 'north':
+            newLat = currentLat + latOffset;
+            break;
+          case 'south':
+            newLat = currentLat - latOffset;
+            break;
+          case 'east':
+            newLng = currentLng + lngOffset;
+            break;
+          case 'west':
+            newLng = currentLng - lngOffset;
+            break;
+        }
+
+        updates.push({ index, point: [newLat, newLng] });
+      });
+
+      // Apply all updates in a single batch
+      try {
+        onBatchPointMove(updates);
+      } catch (error) {
+        alert(`Error moving points: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
+    },
+    [selectedIndices, onBatchPointMove, coursePoints]
+  );
 
-      updates.push({ index, point: [newLat, newLng] });
-    });
-
-    // Apply all updates in a single batch
-    try {
-      onBatchPointMove(updates);
-    } catch (error) {
-      alert(`Error moving points: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
-  const addAfterSelectedPoint = () => {
+  const addAfterSelectedPoint = useCallback(() => {
     if (!onPointAdd || selectedIndices.length === 0) return;
 
     // Use the first selected point for adding after
     const index = selectedIndices[0];
     handleAddAfterPoint(index);
-  };
+  }, [selectedIndices, onPointAdd, handleAddAfterPoint]);
 
   // Get selected points that have segments (exclude last point)
   const getSelectableSegmentIndices = (): number[] => {
@@ -454,7 +466,7 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndices, onBatchPointMove, onPointAdd]);
+  }, [selectedIndices, onBatchPointMove, onPointAdd, moveSelectedPoints, addAfterSelectedPoint]);
 
   if (!course) {
     return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulationApp.module.css';
@@ -31,29 +31,32 @@ const CourseSimulationApp: React.FC = () => {
     return !!extractCourseDataFromUrl();
   });
 
-  const handleCourseDataImported = (
-    points: LatLngTuple[],
-    metadata?: { name?: string; description?: string },
-    lapDetectionParams?: {
-      stepMeters?: number;
-      bearingToleranceDeg?: number;
-      crossingToleranceMeters?: number;
-    }
-  ) => {
-    setCoursePoints(points);
-    if (metadata) {
-      setCourseMetadata(metadata);
-    }
-
-    // Store lap detection params in localStorage
-    if (lapDetectionParams) {
-      try {
-        localStorage.setItem('lapDetectionParams', JSON.stringify(lapDetectionParams));
-      } catch {
-        // Ignore storage errors
+  const handleCourseDataImported = useCallback(
+    (
+      points: LatLngTuple[],
+      metadata?: { name?: string; description?: string },
+      lapDetectionParams?: {
+        stepMeters?: number;
+        bearingToleranceDeg?: number;
+        crossingToleranceMeters?: number;
       }
-    }
-  };
+    ) => {
+      setCoursePoints(points);
+      if (metadata) {
+        setCourseMetadata(metadata);
+      }
+
+      // Store lap detection params in localStorage
+      if (lapDetectionParams) {
+        try {
+          localStorage.setItem('lapDetectionParams', JSON.stringify(lapDetectionParams));
+        } catch {
+          // Ignore storage errors
+        }
+      }
+    },
+    [setCoursePoints, setCourseMetadata]
+  );
 
   // Enable keyboard shortcuts for undo/redo
   useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);

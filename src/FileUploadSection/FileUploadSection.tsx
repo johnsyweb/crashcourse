@@ -8,13 +8,13 @@ const FileUploadSection = ({
 }) => {
   return (
     <div className={styles.uploadSection}>
-      <h2>Upload GPX File</h2>
+      <h2>Upload Course File</h2>
       <button
         className={styles.uploadButton}
         onClick={() => {
           const input = document.createElement('input');
           input.type = 'file';
-          input.accept = '.gpx';
+          input.accept = '.gpx,.fit,.fit.gz';
           input.onchange = (event: Event) => {
             const target = event.target as HTMLInputElement;
             if (target && target.files) {
@@ -26,7 +26,7 @@ const FileUploadSection = ({
           input.click();
         }}
       >
-        Select GPX File
+        Select GPX or FIT File
       </button>
     </div>
   );

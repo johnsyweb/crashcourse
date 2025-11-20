@@ -49,6 +49,7 @@ interface SimulatorProps {
   onPaceRangeChange?: (minPace: string, maxPace: string) => void;
   onElapsedTimeChange?: (time: number) => void;
   onResetSimulator?: () => void;
+  onCongestion?: (distance: number, position: [number, number]) => void;
 }
 
 const Simulator: React.FC<SimulatorProps> = ({
@@ -59,6 +60,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   onPaceRangeChange,
   onElapsedTimeChange,
   onResetSimulator,
+  onCongestion,
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [participantCount, setParticipantCount] = usePersistentState(
@@ -123,7 +125,7 @@ const Simulator: React.FC<SimulatorProps> = ({
   // Update participant count when participants array changes
   useEffect(() => {
     setParticipantCount(participants.length);
-  }, [participants.length]);
+  }, [participants.length, setParticipantCount]);
 
   // Memoize the participant update function to avoid it changing on every render
   const updateParticipants = useCallback(
@@ -153,8 +155,15 @@ const Simulator: React.FC<SimulatorProps> = ({
         let timeProcessed = 0;
 
         // Process time in smaller increments to ensure realistic movement
+        // Track which participant pairs have already recorded congestion in this update to avoid duplicates
+        const congestionRecorded = new Set<string>();
+
         while (timeProcessed < remainingTime) {
           const stepSize = Math.min(maxTickDuration, remainingTime - timeProcessed);
+
+          // Track distances before movement for this step to detect catch-ups
+          const previousDistances = new Map<Participant, number>();
+          participants.forEach((p) => previousDistances.set(p, p.getCumulativeDistance()));
 
           // Advance each participant by the smaller step size
           participants.forEach((participant) => participant.move(stepSize));
@@ -171,16 +180,59 @@ const Simulator: React.FC<SimulatorProps> = ({
             const front = sorted[i + 1];
             const behindDist = behind.getCumulativeDistance();
             const frontDist = front.getCumulativeDistance();
+            const prevBehindDist = previousDistances.get(behind) ?? behindDist;
+            const prevFrontDist = previousDistances.get(front) ?? frontDist;
 
             // Check if the behind participant has caught up to or passed the front participant
-            if (behindDist >= frontDist) {
+            // This is the key condition for overtaking/blocking
+            // Also check if they're very close (within 2m) to catch blocking before full catch-up
+            const distanceGap = frontDist - behindDist;
+            const hasCaughtUp = behindDist >= frontDist;
+            const isVeryClose = distanceGap < 2.0 && distanceGap >= 0;
+
+            if (hasCaughtUp || isVeryClose) {
               // Attempt to overtake: check course width at this distance
+              // Use the behind participant's distance as the reference point
               const widthAtPoint = course!.getWidthAt(behindDist);
-              if (widthAtPoint < behind.getWidth() + front.getWidth()) {
+              const totalWidthNeeded = behind.getWidth() + front.getWidth();
+
+              // Check if blocking occurs (not enough room to pass)
+              if (widthAtPoint < totalWidthNeeded) {
                 // Not enough room: hold the behind participant at front distance
+                // This prevents overtaking and causes congestion
+
+                // Check if the behind participant was behind before moving in this step
+                // This indicates they're trying to catch up and are now being blocked
+                const wasBehindBeforeStep = prevBehindDist < prevFrontDist;
+                const isApproaching = behindDist > prevBehindDist && distanceGap < 2.0;
+
+                // Record congestion when blocking occurs and they were behind before this step
+                // This catches the moment they're blocked from passing
+                // The handler in CourseSimulation will group by location and increment count
+                if (onCongestion && wasBehindBeforeStep && isApproaching) {
+                  // Use the front participant's distance as the congestion point
+                  // Create a unique key for this participant pair and location to avoid duplicate recordings in this update
+                  // Use rounded distance to group nearby congestion points (within 0.1m)
+                  const congestionDistance = frontDist;
+                  const roundedDist = Math.round(congestionDistance * 10) / 10;
+                  const pairKey = `${behind.getId()}-${front.getId()}-${roundedDist}`;
+
+                  if (!congestionRecorded.has(pairKey)) {
+                    try {
+                      const position = course!.getPositionAtDistance(congestionDistance);
+                      onCongestion(congestionDistance, [position[0], position[1]]);
+                      congestionRecorded.add(pairKey);
+                    } catch (error) {
+                      // If position calculation fails, skip this congestion event
+                      console.warn('Failed to calculate congestion point position:', error);
+                    }
+                  }
+                }
+
+                // Always keep them together to prevent overtaking
                 behind.setCumulativeDistance(frontDist);
               }
-              // If enough room, overtaking is allowed (no further action)
+              // If enough room, overtaking is allowed (no further action needed)
             }
           }
 
@@ -211,7 +263,7 @@ const Simulator: React.FC<SimulatorProps> = ({
 
       return allFinished;
     },
-    [participants, onParticipantUpdate, course]
+    [participants, onParticipantUpdate, course, onCongestion]
   );
 
   // Handle elapsed time changes - check if all participants have finished
@@ -273,7 +325,7 @@ const Simulator: React.FC<SimulatorProps> = ({
       }
       return newCount;
     });
-  }, [onParticipantCountChange]);
+  }, [onParticipantCountChange, setParticipantCount]);
 
   // Function to decrease participant count
   const decreaseParticipantCount = useCallback(() => {
@@ -284,7 +336,7 @@ const Simulator: React.FC<SimulatorProps> = ({
       }
       return newCount;
     });
-  }, [onParticipantCountChange]);
+  }, [onParticipantCountChange, setParticipantCount]);
 
   // Validate the pace range and ensure fastest < slowest
   const validatePaceRange = (slow: string, fast: string): boolean => {
@@ -328,7 +380,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         }
       }
     },
-    [minPace, maxPace, onPaceRangeChange]
+    [minPace, maxPace, setMinPace, setMaxPace, onPaceRangeChange]
   );
 
   const decreasePace = useCallback(
@@ -362,7 +414,7 @@ const Simulator: React.FC<SimulatorProps> = ({
         }
       }
     },
-    [minPace, maxPace, onPaceRangeChange]
+    [minPace, maxPace, setMinPace, setMaxPace, onPaceRangeChange]
   );
 
   // Handle pace changes and ensure min <= max

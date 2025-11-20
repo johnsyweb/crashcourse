@@ -117,7 +117,7 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [resetTime, increaseSpeed, decreaseSpeed, simulationStopped, isRunning]);
+  }, [resetTime, increaseSpeed, decreaseSpeed, simulationStopped, isRunning, onResetSimulator]);
 
   useEffect(() => {
     // Return to using setInterval for more stable timing across different devices
@@ -209,7 +209,11 @@ const ElapsedTime: React.FC<ElapsedTimeProps> = ({
               }
             }}
             aria-label={onResetSimulator ? 'Reset Simulator' : 'Reset timer'}
-            title={onResetSimulator ? 'Reset timer, clear results, and return all participants to start' : 'Reset timer'}
+            title={
+              onResetSimulator
+                ? 'Reset timer, clear results, and return all participants to start'
+                : 'Reset timer'
+            }
           >
             🔄
           </button>

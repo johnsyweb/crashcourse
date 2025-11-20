@@ -10,9 +10,11 @@ import CourseMetadata from './CourseMetadata';
 import Map from '../Map';
 import SelectedPointMarker from '../Map/SelectedPointMarker';
 import CoursePointsLayer from '../Map/CoursePointsLayer';
+import CongestionPointsLayer from '../Map/CongestionPointsLayer';
 import Simulator, { DEFAULT_PARTICIPANTS } from '../Simulator';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import Results from '../Results/Results';
+import { CongestionPointsView } from '../CongestionPoint';
 import { usePersistentState } from '../utils/usePersistentState';
 import { downloadGPX, generateGPXFilename } from '../GPXFile';
 import * as turf from '@turf/turf';
@@ -20,6 +22,7 @@ import { createLatitude, createLongitude } from '../utils/coordinates';
 import { createShareableUrl } from '../utils/courseSharing';
 import { hasLapDetection } from '../Course/CourseWithLapDetection';
 import type { LapDetectionParams } from '../Course/CourseWithLapDetection';
+import type { CongestionPoint } from '../CongestionPoint/types';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -64,7 +67,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   const [elapsedTime, setElapsedTime] = usePersistentState('ELAPSED_TIME', 0);
   const [activeTab, setActiveTab] = usePersistentState(
     'ACTIVE_TAB',
-    'results' as 'results' | 'coursePoints'
+    'results' as 'results' | 'coursePoints' | 'congestionPoints'
   );
   const [selectedPoint, setSelectedPoint] = usePersistentState(
     'SELECTED_POINT',
@@ -75,6 +78,10 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [] as CoursePoint[]
   );
   const [widthUpdateCounter, setWidthUpdateCounter] = useState(0);
+  const [congestionPoints, setCongestionPoints] = useState<Map<string, CongestionPoint>>(
+    new globalThis.Map<string, CongestionPoint>()
+  );
+  const [selectedCongestionPointId, setSelectedCongestionPointId] = useState<string | null>(null);
 
   // Clear persistent state when course points change (new course loaded)
   useEffect(() => {
@@ -86,6 +93,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
         setFinishedParticipants([]);
         setElapsedTime(0);
         setSelectedPoint(null);
+        setCongestionPoints(new globalThis.Map<string, CongestionPoint>());
       }, 0);
       // Keep activeTab as it's a UI preference
     }
@@ -160,6 +168,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
 
       return coursePoints;
     },
+    // widthUpdateCounter is needed to force recalculation when segment widths change
+    // even though the course object reference doesn't change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [course, widthUpdateCounter]
   );
 
@@ -379,7 +390,14 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
 
       onCoursePointsChange(newCoursePoints);
     },
-    [coursePoints, onCoursePointsChange, selectedPoints, selectedPoint]
+    [
+      coursePoints,
+      onCoursePointsChange,
+      selectedPoints,
+      selectedPoint,
+      setSelectedPoint,
+      setSelectedPoints,
+    ]
   );
 
   const handlePointAdd = useCallback(
@@ -499,11 +517,51 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
     [course]
   );
 
+  const handleCongestion = useCallback(
+    (distance: number, position: [number, number]) => {
+      if (!course) return;
+
+      // Round coordinates to group nearby congestion points (within ~1 meter)
+      const roundedLat = Math.round(position[0] * 100000) / 100000;
+      const roundedLon = Math.round(position[1] * 100000) / 100000;
+      const key = `${roundedLat},${roundedLon}`;
+
+      setCongestionPoints((prev) => {
+        const newMap = new globalThis.Map(prev);
+        const existing = newMap.get(key);
+
+        if (existing) {
+          // Increment count for existing congestion point
+          newMap.set(key, {
+            ...existing,
+            count: existing.count + 1,
+          });
+        } else {
+          // Create new congestion point
+          newMap.set(key, {
+            id: key,
+            latitude: roundedLat,
+            longitude: roundedLon,
+            distance,
+            count: 1,
+          });
+        }
+
+        return newMap;
+      });
+    },
+    [course]
+  );
+
   const handleResetSimulator = useCallback(() => {
     // Reset elapsed time
     setElapsedTime(0);
     // Clear finished participants
     setFinishedParticipants([]);
+    // Clear congestion points
+    setCongestionPoints(new globalThis.Map<string, CongestionPoint>());
+    // Clear selected congestion point
+    setSelectedCongestionPointId(null);
     // Reset all active participants back to start
     setParticipants((prevParticipants) => {
       const resetParticipants = prevParticipants.map((participant) => {
@@ -646,6 +704,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     onPaceRangeChange={handlePaceRangeChange}
                     onElapsedTimeChange={setElapsedTime}
                     onResetSimulator={handleResetSimulator}
+                    onCongestion={handleCongestion}
                   />
                 )}
               </div>
@@ -682,6 +741,14 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         onPointMove={handlePointMove}
                         draggable={!!selectedPoint}
                       />
+                      <CongestionPointsLayer
+                        congestionPoints={Array.from(congestionPoints.values())}
+                        selectedCongestionPointId={selectedCongestionPointId}
+                        onCongestionPointClick={(point) => {
+                          setSelectedCongestionPointId(point.id);
+                          setActiveTab('congestionPoints');
+                        }}
+                      />
                     </Map>
                   )}
                 </div>
@@ -706,15 +773,19 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     >
                       Course Points
                     </button>
+                    <button
+                      className={`${styles.tabButton} ${activeTab === 'congestionPoints' ? styles.activeTab : ''}`}
+                      onClick={() => setActiveTab('congestionPoints')}
+                      aria-selected={activeTab === 'congestionPoints'}
+                    >
+                      Congestion Points
+                    </button>
                   </div>
 
                   {/* Tab Content */}
                   <div className={styles.tabContent}>
                     {activeTab === 'results' && course && (
-                      <Results
-                        participants={finishedParticipants}
-                        elapsedTime={elapsedTime}
-                      />
+                      <Results participants={finishedParticipants} elapsedTime={elapsedTime} />
                     )}
                     {activeTab === 'coursePoints' && course && (
                       <CoursePointsView
@@ -732,6 +803,20 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                         redo={redo}
                         canUndo={canUndo}
                         canRedo={canRedo}
+                      />
+                    )}
+                    {activeTab === 'congestionPoints' && (
+                      <CongestionPointsView
+                        congestionPoints={Array.from(congestionPoints.values())}
+                        selectedCongestionPointId={selectedCongestionPointId}
+                        onCongestionPointSelect={(point) => {
+                          setSelectedCongestionPointId(point?.id || null);
+                          // Center map on selected congestion point
+                          if (point) {
+                            // Note: We can't directly control the map here, but the selection
+                            // will be visible via the marker styling
+                          }
+                        }}
                       />
                     )}
                   </div>
@@ -770,6 +855,14 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       point={selectedPoint}
                       onPointMove={handlePointMove}
                       draggable={!!selectedPoint}
+                    />
+                    <CongestionPointsLayer
+                      congestionPoints={Array.from(congestionPoints.values())}
+                      selectedCongestionPointId={selectedCongestionPointId}
+                      onCongestionPointClick={(point) => {
+                        setSelectedCongestionPointId(point.id);
+                        setActiveTab('congestionPoints');
+                      }}
                     />
                   </Map>
                 )}
@@ -819,6 +912,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                     onPaceRangeChange={handlePaceRangeChange}
                     onElapsedTimeChange={setElapsedTime}
                     onResetSimulator={handleResetSimulator}
+                    onCongestion={handleCongestion}
                   />
                 )}
               </div>
@@ -843,15 +937,19 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   >
                     Course Points
                   </button>
+                  <button
+                    className={`${styles.tabButton} ${activeTab === 'congestionPoints' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveTab('congestionPoints')}
+                    aria-selected={activeTab === 'congestionPoints'}
+                  >
+                    Congestion Points
+                  </button>
                 </div>
 
                 {/* Tab Content */}
                 <div className={styles.tabContent}>
                   {activeTab === 'results' && course && (
-                    <Results
-                      participants={finishedParticipants}
-                      elapsedTime={elapsedTime}
-                    />
+                    <Results participants={finishedParticipants} elapsedTime={elapsedTime} />
                   )}
                   {activeTab === 'coursePoints' && course && (
                     <CoursePointsView
@@ -869,6 +967,15 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                       redo={redo}
                       canUndo={canUndo}
                       canRedo={canRedo}
+                    />
+                  )}
+                  {activeTab === 'congestionPoints' && (
+                    <CongestionPointsView
+                      congestionPoints={Array.from(congestionPoints.values())}
+                      selectedCongestionPointId={selectedCongestionPointId}
+                      onCongestionPointSelect={(point) => {
+                        setSelectedCongestionPointId(point?.id || null);
+                      }}
                     />
                   )}
                 </div>

@@ -4,7 +4,7 @@ How accessible is this 5km course? Will participants and the public be able to e
 
 ## What
 
-1. Upload a course GPS data file (supported formats: `.gpx`, `.kml`).
+1. Upload a course GPS data file (supported formats: `.gpx`, `.fit`).
 2. See the course overlaid on OpenStreetMap.
 3. Given a default path width, adjust it and specify narrower and wider sections.
 4. Run simulations of walkers, joggers, and runners of varying paces and numbers following this course and highlight any areas of congestion. Add in some public path users with prams and bikes for good measure.
@@ -70,7 +70,7 @@ The main coordinator for the application flow. It handles the switching between 
 
 ### CourseDataImporter
 
-Handles the importing and processing of GPS course data. It manages the file selection interface and handles the parsing of GPS files through the GPXFile component.
+Handles the importing and processing of GPS course data. It manages the file selection interface and handles the parsing of GPS files through the GPXFile and FITFile components.
 
 ### CourseSimulation
 
@@ -86,6 +86,15 @@ A specialized component that handles parsing and processing of GPX files. Featur
 
 - Parsing XML data from GPX files
 - Extracting track points with coordinates
+- Error handling for malformed or incomplete GPS data
+- Providing structured data (start/endpoints, track points) to parent components
+
+### FITFile
+
+A specialized component that handles parsing and processing of FIT files. Features include:
+
+- Parsing binary FIT file format
+- Extracting position records with coordinates (converting from semicircles to degrees)
 - Error handling for malformed or incomplete GPS data
 - Providing structured data (start/endpoints, track points) to parent components
 
