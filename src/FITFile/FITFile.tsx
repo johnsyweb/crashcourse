@@ -62,6 +62,8 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
 
       const arrayBuffer = await readFileAsArrayBuffer(file);
 
+      // Create parser with mode 'list' to get flat records array
+      // fit-file-parser with mode: 'list' already converts semicircles to degrees
       const fitParser = new FitParser({
         force: true,
         speedUnit: 'm/s',
@@ -85,10 +87,14 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
           }
 
           // Extract position records - records with lat/lon
-          const positionRecords = parsedData.records.filter(
-            (record: { position_lat?: number; position_long?: number }) =>
-              record.position_lat !== undefined && record.position_long !== undefined
-          );
+          // fit-file-parser with mode: 'list' converts semicircles to degrees in position_lat/long
+          const positionRecords = parsedData.records.filter((record: Record<string, unknown>) => {
+            const hasPositionCoords =
+              record.position_lat !== undefined && record.position_long !== undefined;
+            const hasLatLonCoords = record.latitude !== undefined && record.longitude !== undefined;
+
+            return hasPositionCoords || hasLatLonCoords;
+          });
 
           if (positionRecords.length === 0) {
             reject(new Error('Invalid FIT format: no position data found'));
@@ -96,34 +102,85 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
           }
 
           // Convert FIT records to FITPoint format
-          // FIT stores latitude/longitude in semicircles (divide by 11930464.7 to get degrees)
-          const semicircleToDegrees = (semicircles: number): number => {
-            return semicircles * (180 / 2147483648);
-          };
+          // fit-file-parser with mode: 'list' already converts semicircles to degrees
+          // So position_lat and position_long are already in degrees, not semicircles
+          const points: FITPoint[] = positionRecords
+            .map((record): FITPoint | null => {
+              let lat: number;
+              let lon: number;
 
-          const points: FITPoint[] = positionRecords.map((record) => {
-            // We've already filtered to ensure position_lat and position_long exist
-            const positionLat = record.position_lat;
-            const positionLong = record.position_long;
-            if (positionLat === undefined || positionLong === undefined) {
-              // This should never happen due to filter, but TypeScript needs this check
-              throw new Error('Position data missing from record');
-            }
-            const lat = semicircleToDegrees(positionLat);
-            const lon = semicircleToDegrees(positionLong);
-            const ele = record.altitude !== undefined ? (record.altitude as number) : undefined;
-            const time =
-              record.timestamp !== undefined
-                ? new Date(record.timestamp as Date | string | number).toISOString()
-                : undefined;
+              // fit-file-parser with mode: 'list' already converts semicircles to degrees
+              // Check if we have latitude/longitude fields first (explicitly converted)
+              if (
+                record.latitude !== undefined &&
+                typeof record.latitude === 'number' &&
+                record.longitude !== undefined &&
+                typeof record.longitude === 'number'
+              ) {
+                lat = record.latitude;
+                lon = record.longitude;
+              } else if (record.position_lat !== undefined && record.position_long !== undefined) {
+                const positionLat = record.position_lat as number;
+                const positionLong = record.position_long as number;
 
-            return {
-              lat,
-              lon,
-              ele,
-              time,
-            };
-          });
+                // Validate values are numbers
+                if (
+                  typeof positionLat !== 'number' ||
+                  typeof positionLong !== 'number' ||
+                  !isFinite(positionLat) ||
+                  !isFinite(positionLong)
+                ) {
+                  return null;
+                }
+
+                // fit-file-parser with mode: 'list' already converts semicircles to degrees
+                // So position_lat/long are already in degrees
+                lat = positionLat;
+                lon = positionLong;
+              } else {
+                return null;
+              }
+
+              // Validate coordinates are valid (latitude: -90 to 90, longitude: -180 to 180)
+              if (
+                !isFinite(lat) ||
+                !isFinite(lon) ||
+                lat < -90 ||
+                lat > 90 ||
+                lon < -180 ||
+                lon > 180
+              ) {
+                return null;
+              }
+
+              const ele =
+                record.altitude !== undefined
+                  ? (record.altitude as number)
+                  : record.elevation !== undefined
+                    ? (record.elevation as number)
+                    : undefined;
+              const time =
+                record.timestamp !== undefined
+                  ? new Date(record.timestamp as Date | string | number).toISOString()
+                  : undefined;
+
+              return {
+                lat,
+                lon,
+                ele,
+                time,
+              };
+            })
+            .filter((point): point is FITPoint => point !== null);
+
+          if (points.length === 0) {
+            reject(
+              new Error(
+                'No valid position data found in FIT file after filtering invalid coordinates'
+              )
+            );
+            return;
+          }
 
           // Extract name from activity or file name
           const activityType = parsedData.activity?.sport;
