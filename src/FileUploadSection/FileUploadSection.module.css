@@ -29,3 +29,10 @@
 .uploadButton:active {
   transform: scale(0.98);
 }
+
+.uploadDescription {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #586e75;
+  text-align: center;
+}

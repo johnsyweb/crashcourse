@@ -127,13 +127,15 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           </p>
         </div>
 
+        {/* Import Section - Moved up prominently */}
+        <div className={styles.uploadSection}>
+          <FileUploadSection handleFileChange={handleFileChange} />
+        </div>
+
+        {importError && <div className={styles.errorMessage}>{importError}</div>}
+
         {/* Features Grid */}
         <div className={styles.featuresGrid}>
-          <div className={styles.feature}>
-            <div className={styles.featureIcon}>📁</div>
-            <h3>Import Courses</h3>
-            <p>Upload GPX or FIT files from your GPS device or mapping software</p>
-          </div>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>✏️</div>
             <h3>Edit Waypoints</h3>
@@ -141,8 +143,13 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           </div>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>🎯</div>
-            <h3>Simulate Runs</h3>
+            <h3>Simulate Participation</h3>
             <p>Test your course with virtual participants at different paces</p>
+          </div>
+          <div className={styles.feature}>
+            <div className={styles.featureIcon}>📊</div>
+            <h3>Analyse Congestion</h3>
+            <p>Identify bottlenecks and narrow sections that cause delays</p>
           </div>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>📤</div>
@@ -150,55 +157,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
             <p>Save your edited courses back to GPX format with full metadata</p>
           </div>
         </div>
-
-        {/* Instructions */}
-        <div className={styles.instructions}>
-          <h2>Getting Started</h2>
-          <ol className={styles.stepsList}>
-            <li>
-              <strong>Upload a Course:</strong> Click the button below to select a GPX or FIT file
-              from your device
-            </li>
-            <li>
-              <strong>Review & Edit:</strong> Examine course points, edit metadata, and make
-              adjustments
-            </li>
-            <li>
-              <strong>Simulate:</strong> Run simulations with different participant counts and pace
-              ranges
-            </li>
-            <li>
-              <strong>Export:</strong> Save your modified course back to GPX format
-            </li>
-          </ol>
-        </div>
-
-        {/* Supported Formats */}
-        <div className={styles.supportedFormats}>
-          <h3>Supported File Formats</h3>
-          <div className={styles.formatList}>
-            <div className={styles.format}>
-              <span className={styles.formatIcon}>🗺️</span>
-              <span>
-                <strong>GPX</strong> - GPS Exchange Format
-              </span>
-            </div>
-            <div className={styles.format}>
-              <span className={styles.formatIcon}>📊</span>
-              <span>
-                <strong>FIT</strong> - Flexible and Interoperable Data Transfer Format
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
-
-      {/* File Upload Section */}
-      <div className={styles.uploadSection}>
-        <FileUploadSection handleFileChange={handleFileChange} />
-      </div>
-
-      {importError && <div className={styles.errorMessage}>{importError}</div>}
 
       {file &&
         (file.name.toLowerCase().endsWith('.fit') || file.name.toLowerCase().endsWith('.fit.gz') ? (

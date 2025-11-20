@@ -8,7 +8,8 @@ const FileUploadSection = ({
 }) => {
   return (
     <div className={styles.uploadSection}>
-      <h2>Upload Course File</h2>
+      <h2>Import Course</h2>
+      <p className={styles.uploadDescription}>Select a GPX or FIT file to begin</p>
       <button
         className={styles.uploadButton}
         onClick={() => {
@@ -26,7 +27,7 @@ const FileUploadSection = ({
           input.click();
         }}
       >
-        Select GPX or FIT File
+        Choose File
       </button>
     </div>
   );
