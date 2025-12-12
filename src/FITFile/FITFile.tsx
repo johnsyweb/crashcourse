@@ -48,6 +48,7 @@ interface FITFileProps {
 const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pointCount, setPointCount] = useState<number | null>(null);
 
   const parseFIT = useCallback(async () => {
     if (!file) {
@@ -60,6 +61,7 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
     try {
       setIsLoading(true);
       setError(null);
+      setPointCount(null);
 
       console.log('FITFile: Reading file as ArrayBuffer...');
       const arrayBuffer = await readFileAsArrayBuffer(file);
@@ -102,6 +104,10 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
             parsedData.records.length,
             'total records'
           );
+          
+          // Show progress: update count of records being processed
+          setPointCount(parsedData.records.length);
+          
           const positionRecords = parsedData.records.filter((record: Record<string, unknown>) => {
             const hasPositionCoords =
               record.position_lat !== undefined && record.position_long !== undefined;
@@ -110,6 +116,9 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
             return hasPositionCoords || hasLatLonCoords;
           });
           console.log('FITFile: Found', positionRecords.length, 'position records');
+          
+          // Update point count with filtered results
+          setPointCount(positionRecords.length);
 
           if (positionRecords.length === 0) {
             const totalRecords = parsedData.records.length;
@@ -243,7 +252,19 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
 
   return (
     <div className={styles.fitFile}>
-      {isLoading && <div className={styles.loadingIndicator}>Parsing FIT file...</div>}
+      {isLoading && (
+        <div className={styles.loadingIndicator}>
+          <div className={styles.spinner}></div>
+          <div className={styles.loadingText}>
+            <div>Parsing FIT file...</div>
+            {pointCount !== null && (
+              <div className={styles.pointCount}>
+                {pointCount > 0 ? `Processing ${pointCount.toLocaleString()} records` : 'Reading file...'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {error && <div className={styles.errorMessage}>Error: {error}</div>}
     </div>
   );

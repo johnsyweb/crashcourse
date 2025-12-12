@@ -504,9 +504,43 @@ export class Course {
   getPositionAtDistance(distance: number): LatLngTuple {
     distance = this.clipDistance(distance);
 
-    // Use turf.along to find the point at the specified distance
-    const point = turf.along(this.lineString, distance / 1000, { units: 'kilometers' });
-    const [lon, lat] = point.geometry.coordinates;
+    // If at the end of the course, return the finish point directly
+    if (distance >= this.totalLength) {
+      return this.finishPoint;
+    }
+
+    // If at the start, return the start point directly
+    if (distance <= 0) {
+      return this.startPoint;
+    }
+
+    // Use binary search to find the segment containing this distance
+    const segmentIndex = this.findSegmentIndex(distance);
+
+    // Ensure we don't go out of bounds
+    if (segmentIndex >= this.points.length - 1) {
+      return this.finishPoint;
+    }
+
+    // Get the points for this segment
+    const [lat1, lon1] = this.points[segmentIndex];
+    const [lat2, lon2] = this.points[segmentIndex + 1];
+
+    // Calculate distance along this specific segment
+    const segmentStartDistance = this.cumulativeDistances[segmentIndex];
+    const segmentEndDistance = this.cumulativeDistances[segmentIndex + 1];
+    const segmentLength = segmentEndDistance - segmentStartDistance;
+
+    // If the segment has zero length, return the start point
+    if (segmentLength === 0) {
+      return [lat1, lon1];
+    }
+
+    // Interpolate position within the segment
+    const fraction = (distance - segmentStartDistance) / segmentLength;
+    const lat = lat1 + (lat2 - lat1) * fraction;
+    const lon = lon1 + (lon2 - lon1) * fraction;
+
     return [lat, lon];
   }
 
@@ -638,9 +672,16 @@ export class Course {
       return cachedIndex;
     }
 
+    // If distance is at or beyond the last cumulative distance, return the last segment index
+    if (distance >= this.cumulativeDistances[this.cumulativeDistances.length - 1]) {
+      const lastSegmentIndex = Math.max(0, this.cumulativeDistances.length - 2);
+      this.segmentCache.set(distance, lastSegmentIndex);
+      return lastSegmentIndex;
+    }
+
     // Binary search for the segment
     let left = 0;
-    let right = this.cumulativeDistances.length - 1;
+    let right = this.cumulativeDistances.length - 2; // Last valid segment index
 
     while (left < right) {
       const mid = Math.floor((left + right) / 2);
@@ -658,8 +699,10 @@ export class Course {
       }
     }
 
-    this.segmentCache.set(distance, left);
-    return left;
+    // Ensure we don't return an index that's out of bounds
+    const result = Math.min(left, this.cumulativeDistances.length - 2);
+    this.segmentCache.set(distance, result);
+    return result;
   }
 
   private getAverageSegmentLength(): number {
@@ -775,13 +818,25 @@ export class Course {
   public getBearingAtDistance(distance: number): number {
     distance = this.clipDistance(distance);
 
-    // Find the segment containing this distance
-    let segmentIndex = 0;
-    for (let i = 0; i < this.cumulativeDistances.length - 1; i++) {
-      if (distance >= this.cumulativeDistances[i] && distance < this.cumulativeDistances[i + 1]) {
-        segmentIndex = i;
-        break;
+    // If at or beyond the end, use the bearing of the last segment
+    if (distance >= this.totalLength && this.points.length >= 2) {
+      const [lat1, lon1] = this.points[this.points.length - 2];
+      const [lat2, lon2] = this.points[this.points.length - 1];
+      return turf.bearing([lon1, lat1], [lon2, lat2]);
+    }
+
+    // Use binary search to find the segment containing this distance (same as findSegmentIndex)
+    const segmentIndex = this.findSegmentIndex(distance);
+
+    // Ensure we don't go out of bounds
+    if (segmentIndex >= this.points.length - 1 || segmentIndex < 0) {
+      // Fallback to last segment
+      if (this.points.length >= 2) {
+        const [lat1, lon1] = this.points[this.points.length - 2];
+        const [lat2, lon2] = this.points[this.points.length - 1];
+        return turf.bearing([lon1, lat1], [lon2, lat2]);
       }
+      return 0;
     }
 
     // Get the points for this segment

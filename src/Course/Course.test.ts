@@ -86,6 +86,117 @@ describe('Course', () => {
     expect(typeof bearing).toBe('number');
   });
 
+  describe('edge cases for getPositionAtDistance and getBearingAtDistance', () => {
+    it('should handle distance exactly equal to course length', () => {
+      const course = new Course(samplePoints);
+      const length = course.length;
+      const position = course.getPositionAtDistance(length);
+      expect(position).toBeDefined();
+      expect(Array.isArray(position)).toBe(true);
+      expect(position.length).toBe(2);
+      // Should return the finish point
+      expect(position).toEqual(course.finishPoint);
+    });
+
+    it('should handle distance slightly greater than course length', () => {
+      const course = new Course(samplePoints);
+      const position = course.getPositionAtDistance(course.length + 0.0001);
+      expect(position).toBeDefined();
+      expect(position).toEqual(course.finishPoint);
+    });
+
+    it('should handle bearing at distance equal to course length', () => {
+      const course = new Course(samplePoints);
+      const bearing = course.getBearingAtDistance(course.length);
+      expect(bearing).toBeDefined();
+      expect(typeof bearing).toBe('number');
+      expect(isNaN(bearing)).toBe(false);
+    });
+
+    it('should handle bearing at distance slightly greater than course length', () => {
+      const course = new Course(samplePoints);
+      const bearing = course.getBearingAtDistance(course.length + 0.0001);
+      expect(bearing).toBeDefined();
+      expect(typeof bearing).toBe('number');
+      expect(isNaN(bearing)).toBe(false);
+    });
+
+    it('should handle position at distance 0', () => {
+      const course = new Course(samplePoints);
+      const position = course.getPositionAtDistance(0);
+      expect(position).toBeDefined();
+      expect(position).toEqual(course.startPoint);
+    });
+
+    it('should handle bearing at distance 0', () => {
+      const course = new Course(samplePoints);
+      const bearing = course.getBearingAtDistance(0);
+      expect(bearing).toBeDefined();
+      expect(typeof bearing).toBe('number');
+      expect(isNaN(bearing)).toBe(false);
+    });
+
+    it('should handle positions at various distances along a long course', () => {
+      // Create a course with many points to test binary search
+      const manyPoints: LatLngTuple[] = [];
+      for (let i = 0; i < 100; i++) {
+        manyPoints.push([51.5 + i * 0.001, -0.1 + i * 0.001]);
+      }
+      const course = new Course(manyPoints);
+      const length = course.length;
+
+      // Test various positions
+      const distances = [
+        0,
+        length * 0.1,
+        length * 0.5,
+        length * 0.9,
+        length * 0.99,
+        length,
+        length + 1,
+      ];
+
+      distances.forEach((distance) => {
+        const position = course.getPositionAtDistance(distance);
+        expect(position).toBeDefined();
+        expect(Array.isArray(position)).toBe(true);
+        expect(position.length).toBe(2);
+        expect(typeof position[0]).toBe('number');
+        expect(typeof position[1]).toBe('number');
+        expect(isNaN(position[0])).toBe(false);
+        expect(isNaN(position[1])).toBe(false);
+      });
+    });
+
+    it('should handle bearings at various distances along a long course', () => {
+      // Create a course with many points to test binary search
+      const manyPoints: LatLngTuple[] = [];
+      for (let i = 0; i < 100; i++) {
+        manyPoints.push([51.5 + i * 0.001, -0.1 + i * 0.001]);
+      }
+      const course = new Course(manyPoints);
+      const length = course.length;
+
+      // Test various bearings
+      const distances = [
+        0,
+        length * 0.1,
+        length * 0.5,
+        length * 0.9,
+        length * 0.99,
+        length,
+        length + 1,
+      ];
+
+      distances.forEach((distance) => {
+        const bearing = course.getBearingAtDistance(distance);
+        expect(bearing).toBeDefined();
+        expect(typeof bearing).toBe('number');
+        expect(isNaN(bearing)).toBe(false);
+      });
+    });
+  });
+
   it('should find parallel paths', () => {
     const course = new Course(samplePoints);
     const position = course.getPositionAtDistance(100);

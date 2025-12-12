@@ -35,6 +35,7 @@ interface GPXFileProps {
 const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pointCount, setPointCount] = useState<number | null>(null);
 
   // Use useCallback to memoize the parseGPX function
   const parseGPX = useCallback(async () => {
@@ -46,6 +47,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
     try {
       setIsLoading(true);
       setError(null);
+      setPointCount(null);
 
       // Use the generic readFileContent utility instead of the internal implementation
       const fileContent = await readFileContent(file);
@@ -73,6 +75,9 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
 
       // Extract track points - already ensured to be an array with isArray option
       const trackPoints = track.trkseg.trkpt;
+
+      // Update point count for user feedback
+      setPointCount(trackPoints.length);
 
       // Convert to our GPXPoint format
       const points: GPXPoint[] = trackPoints.map(
@@ -143,7 +148,17 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
 
   return (
     <div className={styles.gpxFile}>
-      {isLoading && <div className={styles.loadingIndicator}>Parsing GPX file...</div>}
+      {isLoading && (
+        <div className={styles.loadingIndicator}>
+          <div className={styles.spinner}></div>
+          <div className={styles.loadingText}>
+            <div>Parsing GPX file...</div>
+            {pointCount !== null && (
+              <div className={styles.pointCount}>Found {pointCount.toLocaleString()} points</div>
+            )}
+          </div>
+        </div>
+      )}
       {error && <div className={styles.errorMessage}>Error: {error}</div>}
     </div>
   );

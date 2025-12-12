@@ -22,6 +22,7 @@ interface CourseDataImporterProps {
 const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImported }) => {
   const [file, setFile] = useState<File | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -49,9 +50,12 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
     setFile(selectedFile);
     setImportError(null);
+    setIsProcessing(true);
   };
 
   const handleGPXDataParsed = (data: GPXData) => {
+    setIsProcessing(false);
+    
     if (data.isValid && data.points.length > 0) {
       // Convert GPXPoint array to LatLngTuple array
       const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
@@ -74,6 +78,8 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
   };
 
   const handleFITDataParsed = (data: FITData) => {
+    setIsProcessing(false);
+    
     console.log('CourseDataImporter: FIT data parsed', {
       isValid: data.isValid,
       pointsCount: data.points.length,
@@ -115,6 +121,24 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   return (
     <div className={styles.courseDataImporter}>
+      {/* Loading Overlay */}
+      {isProcessing && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingCard}>
+            <div className={styles.loadingSpinner}></div>
+            <div className={styles.loadingMessage}>
+              <div className={styles.loadingTitle}>Processing course file...</div>
+              <div className={styles.loadingSubtitle}>
+                {file?.name && `Loading ${file.name}`}
+              </div>
+              <div className={styles.loadingHint}>
+                Large files may take a moment to process
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Section */}
       <div className={styles.welcomeSection}>
         <div className={styles.hero}>

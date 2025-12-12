@@ -42,7 +42,13 @@ interface TileLayerProps {
 
 // Mock react-leaflet components
 jest.mock('react-leaflet', () => ({
-  MapContainer: ({ children, center, zoom, className, zoomControl }: MapContainerProps & { zoomControl?: boolean }) => (
+  MapContainer: ({
+    children,
+    center,
+    zoom,
+    className,
+    zoomControl,
+  }: MapContainerProps & { zoomControl?: boolean }) => (
     <div
       data-testid="map-container"
       data-center={JSON.stringify(center)}
