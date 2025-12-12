@@ -55,7 +55,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   const handleGPXDataParsed = (data: GPXData) => {
     setIsProcessing(false);
-    
+
     if (data.isValid && data.points.length > 0) {
       // Convert GPXPoint array to LatLngTuple array
       const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
@@ -79,7 +79,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   const handleFITDataParsed = (data: FITData) => {
     setIsProcessing(false);
-    
+
     console.log('CourseDataImporter: FIT data parsed', {
       isValid: data.isValid,
       pointsCount: data.points.length,
@@ -128,12 +128,8 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
             <div className={styles.loadingSpinner}></div>
             <div className={styles.loadingMessage}>
               <div className={styles.loadingTitle}>Processing course file...</div>
-              <div className={styles.loadingSubtitle}>
-                {file?.name && `Loading ${file.name}`}
-              </div>
-              <div className={styles.loadingHint}>
-                Large files may take a moment to process
-              </div>
+              <div className={styles.loadingSubtitle}>{file?.name && `Loading ${file.name}`}</div>
+              <div className={styles.loadingHint}>Large files may take a moment to process</div>
             </div>
           </div>
         </div>

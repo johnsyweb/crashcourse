@@ -104,10 +104,10 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
             parsedData.records.length,
             'total records'
           );
-          
+
           // Show progress: update count of records being processed
           setPointCount(parsedData.records.length);
-          
+
           const positionRecords = parsedData.records.filter((record: Record<string, unknown>) => {
             const hasPositionCoords =
               record.position_lat !== undefined && record.position_long !== undefined;
@@ -116,7 +116,7 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
             return hasPositionCoords || hasLatLonCoords;
           });
           console.log('FITFile: Found', positionRecords.length, 'position records');
-          
+
           // Update point count with filtered results
           setPointCount(positionRecords.length);
 
@@ -259,7 +259,9 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
             <div>Parsing FIT file...</div>
             {pointCount !== null && (
               <div className={styles.pointCount}>
-                {pointCount > 0 ? `Processing ${pointCount.toLocaleString()} records` : 'Reading file...'}
+                {pointCount > 0
+                  ? `Processing ${pointCount.toLocaleString()} records`
+                  : 'Reading file...'}
               </div>
             )}
           </div>
