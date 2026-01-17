@@ -79,7 +79,7 @@ export function exportToGPX(points: LatLngTuple[], options: GPXExportOptions = {
     if (lapParams.length > 0) {
       extensionsXml = `
     <extensions>
-      <lapDetection:params xmlns:lapDetection="https://johnsy.com/crashcourse/lapdetection">
+      <lapDetection:params xmlns:lapDetection="https://www.johnsy.com/crashcourse/lapdetection">
 ${lapParams.map((p) => '        ' + p).join('\n')}
       </lapDetection:params>
     </extensions>`;
@@ -94,7 +94,7 @@ ${lapParams.map((p) => '        ' + p).join('\n')}
     <desc>${escapeXml(description)}</desc>
     <author>
       <name>${escapeXml(author)}</name>
-      <link href="https://johnsy.com/crashcourse/">
+      <link href="https://www.johnsy.com/crashcourse/">
         <text>Crash Course Simulator</text>
       </link>
     </author>

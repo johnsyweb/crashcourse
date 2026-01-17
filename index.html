@@ -31,13 +31,13 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://johnsy.com/crashcourse/" />
+    <meta property="og:url" content="https://www.johnsy.com/crashcourse/" />
     <meta property="og:title" content="Crash Course Simulator - GPS Course Planning & Simulation" />
     <meta
       property="og:description"
       content="Plan, edit, and simulate GPS courses with our powerful course simulator. Import GPX files, edit waypoints, and export your courses with full metadata support."
     />
-    <meta property="og:image" content="https://johnsy.com/crashcourse/og-image-with-course.png" />
+    <meta property="og:image" content="https://www.johnsy.com/crashcourse/og-image-with-course.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Crash Course Simulator - GPS Course Planning Tool" />
@@ -46,7 +46,7 @@
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://johnsy.com/crashcourse/" />
+    <meta property="twitter:url" content="https://www.johnsy.com/crashcourse/" />
     <meta
       property="twitter:title"
       content="Crash Course Simulator - GPS Course Planning & Simulation"
@@ -57,7 +57,7 @@
     />
     <meta
       property="twitter:image"
-      content="https://johnsy.com/crashcourse/og-image-with-course.png"
+      content="https://www.johnsy.com/crashcourse/og-image-with-course.png"
     />
     <meta
       property="twitter:image:alt"
@@ -70,7 +70,11 @@
     <meta name="msapplication-config" content="./browserconfig.xml" />
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://johnsy.com/crashcourse/" />
+    <link rel="canonical" href="https://www.johnsy.com/crashcourse/" />
+
+    <!-- SEO & Performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
     <!-- Preconnect to external domains for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -89,7 +93,7 @@
         "@type": "WebApplication",
         "name": "Crash Course Simulator",
         "description": "Plan, edit, and simulate GPS courses with our powerful course simulator. Import GPX files, edit waypoints, and export your courses with full metadata support.",
-        "url": "https://johnsy.com/crashcourse/",
+        "url": "https://www.johnsy.com/crashcourse/",
         "applicationCategory": "SportsApplication",
         "operatingSystem": "Web Browser",
         "offers": {
@@ -100,7 +104,7 @@
         "author": {
           "@type": "Organization",
           "name": "Crash Course Simulator",
-          "url": "https://johnsy.com/crashcourse/"
+          "url": "https://www.johnsy.com/crashcourse/"
         },
         "featureList": [
           "GPX Import",
@@ -110,6 +114,41 @@
           "Export Functionality",
           "Undo/Redo Support"
         ]
+      }
+    </script>
+
+    <!-- Breadcrumb Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://www.johnsy.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Crash Course Simulator",
+            "item": "https://www.johnsy.com/crashcourse/"
+          }
+        ]
+      }
+    </script>
+
+    <!-- Organization Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Crash Course Simulator",
+        "url": "https://www.johnsy.com/crashcourse/",
+        "logo": "https://www.johnsy.com/crashcourse/favicon.svg",
+        "description": "Plan, edit, and simulate GPS courses with our powerful course simulator. Import GPX files, edit waypoints, and export your courses with full metadata support.",
+        "sameAs": []
       }
     </script>
   </head>
