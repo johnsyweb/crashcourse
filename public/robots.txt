@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-
-# Sitemap
-Sitemap: https://johnsy.com/crashcourse/sitemap.xml
-
-# Crawl-delay for respectful crawling
-Crawl-delay: 1
