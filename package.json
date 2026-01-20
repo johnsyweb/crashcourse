@@ -84,5 +84,5 @@
     "tabWidth": 2,
     "semi": true
   },
-  "packageManager": "pnpm@10.8.1+sha512.c50088ba998c67b8ca8c99df8a5e02fd2ae2e2b29aaf238feaa9e124248d3f48f9fb6db2424949ff901cffbb5e0f0cc1ad6aedb602cd29450751d11c35023677"
+  "packageManager": "pnpm@10.28.1+sha512.33097b555b3c2dc90c830207c14e7f3b8b14e0ea1ffc53b51ebbe82dbfad9071a71b6e20f75ac09f308a17cf6b08c084398d5bbe2d30b6e8a05e7f893f4e2e67"
 }
