@@ -1,4 +1,7 @@
 # Run full project checks to catch cross-file type errors
+# Use mise shims so pnpm is found in non-interactive runs
+export PATH="${HOME}/.local/share/mise/shims:${PATH}"
+
 echo "🔍 Running pre-commit checks on full project..."
 
 echo "📝 Formatting code..."
