@@ -1,1 +1,4 @@
+# Use mise shims so pnpm is found in non-interactive runs
+export PATH="${HOME}/.local/share/mise/shims:${PATH}"
+
 pnpm check
