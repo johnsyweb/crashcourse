@@ -30,7 +30,11 @@ export default {
   ],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  testMatch: ['<rootDir>/src/**/__tests__/**/*.{ts,tsx}', '<rootDir>/src/**/*.test.{ts,tsx}'],
+  testMatch: [
+    '<rootDir>/src/**/__tests__/**/*.{ts,tsx}',
+    '<rootDir>/src/**/*.test.{ts,tsx}',
+    '<rootDir>/script/**/*.test.js',
+  ],
   // Suppress the punycode deprecation warning
   setupFiles: ['<rootDir>/test/setup.js'],
 };
