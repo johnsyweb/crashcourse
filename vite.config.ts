@@ -5,6 +5,12 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Prevent dev server from being cached so CSS/JS changes show after refresh
+  server: {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

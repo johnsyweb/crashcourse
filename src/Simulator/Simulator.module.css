@@ -5,7 +5,7 @@
   width: 100%;
   height: 100%;
   padding: 1rem;
-  background-color: #f7f7f7;
+  background-color: var(--parkrun-light-grey);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   max-height: 100%;
@@ -36,7 +36,7 @@
 
 .infoLabel {
   font-weight: bold;
-  color: #555;
+  color: var(--parkrun-grey);
 }
 
 .infoValue {
@@ -55,7 +55,7 @@
 }
 
 .controlSection {
-  border: 1px solid #ddd;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 6px;
   overflow: hidden;
   display: flex;
@@ -65,10 +65,10 @@
 
 .controlHeader {
   padding: 0.5rem 1rem;
-  background-color: #ecf0f1;
+  background-color: var(--parkrun-light-grey);
   font-weight: bold;
-  color: #2c3e50;
-  border-bottom: 1px solid #ddd;
+  color: var(--parkrun-black);
+  border-bottom: 1px solid var(--parkrun-grey);
 }
 
 .controlContent {
@@ -91,14 +91,14 @@
 
 .controlLabel {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--parkrun-grey);
   font-weight: 500;
 }
 
 /* Small helper text used across control panels (matches Lap Detection box style) */
 .controlSmallText {
   font-size: 11px;
-  color: #333;
+  color: var(--parkrun-black);
 }
 
 .controlInputGroup {
@@ -110,8 +110,8 @@
 .controlButton {
   width: 2.5rem;
   height: 2.5rem;
-  background-color: #e7e7e7;
-  border: 1px solid #ccc;
+  background-color: var(--parkrun-light-grey);
+  border: 1px solid var(--parkrun-grey);
   font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
@@ -130,7 +130,7 @@
 }
 
 .controlButton:hover:not(:disabled) {
-  background-color: #d7d7d7;
+  background-color: color-mix(in srgb, var(--parkrun-grey) 15%, var(--parkrun-light-grey));
 }
 
 .controlButton:disabled {
@@ -141,12 +141,12 @@
 .controlInput {
   flex: 1;
   height: 2.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--parkrun-grey);
   border-left: none;
   border-right: none;
   text-align: center;
   font-size: 1rem;
-  color: #333;
+  color: var(--parkrun-black);
   -moz-appearance: textfield;
   /* Firefox */
   appearance: textfield;
@@ -179,7 +179,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: #3366cc;
+  background: var(--parkrun-aubergine);
   cursor: pointer;
   transition: background 0.15s ease-in-out;
 }
@@ -189,24 +189,24 @@
   height: 15px;
   border: none;
   border-radius: 50%;
-  background: #3366cc;
+  background: var(--parkrun-aubergine);
   cursor: pointer;
   transition: background 0.15s ease-in-out;
 }
 
 .rangeSlider::-webkit-slider-thumb:hover {
-  background: #2850a1;
+  background: var(--parkrun-aubergine);
 }
 
 .rangeSlider::-moz-range-thumb:hover {
-  background: #2850a1;
+  background: var(--parkrun-aubergine);
 }
 
 .rangeLabels {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: #666;
+  color: var(--parkrun-grey);
   max-width: 250px;
 }
 
@@ -214,7 +214,7 @@
 .keyboardShortcuts {
   margin-top: 1rem;
   padding: 1rem;
-  background-color: #ecf0f1;
+  background-color: var(--parkrun-light-grey);
   border-radius: 6px;
 }
 
@@ -227,7 +227,7 @@
 
 .shortcutsHeader {
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--parkrun-black);
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
 }
@@ -253,11 +253,11 @@
 }
 
 .shortcutItem kbd {
-  background-color: #f8f9fa;
-  border: 1px solid #d3d3d3;
+  background-color: var(--parkrun-light-grey);
+  border: 1px solid var(--parkrun-grey);
   border-radius: 3px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
-  color: #333;
+  color: var(--parkrun-black);
   display: inline-block;
   font-family: monospace;
   font-size: 0.75rem;
@@ -270,7 +270,7 @@
 }
 
 .shortcutItem span {
-  color: #4a4a4a;
+  color: var(--parkrun-grey);
   font-size: 0.75rem;
 }
 
@@ -288,8 +288,8 @@
 
 .shortcutGroupTitle {
   font-weight: 500;
-  color: #34495e;
-  border-bottom: 1px solid #ddd;
+  color: var(--parkrun-black);
+  border-bottom: 1px solid var(--parkrun-grey);
   padding-bottom: 0.25rem;
   margin-bottom: 0.25rem;
 }
@@ -306,15 +306,15 @@
   padding: 0.15rem 0.4rem;
   font-size: 0.85rem;
   line-height: 1;
-  color: #444;
-  background-color: #f7f7f7;
-  border: 1px solid #ccc;
+  color: var(--parkrun-black);
+  background-color: var(--parkrun-light-grey);
+  border: 1px solid var(--parkrun-grey);
   border-radius: 3px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .shortcut span {
-  color: #555;
+  color: var(--parkrun-grey);
 }
 
 /* Pace controls styling */
@@ -338,13 +338,13 @@
 .paceLabel {
   width: auto;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--parkrun-grey);
 }
 
 .paceInput {
   width: 3rem;
   max-width: 100%;
-  border: 1px solid #ccc;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
   padding: 0.4rem;
   text-align: left;
@@ -362,33 +362,33 @@
 }
 
 .paceUnit {
-  color: #555;
+  color: var(--parkrun-grey);
   font-size: 0.9rem;
 }
 
 .paceInfo {
   margin-top: 0.5rem;
   font-size: 0.8rem;
-  color: #666;
+  color: var(--parkrun-grey);
   font-style: italic;
 }
 
 .errorMessage {
-  color: #e74c3c;
+  color: var(--parkrun-apricot);
   font-size: 0.85rem;
   margin-top: 0.25rem;
   padding: 0.25rem;
-  background-color: #fdecea;
+  background-color: rgba(247, 165, 65, 0.15);
   border-radius: 4px;
-  border-left: 3px solid #e74c3c;
+  border-left: 3px solid var(--parkrun-apricot);
 }
 
 /* Lap detection controls (sliders + button) */
 .lapSettings {
   padding: 0.5rem;
-  border: 1px solid #e6e9ee;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--parkrun-white);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -419,9 +419,9 @@
 .recomputeButton {
   padding: 6px 10px;
   font-size: 12px;
-  background: #3366cc;
-  color: #fff;
-  border: 1px solid #2d56a6;
+  background: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
+  border: 1px solid var(--parkrun-aubergine);
   border-radius: 4px;
   cursor: pointer;
   transition:
@@ -430,7 +430,7 @@
 }
 
 .recomputeButton:hover {
-  background: #2850a1;
+  background: var(--parkrun-aubergine);
 }
 
 .recomputeButton:active {
@@ -440,9 +440,9 @@
 .resetSimulatorButton {
   padding: 8px 16px;
   font-size: 14px;
-  background: #dc3545;
-  color: #fff;
-  border: 1px solid #c82333;
+  background: var(--parkrun-apricot);
+  color: var(--parkrun-white);
+  border: 1px solid color-mix(in srgb, var(--parkrun-apricot) 85%, var(--parkrun-black));
   border-radius: 4px;
   cursor: pointer;
   transition:
@@ -452,7 +452,7 @@
 }
 
 .resetSimulatorButton:hover {
-  background: #c82333;
+  background: color-mix(in srgb, var(--parkrun-apricot) 85%, var(--parkrun-black));
 }
 
 .resetSimulatorButton:active {
@@ -461,7 +461,7 @@
 
 .resetSimulatorButton:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.5);
+  box-shadow: 0 0 0 2px rgba(247, 165, 65, 0.5);
 }
 
 /* Responsive tweaks for small viewports */

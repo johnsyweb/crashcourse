@@ -5,7 +5,7 @@
   height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #fdf6e3; /* Solarized light base3 */
+  background-color: var(--parkrun-light-grey);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -18,7 +18,7 @@
   width: 100%;
   max-width: 1200px;
   padding: 1rem;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
 }
 
 .hero {
@@ -30,7 +30,7 @@
   font-size: 2.5rem;
   font-weight: bold;
   margin: 0 0 0.75rem 0;
-  color: #073642; /* Solarized light base02 */
+  color: var(--parkrun-black);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,7 +57,7 @@
 .subtitle {
   font-size: 1.2rem;
   margin: 0;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
   font-weight: 300;
 }
 
@@ -69,20 +69,20 @@
 }
 
 .feature {
-  background: #eee8d5; /* Solarized light base2 */
+  background: var(--parkrun-white);
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
-  border: 1px solid #93a1a1; /* Solarized light base1 */
+  border: 1px solid var(--parkrun-grey);
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
 }
 
 .feature:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(7, 54, 66, 0.2); /* Solarized light base02 with opacity */
+  box-shadow: 0 10px 30px rgba(76, 26, 87, 0.2);
 }
 
 .featureIcon {
@@ -101,16 +101,16 @@
   margin: 0;
   line-height: 1.4;
   font-size: 0.9rem;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
 }
 
 .instructions {
-  background: #eee8d5; /* Solarized light base2 */
+  background: var(--parkrun-white);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
-  border: 1px solid #93a1a1; /* Solarized light base1 */
-  color: #586e75; /* Solarized light base01 */
+  border: 1px solid var(--parkrun-grey);
+  color: var(--parkrun-grey);
 }
 
 .instructions h2 {
@@ -131,17 +131,17 @@
 }
 
 .stepsList strong {
-  color: #d33682; /* Solarized magenta */
+  color: var(--parkrun-apricot);
 }
 
 .supportedFormats {
-  background: #eee8d5; /* Solarized light base2 */
+  background: var(--parkrun-white);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
-  border: 1px solid #93a1a1; /* Solarized light base1 */
+  border: 1px solid var(--parkrun-grey);
   text-align: center;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
 }
 
 .supportedFormats h3 {
@@ -168,25 +168,25 @@
 }
 
 .uploadSection {
-  background: #fdf6e3; /* Solarized light base3 */
+  background: var(--parkrun-light-grey);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 1rem auto 1.5rem;
-  box-shadow: 0 4px 12px rgba(7, 54, 66, 0.1); /* Solarized light base02 with opacity */
+  box-shadow: 0 4px 12px rgba(76, 26, 87, 0.1);
   max-width: 500px;
   width: 100%;
-  border: 2px solid #268bd2; /* Solarized blue - make it stand out */
+  border: 2px solid var(--parkrun-aubergine);
 }
 
 .errorMessage {
   padding: 0.75rem 1rem;
-  background-color: #fdf6e3; /* Solarized light base3 */
-  color: #dc322f; /* Solarized red */
+  background-color: var(--parkrun-light-grey);
+  color: var(--parkrun-apricot);
   border-radius: 4px;
   font-size: 0.9rem;
   margin-top: 0.5rem;
-  border-left: 4px solid #dc322f; /* Solarized red */
-  white-space: pre-line; /* Allow line breaks in error messages */
+  border-left: 4px solid var(--parkrun-apricot);
+  white-space: pre-line;
   line-height: 1.6;
 }
 
@@ -196,7 +196,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(7, 54, 66, 0.7); /* Solarized dark base03 with opacity */
+  background-color: rgba(76, 26, 87, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,23 +205,23 @@
 }
 
 .loadingCard {
-  background: #fdf6e3; /* Solarized light base3 */
+  background: var(--parkrun-light-grey);
   border-radius: 12px;
   padding: 2rem 3rem;
-  box-shadow: 0 8px 32px rgba(7, 54, 66, 0.3);
+  box-shadow: 0 8px 32px rgba(76, 26, 87, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
   max-width: 400px;
-  border: 2px solid #268bd2; /* Solarized blue */
+  border: 2px solid var(--parkrun-aubergine);
 }
 
 .loadingSpinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(38, 139, 210, 0.2); /* Solarized blue with opacity */
-  border-top-color: #268bd2; /* Solarized blue */
+  border: 4px solid rgba(76, 26, 87, 0.2);
+  border-top-color: var(--parkrun-aubergine);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -234,26 +234,26 @@
 
 .loadingMessage {
   text-align: center;
-  color: #073642; /* Solarized dark base02 */
+  color: var(--parkrun-black);
 }
 
 .loadingTitle {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #073642; /* Solarized dark base02 */
+  color: var(--parkrun-black);
 }
 
 .loadingSubtitle {
   font-size: 1rem;
-  color: #586e75; /* Solarized light base01 */
+  color: var(--parkrun-grey);
   margin-bottom: 0.5rem;
   word-break: break-word;
 }
 
 .loadingHint {
   font-size: 0.875rem;
-  color: #93a1a1; /* Solarized light base1 */
+  color: var(--parkrun-grey);
   font-style: italic;
   margin-top: 0.5rem;
 }

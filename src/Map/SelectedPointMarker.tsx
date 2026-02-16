@@ -16,8 +16,8 @@ const createSelectedPointIcon = () => {
       <div style="
         width: 20px;
         height: 20px;
-        background-color: #ff4444;
-        border: 3px solid white;
+        background-color: #f7a541;
+        border: 3px solid #ffffff;
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         display: flex;
@@ -25,7 +25,7 @@ const createSelectedPointIcon = () => {
         justify-content: center;
         font-size: 12px;
         font-weight: bold;
-        color: white;
+        color: #ffffff;
       ">
         <span>📍</span>
       </div>
@@ -83,7 +83,12 @@ const SelectedPointMarker: React.FC<SelectedPointMarkerProps> = ({
           </p>
           {draggable && (
             <p
-              style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#666', fontStyle: 'italic' }}
+              style={{
+                margin: '8px 0 0 0',
+                fontSize: '12px',
+                color: 'var(--parkrun-grey)',
+                fontStyle: 'italic',
+              }}
             >
               Drag to move this point
             </p>

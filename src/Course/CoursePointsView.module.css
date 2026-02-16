@@ -25,14 +25,14 @@
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--parkrun-black);
 }
 
 .summary {
   display: flex;
   gap: 1rem;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--parkrun-grey);
 }
 
 .summaryItem {
@@ -58,8 +58,8 @@
 }
 
 .batchDeleteButton {
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--parkrun-apricot);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -74,22 +74,22 @@
 }
 
 .batchDeleteButton:hover {
-  background-color: #c82333;
+  background-color: color-mix(in srgb, var(--parkrun-apricot) 85%, var(--parkrun-black));
 }
 
 .batchDeleteButton:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.5);
+  box-shadow: 0 0 0 2px rgba(247, 165, 65, 0.5);
 }
 
 .batchDeleteButton:active {
-  background-color: #bd2130;
+  background-color: color-mix(in srgb, var(--parkrun-apricot) 75%, var(--parkrun-black));
 }
 
 .undoButton,
 .redoButton {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--parkrun-grey);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -105,7 +105,7 @@
 
 .undoButton:hover:not(:disabled),
 .redoButton:hover:not(:disabled) {
-  background-color: #5a6268;
+  background-color: var(--parkrun-grey);
 }
 
 .undoButton:focus,
@@ -116,20 +116,20 @@
 
 .undoButton:active:not(:disabled),
 .redoButton:active:not(:disabled) {
-  background-color: #545b62;
+  background-color: var(--parkrun-grey);
 }
 
 .undoButton:disabled,
 .redoButton:disabled {
-  background-color: #e9ecef;
-  color: #6c757d;
+  background-color: var(--parkrun-grey);
+  color: var(--parkrun-grey);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .exportButton {
-  background-color: #28a745;
-  color: white;
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -143,7 +143,7 @@
 }
 
 .exportButton:hover {
-  background-color: #218838;
+  background-color: var(--parkrun-aubergine);
 }
 
 .exportButton:focus {
@@ -152,17 +152,17 @@
 }
 
 .exportButton:active {
-  background-color: #1e7e34;
+  background-color: var(--parkrun-aubergine);
 }
 
 .noCourseMessage {
   text-align: center;
   padding: 2rem 1rem;
-  color: #666;
+  color: var(--parkrun-grey);
   font-size: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--parkrun-light-grey);
   border-radius: 8px;
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--parkrun-grey);
   flex: 1;
   display: flex;
   align-items: center;
@@ -170,7 +170,7 @@
 }
 
 .tableContainer {
-  background: white;
+  background: var(--parkrun-white);
   border-radius: 4px;
   box-shadow: none;
   overflow-y: auto;
@@ -183,7 +183,7 @@
   position: relative;
   /* Firefox scrollbar styling */
   scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
+  scrollbar-color: var(--parkrun-grey) var(--parkrun-light-grey);
 }
 
 /* Ensure scrollbars are visible in Chrome/Firefox */
@@ -193,17 +193,17 @@
 }
 
 .tableContainer::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--parkrun-light-grey);
   border-radius: 4px;
 }
 
 .tableContainer::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--parkrun-grey);
   border-radius: 4px;
 }
 
 .tableContainer::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--parkrun-grey);
 }
 
 .table {
@@ -213,12 +213,12 @@
 }
 
 .table th {
-  background-color: #f8f9fa;
-  color: #495057;
+  background-color: var(--parkrun-light-grey);
+  color: var(--parkrun-black);
   font-weight: 600;
   text-align: left;
   padding: 0.5rem;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--parkrun-grey);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -226,21 +226,21 @@
 
 .table td {
   padding: 0.5rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--parkrun-grey);
   vertical-align: top;
 }
 
 .tableRow:hover {
-  background-color: #f8f9fa;
+  background-color: var(--parkrun-light-grey);
 }
 
 .selectedRow {
-  background-color: #e3f2fd !important;
-  border-left: 3px solid #2196f3;
+  background-color: rgba(76, 26, 87, 0.1) !important;
+  border-left: 3px solid var(--parkrun-aubergine);
 }
 
 .selectedRow:hover {
-  background-color: #bbdefb !important;
+  background-color: rgba(76, 26, 87, 0.2) !important;
 }
 
 .tableRow:last-child td {
@@ -276,19 +276,19 @@
 .indexCell {
   text-align: center;
   font-weight: 500;
-  color: #666;
+  color: var(--parkrun-grey);
 }
 
 .coordinateCell {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.8rem;
-  color: #495057;
+  color: var(--parkrun-black);
 }
 
 .distanceCell {
   text-align: right;
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
 }
 
 .widthCell {
@@ -299,12 +299,12 @@
 .widthInput {
   width: 70px;
   padding: 0.25rem 0.375rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
   font-size: 0.8rem;
   text-align: center;
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -312,22 +312,22 @@
 
 .widthInput:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--parkrun-aubergine);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .widthInput:hover {
-  border-color: #adb5bd;
+  border-color: var(--parkrun-grey);
 }
 
 .noWidth {
-  color: #6c757d;
+  color: var(--parkrun-grey);
   font-style: italic;
 }
 
 .widthValue {
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
 }
 
 .bearingCell {
@@ -340,14 +340,14 @@
 
 .bearingValue {
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
 }
 
 .bearingDirection {
   font-size: 0.7rem;
-  color: #6c757d;
+  color: var(--parkrun-grey);
   font-weight: 600;
-  background-color: #e9ecef;
+  background-color: var(--parkrun-grey);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
 }
@@ -424,8 +424,8 @@
 }
 
 .addPointButton {
-  background-color: #28a745;
-  color: white;
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -439,7 +439,7 @@
 }
 
 .addPointButton:hover {
-  background-color: #218838;
+  background-color: var(--parkrun-aubergine);
 }
 
 .addPointForm {
@@ -447,9 +447,9 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: #f8f9fa;
+  background-color: var(--parkrun-light-grey);
   border-radius: 4px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--parkrun-grey);
 }
 
 .formRow {
@@ -465,13 +465,13 @@
   gap: 0.25rem;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
   min-width: 120px;
 }
 
 .formInput {
   padding: 0.5rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
   font-size: 0.9rem;
   transition: border-color 0.2s ease;
@@ -479,13 +479,13 @@
 
 .formInput:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--parkrun-aubergine);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .formHelp {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: var(--parkrun-grey);
   margin-top: 0.25rem;
   font-style: italic;
 }
@@ -497,8 +497,8 @@
 }
 
 .addButton {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -510,17 +510,17 @@
 }
 
 .addButton:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--parkrun-aubergine);
 }
 
 .addButton:disabled {
-  background-color: #6c757d;
+  background-color: var(--parkrun-grey);
   cursor: not-allowed;
 }
 
 .cancelButton {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--parkrun-grey);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -532,29 +532,29 @@
 }
 
 .cancelButton:hover {
-  background-color: #545b62;
+  background-color: var(--parkrun-grey);
 }
 
 .actionColumn {
   text-align: center;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--parkrun-black);
   padding: 0.75rem 0.5rem;
-  border-bottom: 2px solid #dee2e6;
-  background-color: #f8f9fa;
+  border-bottom: 2px solid var(--parkrun-grey);
+  background-color: var(--parkrun-light-grey);
 }
 
 .actionCell {
   text-align: center;
   padding: 0.5rem;
-  border-bottom: 1px solid #dee2e6;
-  background-color: #ffffff;
+  border-bottom: 1px solid var(--parkrun-grey);
+  background-color: var(--parkrun-white);
 }
 
 .addAfterButton {
-  background-color: #17a2b8;
-  color: white;
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.25rem 0.5rem;
   border-radius: 3px;
@@ -565,7 +565,7 @@
 }
 
 .addAfterButton:hover {
-  background-color: #138496;
+  background-color: var(--parkrun-aubergine);
 }
 
 /* Mobile responsiveness for add point form */
@@ -600,8 +600,8 @@
 
 /* Selected Points Controls */
 .selectedControls {
-  background: #e3f2fd;
-  border: 1px solid #bbdefb;
+  background: rgba(76, 26, 87, 0.1);
+  border: 1px solid rgba(76, 26, 87, 0.2);
   border-radius: 4px;
   padding: 0.75rem;
   margin-bottom: 1rem;
@@ -629,8 +629,8 @@
 }
 
 .directionButton {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background: var(--parkrun-light-grey);
+  border: 1px solid var(--parkrun-grey);
   border-radius: 3px;
   padding: 0.375rem 0.5rem;
   font-size: 0.875rem;
@@ -645,20 +645,20 @@
 }
 
 .directionButton:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
+  background: var(--parkrun-grey);
+  border-color: var(--parkrun-grey);
   transform: scale(1.05);
 }
 
 .directionButton:active {
-  background: #dee2e6;
+  background: var(--parkrun-grey);
   transform: scale(0.95);
 }
 
 .addAfterButton {
-  background: #28a745;
-  color: white;
-  border: 1px solid #28a745;
+  background: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
+  border: 1px solid var(--parkrun-aubergine);
   border-radius: 4px;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
@@ -669,13 +669,13 @@
 }
 
 .addAfterButton:hover {
-  background: #218838;
-  border-color: #1e7e34;
+  background: var(--parkrun-aubergine);
+  border-color: var(--parkrun-aubergine);
   transform: translateY(-1px);
 }
 
 .addAfterButton:active {
-  background: #1e7e34;
+  background: var(--parkrun-aubergine);
   transform: translateY(0);
 }
 
@@ -707,27 +707,27 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  background: #f8f9fa;
+  background: var(--parkrun-light-grey);
   border-radius: 4px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--parkrun-grey);
 }
 
 .widthLabel {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
   white-space: nowrap;
 }
 
 .widthControlInput {
   width: 80px;
   padding: 0.375rem 0.5rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
   font-size: 0.875rem;
   text-align: center;
   font-weight: 500;
-  color: #495057;
+  color: var(--parkrun-black);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -735,13 +735,13 @@
 
 .widthControlInput:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--parkrun-aubergine);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .widthApplyButton {
-  background: #007bff;
-  color: white;
+  background: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
   border: none;
   padding: 0.375rem 0.75rem;
   border-radius: 4px;
@@ -753,7 +753,7 @@
 }
 
 .widthApplyButton:hover {
-  background: #0056b3;
+  background: var(--parkrun-aubergine);
 }
 
 .widthApplyButton:focus {
@@ -762,7 +762,7 @@
 }
 
 .widthApplyButton:active {
-  background: #004085;
+  background: var(--parkrun-aubergine);
 }
 
 @media (max-width: 768px) {

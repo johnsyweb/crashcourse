@@ -36,8 +36,8 @@ const CoursePointsLayer: React.FC<CoursePointsLayerProps> = ({
             center={[lat, lng]}
             radius={3}
             pathOptions={{
-              color: '#666',
-              fillColor: '#666',
+              color: '#666666',
+              fillColor: '#666666',
               fillOpacity: 0.6,
               weight: 1,
             }}

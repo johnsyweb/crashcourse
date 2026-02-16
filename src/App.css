@@ -62,18 +62,183 @@
   overflow: hidden;
 }
 
-.App-header {
-  display: none; /* Hide header when course is loaded */
+/* Skip link - off-screen until focused */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--parkrun-apricot);
+  color: var(--parkrun-black);
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.2s ease;
+  z-index: 1000;
 }
 
-.App-header h1 {
-  color: var(--base02);
-  margin-bottom: 0.5rem;
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
-.App-header p {
-  color: var(--base01);
-  margin-top: 0;
+/* Full-width breakout so header/footer span viewport when embedded */
+.app-header,
+.app-footer {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  box-sizing: border-box;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 1rem;
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Reserves space for CourseSimulation hamburger on small screens so it sits before breadcrumbs */
+.header-hamburger-slot {
+  width: 0;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.app-header .breadcrumbs a {
+  color: var(--parkrun-apricot);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-header .breadcrumbs a:hover,
+.app-header .breadcrumbs a:focus-visible {
+  text-decoration: underline;
+}
+
+.breadcrumbs span[aria-hidden='true'] {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.breadcrumbs span[aria-current='page'] {
+  color: var(--parkrun-white);
+  font-weight: 600;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-title h1 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin: 0.75rem 0 0.25rem 0;
+  color: var(--parkrun-white);
+}
+
+.header-title p {
+  font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.95;
+  color: var(--parkrun-white);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.app-footer {
+  background-color: var(--parkrun-aubergine);
+  color: var(--parkrun-white);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  margin-top: auto;
+}
+
+.app-footer p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.app-footer a {
+  color: var(--parkrun-apricot);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  text-underline-offset: 0.15em;
+}
+
+.app-footer a:hover {
+  opacity: 0.9;
+  text-decoration: underline;
+}
+
+.app-footer a:focus,
+.app-footer a:focus-visible {
+  outline: 2px solid var(--parkrun-apricot);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.app-footer strong {
+  font-weight: 600;
+  color: var(--parkrun-apricot);
+}
+
+/* Match CourseSimulation hamburger breakpoint: reserve space so hamburger sits before breadcrumbs */
+@media (max-width: 1280px) {
+  .header-hamburger-slot {
+    width: 52px;
+    min-width: 52px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .header-actions {
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 main {
@@ -82,8 +247,4 @@ main {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-}
-
-footer {
-  display: none; /* Hide footer to maximize space */
 }

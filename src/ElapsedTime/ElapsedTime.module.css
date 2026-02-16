@@ -10,12 +10,12 @@
 .timeDisplay {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
-  background-color: #f7f9fc;
+  color: var(--parkrun-black);
+  background-color: var(--parkrun-light-grey);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
   text-align: center;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--parkrun-grey);
 }
 
 .controlRow {
@@ -34,7 +34,7 @@
 
 .controlLabel {
   font-weight: 500;
-  color: #555;
+  color: var(--parkrun-grey);
   font-size: 0.9rem;
 }
 
@@ -49,8 +49,8 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border: 1px solid #ccc;
-  background-color: #f8f8f8;
+  border: 1px solid var(--parkrun-grey);
+  background-color: var(--parkrun-light-grey);
   border-radius: 4px;
   font-size: 1rem;
   font-weight: 600;
@@ -59,7 +59,7 @@
 }
 
 .controlButton:hover:not(:disabled) {
-  background-color: #e9e9e9;
+  background-color: color-mix(in srgb, var(--parkrun-grey) 15%, var(--parkrun-light-grey));
 }
 
 .controlButton:active:not(:disabled) {
@@ -74,9 +74,9 @@
 .controlSelect {
   height: 2rem;
   padding: 0 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--parkrun-white);
   font-size: 0.9rem;
   min-width: 4rem;
 }
@@ -116,18 +116,18 @@
 .simulationButtonDisabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background-color: #f0f0f0 !important;
-  border-color: #ddd !important;
+  background-color: var(--parkrun-light-grey) !important;
+  border-color: var(--parkrun-grey) !important;
 }
 
 .simulationCompleteMessage {
   font-size: 0.9rem;
-  color: #3d8b3d;
+  color: var(--parkrun-aubergine);
   font-weight: 500;
   margin-top: 0.5rem;
   text-align: center;
-  background-color: #e8f5e9;
+  background-color: rgba(76, 26, 87, 0.1);
   border-radius: 4px;
   padding: 0.5rem;
-  border: 1px solid #c8e6c9;
+  border: 1px solid rgba(76, 26, 87, 0.25);
 }

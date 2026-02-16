@@ -1,7 +1,7 @@
 .controlCard {
-  border: 1px solid #e6e9ee;
+  border: 1px solid var(--parkrun-grey);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--parkrun-white);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -23,10 +23,10 @@
 
 .header {
   padding: 0.5rem 0.75rem;
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #e1e4e8;
+  background-color: var(--parkrun-light-grey);
+  border-bottom: 1px solid var(--parkrun-grey);
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--parkrun-black);
   font-size: 0.95rem;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .muted {
-  color: #666;
+  color: var(--parkrun-grey);
 }
 
 .small {
@@ -56,14 +56,14 @@
   border: none;
   cursor: pointer;
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: var(--parkrun-black);
   padding: 0.25rem;
   border-radius: 3px;
   transition: background-color 0.2s;
 }
 
 .toggleButton:hover {
-  background-color: #e9ecef;
+  background-color: color-mix(in srgb, var(--parkrun-grey) 10%, var(--parkrun-light-grey));
 }
 
 .chevron {

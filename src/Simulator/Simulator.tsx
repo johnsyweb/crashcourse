@@ -635,7 +635,7 @@ const Simulator: React.FC<SimulatorProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div className={styles.controlSmallText} style={{ color: '#666' }}>
+                  <div className={styles.controlSmallText} style={{ color: 'var(--parkrun-grey)' }}>
                     Tip: move sliders to adjust lap detection. Values are saved to your browser.
                   </div>
                   <button

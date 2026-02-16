@@ -1,7 +1,7 @@
 .resultsContainer {
   margin: 0;
   padding: 1rem;
-  background-color: #ffffff;
+  background-color: var(--parkrun-white);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 100%;
@@ -20,14 +20,14 @@
 
 .resultsHeader h2 {
   margin: 0;
-  color: #333;
+  color: var(--parkrun-black);
   font-size: 1.5rem;
 }
 
 .resetButton {
   padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
+  background-color: var(--parkrun-light-grey);
+  border: 1px solid var(--parkrun-grey);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -35,7 +35,7 @@
 }
 
 .resetButton:hover {
-  background-color: #e0e0e0;
+  background-color: color-mix(in srgb, var(--parkrun-grey) 15%, var(--parkrun-light-grey));
 }
 
 .tableContainer {
@@ -52,32 +52,32 @@
 .resultsTable td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--parkrun-grey);
 }
 
 .resultsTable th {
-  background-color: #f8f8f8;
+  background-color: var(--parkrun-light-grey);
   font-weight: 600;
-  color: #333;
+  color: var(--parkrun-black);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
 
 .resultsTable th:hover {
-  background-color: #f0f0f0;
+  background-color: color-mix(in srgb, var(--parkrun-grey) 10%, var(--parkrun-light-grey));
 }
 
 .resultsTable tr:hover {
-  background-color: #f8f8f8;
+  background-color: var(--parkrun-light-grey);
 }
 
 .positive {
-  color: #e74c3c;
+  color: var(--parkrun-apricot);
 }
 
 .negative {
-  color: #2ecc71;
+  color: var(--parkrun-aubergine);
 }
 
 /* Responsive adjustments */

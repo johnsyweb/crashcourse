@@ -42,8 +42,8 @@ const CongestionPointsLayer: React.FC<CongestionPointsLayerProps> = ({
             center={[point.latitude, point.longitude]}
             radius={radius}
             pathOptions={{
-              color: isSelected ? '#d32f2f' : '#c62828',
-              fillColor: isSelected ? '#f44336' : '#d32f2f',
+              color: isSelected ? '#f7a541' : '#4c1a57',
+              fillColor: isSelected ? '#f7a541' : '#4c1a57',
               fillOpacity: isSelected ? 0.8 : 0.6,
               weight: isSelected ? 3 : 2,
             }}

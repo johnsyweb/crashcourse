@@ -4,24 +4,24 @@
 
 .loadingIndicator {
   padding: 1rem 1.5rem;
-  background-color: #e6f7ff;
-  color: #0072b1;
+  background-color: rgba(76, 26, 87, 0.1);
+  color: var(--parkrun-aubergine);
   border-radius: 8px;
   margin: 1rem 0;
   display: flex;
   align-items: center;
   gap: 1rem;
   font-size: 1rem;
-  border: 2px solid #0072b1;
-  box-shadow: 0 2px 8px rgba(0, 114, 177, 0.2);
+  border: 2px solid var(--parkrun-aubergine);
+  box-shadow: 0 2px 8px rgba(76, 26, 87, 0.2);
   min-height: 60px;
 }
 
 .spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(0, 114, 177, 0.2);
-  border-top-color: #0072b1;
+  border: 3px solid rgba(76, 26, 87, 0.2);
+  border-top-color: var(--parkrun-aubergine);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   flex-shrink: 0;
@@ -48,8 +48,8 @@
 
 .errorMessage {
   padding: 8px;
-  background-color: #fff2f0;
-  color: #d32f2f;
+  background-color: rgba(247, 165, 65, 0.15);
+  color: var(--parkrun-apricot);
   border-radius: 4px;
   margin-bottom: 10px;
   font-size: 0.9rem;

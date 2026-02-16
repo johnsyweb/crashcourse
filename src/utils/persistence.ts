@@ -74,4 +74,5 @@ export const STORAGE_KEYS = {
   PARTICIPANT_COUNT: 'participant_count',
   MIN_PACE: 'min_pace',
   MAX_PACE: 'max_pace',
+  MAP_PANEL_HEIGHT_PERCENT: 'map_panel_height_percent',
 } as const;

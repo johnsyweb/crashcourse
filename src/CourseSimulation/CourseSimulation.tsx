@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulation.module.css';
 import { Participant } from '../Participant/Participant';
@@ -83,6 +83,11 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
   );
   const [selectedCongestionPointId, setSelectedCongestionPointId] = useState<string | null>(null);
   const [isControlsOpen, setIsControlsOpen] = useState(false);
+  const [mapPanelHeightPercent, setMapPanelHeightPercent] = usePersistentState(
+    'MAP_PANEL_HEIGHT_PERCENT',
+    60
+  );
+  const rightSectionRef = useRef<HTMLDivElement>(null);
 
   // Clear persistent state when course points change (new course loaded)
   useEffect(() => {
@@ -99,6 +104,45 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
       // Keep activeTab as it's a UI preference
     }
   }, [coursePoints, setParticipants, setFinishedParticipants, setElapsedTime, setSelectedPoint]);
+
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        const el = rightSectionRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const percentFromTop = ((moveEvent.clientY - rect.top) / rect.height) * 100;
+        const clamped = Math.min(85, Math.max(20, percentFromTop));
+        setMapPanelHeightPercent(clamped);
+      };
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    },
+    [setMapPanelHeightPercent]
+  );
+
+  const handleResizerKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const step = 5;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMapPanelHeightPercent((p) => Math.max(20, p - step));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMapPanelHeightPercent((p) => Math.min(85, p + step));
+      }
+    },
+    [setMapPanelHeightPercent]
+  );
 
   // Memoize course creation to prevent unnecessary recalculation
   // Separate the course creation from error handling
@@ -746,9 +790,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
             </div>
 
             {/* Right Side - Map and Results */}
-            <div className={styles.rightSection}>
+            <div ref={rightSectionRef} className={styles.rightSection}>
               {/* Map Panel */}
-              <div className={styles.mapPanel}>
+              <div className={styles.mapPanel} style={{ height: `${mapPanelHeightPercent}%` }}>
                 <div className={styles.mapContainer}>
                   {course && (
                     <Map
@@ -788,6 +832,20 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* Resizer - desktop only */}
+              <div
+                role="separator"
+                aria-orientation="horizontal"
+                aria-valuenow={mapPanelHeightPercent}
+                aria-valuemin={20}
+                aria-valuemax={85}
+                aria-label="Resize map and results panels"
+                tabIndex={0}
+                className={styles.panelResizer}
+                onMouseDown={handleResizeStart}
+                onKeyDown={handleResizerKeyDown}
+              />
 
               {/* Results Panel */}
               <div className={styles.resultsPanel}>

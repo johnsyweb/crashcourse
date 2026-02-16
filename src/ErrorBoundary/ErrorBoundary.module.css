@@ -1,20 +1,20 @@
 .errorContainer {
   padding: 2rem;
   margin: 1rem;
-  border: 1px solid #ff4d4f;
+  border: 1px solid var(--parkrun-apricot);
   border-radius: 4px;
-  background-color: #fff2f0;
+  background-color: rgba(247, 165, 65, 0.15);
   text-align: center;
 }
 
 .errorTitle {
-  color: #cf1322;
+  color: var(--parkrun-apricot);
   margin-bottom: 1rem;
   font-size: 1.5rem;
 }
 
 .errorMessage {
-  color: #ff4d4f;
+  color: var(--parkrun-apricot);
   margin-bottom: 1.5rem;
   font-family: monospace;
   white-space: pre-wrap;
@@ -22,8 +22,8 @@
 
 .resetButton {
   padding: 0.5rem 1rem;
-  background-color: #ff4d4f;
-  color: white;
+  background-color: var(--parkrun-apricot);
+  color: var(--parkrun-white);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -32,9 +32,9 @@
 }
 
 .resetButton:hover {
-  background-color: #ff7875;
+  background-color: color-mix(in srgb, var(--parkrun-apricot) 85%, var(--parkrun-black));
 }
 
 .resetButton:active {
-  background-color: #d9363e;
+  background-color: color-mix(in srgb, var(--parkrun-apricot) 75%, var(--parkrun-black));
 }
