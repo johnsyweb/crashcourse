@@ -27,7 +27,8 @@ export function encodeCourseData(data: ShareableCourseData): string {
     return btoa(jsonString);
   } catch (error) {
     throw new Error(
-      'Failed to encode course data: ' + (error instanceof Error ? error.message : 'Unknown error')
+      'Failed to encode course data: ' + (error instanceof Error ? error.message : 'Unknown error'),
+      { cause: error }
     );
   }
 }
@@ -41,7 +42,8 @@ export function decodeCourseData(encoded: string): ShareableCourseData {
     jsonString = atob(encoded);
   } catch (error) {
     throw new Error(
-      'Invalid base64 encoding: ' + (error instanceof Error ? error.message : 'Unknown error')
+      'Invalid base64 encoding: ' + (error instanceof Error ? error.message : 'Unknown error'),
+      { cause: error }
     );
   }
 
@@ -50,7 +52,8 @@ export function decodeCourseData(encoded: string): ShareableCourseData {
     data = JSON.parse(jsonString) as ShareableCourseData;
   } catch (error) {
     throw new Error(
-      'Invalid JSON data: ' + (error instanceof Error ? error.message : 'Unknown error')
+      'Invalid JSON data: ' + (error instanceof Error ? error.message : 'Unknown error'),
+      { cause: error }
     );
   }
 
