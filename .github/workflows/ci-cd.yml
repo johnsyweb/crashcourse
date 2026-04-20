@@ -30,7 +30,7 @@ jobs:
           install: true
 
       - name: Setup pnpm cache
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           cache: pnpm
 
@@ -51,7 +51,7 @@ jobs:
           install: true
 
       - name: Setup pnpm cache
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           cache: pnpm
 
@@ -73,7 +73,7 @@ jobs:
           install: true
 
       - name: Setup pnpm cache
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           cache: pnpm
 
@@ -106,7 +106,7 @@ jobs:
           install: true
 
       - name: Setup pnpm cache
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           cache: pnpm
 
