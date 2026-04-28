@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@turf/turf": "^7.3.5",
-    "fast-xml-parser": "^5.7.1",
+    "fast-xml-parser": "^5.7.2",
     "fit-file-parser": "^2.3.3",
     "leaflet": "^1.9.4",
     "react": "^19.2.5",
@@ -65,8 +65,8 @@
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.59.0",
-    "vite": "^8.0.9"
+    "typescript-eslint": "^8.59.1",
+    "vite": "^8.0.10"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
