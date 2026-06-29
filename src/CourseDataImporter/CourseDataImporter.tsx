@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseDataImporter.module.css';
 import FileUploadSection from '../FileUploadSection';
 import GPXFile, { GPXData } from '../GPXFile';
 import FITFile, { FITData } from '../FITFile';
 import KMLFile, { KMLData } from '../KMLFile';
+import { CourseAssemblyControls } from '../CourseAssembly';
+import {
+  assembleCourse,
+  CourseAssemblyParams,
+  defaultAssemblyParamsForSegment,
+} from '../Course/assembleCourse';
 
 export interface LapDetectionParams {
   stepMeters?: number;
@@ -12,136 +18,191 @@ export interface LapDetectionParams {
   crossingToleranceMeters?: number;
 }
 
+interface PendingImport {
+  segmentPoints: LatLngTuple[];
+  metadata?: { name?: string; description?: string };
+  lapDetectionParams?: LapDetectionParams;
+  warning?: string;
+}
+
 interface CourseDataImporterProps {
   onCourseDataImported: (
     points: LatLngTuple[],
     metadata?: { name?: string; description?: string },
-    lapDetectionParams?: LapDetectionParams
+    lapDetectionParams?: LapDetectionParams,
+    importAssembly?: {
+      segmentPoints: LatLngTuple[];
+      assemblyParams: CourseAssemblyParams;
+    }
   ) => void;
 }
 
 const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImported }) => {
   const [file, setFile] = useState<File | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
-  const [importWarning, setImportWarning] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [assemblyParams, setAssemblyParams] = useState<CourseAssemblyParams>({
+    targetLengthMeters: 5000,
+    mirror: false,
+  });
+  const parsedFileRef = useRef<File | null>(null);
+
+  const assemblyPreview = useMemo(() => {
+    if (!pendingImport) {
+      return null;
+    }
+
+    try {
+      return assembleCourse(pendingImport.segmentPoints, assemblyParams);
+    } catch {
+      return null;
+    }
+  }, [assemblyParams, pendingImport]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) {
-      console.log('CourseDataImporter: No file selected');
       return;
     }
-
-    console.log(
-      'CourseDataImporter: File selected:',
-      selectedFile.name,
-      selectedFile.size,
-      'bytes'
-    );
-    console.log(
-      'CourseDataImporter: File type/extension:',
-      selectedFile.type,
-      selectedFile.name.toLowerCase()
-    );
-
-    const isFITFile =
-      selectedFile.name.toLowerCase().endsWith('.fit') ||
-      selectedFile.name.toLowerCase().endsWith('.fit.gz');
-    console.log('CourseDataImporter: Is FIT file?', isFITFile);
 
     setFile(selectedFile);
     setImportError(null);
-    setImportWarning(null);
+    setPendingImport(null);
+    parsedFileRef.current = null;
     setIsProcessing(true);
   };
 
-  const importParsedCourse = (
-    points: LatLngTuple[],
-    metadata?: { name?: string; description?: string },
-    lapDetectionParams?: LapDetectionParams,
-    warning?: string
-  ) => {
-    if (points.length < 2) {
-      setImportError('Course must contain at least 2 GPS points.');
+  const queueParsedImport = useCallback(
+    (
+      points: LatLngTuple[],
+      metadata?: { name?: string; description?: string },
+      lapDetectionParams?: LapDetectionParams,
+      warning?: string
+    ) => {
+      if (points.length < 2) {
+        setImportError('Course must contain at least 2 GPS points.');
+        return;
+      }
+
+      const defaults = defaultAssemblyParamsForSegment(points);
+      setAssemblyParams(defaults);
+      setPendingImport({
+        segmentPoints: points,
+        metadata,
+        lapDetectionParams,
+        warning,
+      });
+    },
+    []
+  );
+
+  const handleStartAssessment = () => {
+    if (!pendingImport || !assemblyPreview) {
       return;
     }
 
-    setImportWarning(warning ?? null);
-    onCourseDataImported(points, metadata, lapDetectionParams);
+    onCourseDataImported(
+      assemblyPreview.points,
+      pendingImport.metadata,
+      pendingImport.lapDetectionParams,
+      {
+        segmentPoints: pendingImport.segmentPoints,
+        assemblyParams,
+      }
+    );
   };
 
-  const handleGPXDataParsed = (data: GPXData) => {
-    setIsProcessing(false);
+  const handleGPXDataParsed = useCallback(
+    (data: GPXData) => {
+      if (file && parsedFileRef.current === file) {
+        return;
+      }
+      if (file) {
+        parsedFileRef.current = file;
+      }
 
-    if (data.isValid && data.points.length > 0) {
-      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
-      importParsedCourse(
-        points,
-        {
-          name: data.name,
-          description: data.description,
-        },
-        data.lapDetectionParams
-      );
-    } else if (data.errorMessage) {
-      setImportError(data.errorMessage);
-    }
-  };
+      setIsProcessing(false);
 
-  const handleFITDataParsed = (data: FITData) => {
-    setIsProcessing(false);
+      if (data.isValid && data.points.length > 0) {
+        const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
+        queueParsedImport(
+          points,
+          {
+            name: data.name,
+            description: data.description,
+          },
+          data.lapDetectionParams
+        );
+      } else if (data.errorMessage) {
+        setImportError(data.errorMessage);
+      }
+    },
+    [file, queueParsedImport]
+  );
 
-    console.log('CourseDataImporter: FIT data parsed', {
-      isValid: data.isValid,
-      pointsCount: data.points.length,
-      errorMessage: data.errorMessage,
-      name: data.name,
-    });
+  const handleFITDataParsed = useCallback(
+    (data: FITData) => {
+      if (file && parsedFileRef.current === file) {
+        return;
+      }
+      if (file) {
+        parsedFileRef.current = file;
+      }
 
-    if (data.isValid && data.points.length > 0) {
-      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
-      importParsedCourse(
-        points,
-        {
-          name: data.name,
-          description: data.description,
-        },
-        data.lapDetectionParams
-      );
-    } else if (data.errorMessage) {
-      console.error('CourseDataImporter: FIT import error:', data.errorMessage);
+      setIsProcessing(false);
 
-      const isNoGPSError = data.errorMessage.includes('No GPS position data found');
-      const errorWithHelp = isNoGPSError
-        ? `${data.errorMessage}\n\nFIT files with no GPS points may have been saved as an indoor activity.`
-        : data.errorMessage;
+      if (data.isValid && data.points.length > 0) {
+        const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
+        queueParsedImport(
+          points,
+          {
+            name: data.name,
+            description: data.description,
+          },
+          data.lapDetectionParams
+        );
+      } else if (data.errorMessage) {
+        const isNoGPSError = data.errorMessage.includes('No GPS position data found');
+        const errorWithHelp = isNoGPSError
+          ? `${data.errorMessage}\n\nFIT files with no GPS points may have been saved as an indoor activity.`
+          : data.errorMessage;
+        setImportError(errorWithHelp);
+      } else {
+        setImportError('Failed to import FIT file: No valid data found.');
+      }
+    },
+    [file, queueParsedImport]
+  );
 
-      setImportError(errorWithHelp);
-    } else {
-      console.warn('CourseDataImporter: FIT data is invalid but no error message');
-      setImportError('Failed to import FIT file: No valid data found.');
-    }
-  };
+  const handleKMLDataParsed = useCallback(
+    (data: KMLData) => {
+      if (file && parsedFileRef.current === file) {
+        return;
+      }
+      if (file) {
+        parsedFileRef.current = file;
+      }
 
-  const handleKMLDataParsed = (data: KMLData) => {
-    setIsProcessing(false);
+      setIsProcessing(false);
 
-    if (data.isValid && data.points.length > 0) {
-      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
-      importParsedCourse(
-        points,
-        {
-          name: data.name,
-          description: data.description,
-        },
-        undefined,
-        data.warning
-      );
-    } else if (data.errorMessage) {
-      setImportError(data.errorMessage);
-    }
-  };
+      if (data.isValid && data.points.length > 0) {
+        const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
+        queueParsedImport(
+          points,
+          {
+            name: data.name,
+            description: data.description,
+          },
+          undefined,
+          data.warning
+        );
+      } else if (data.errorMessage) {
+        setImportError(data.errorMessage);
+      }
+    },
+    [file, queueParsedImport]
+  );
 
   const lowerFileName = file?.name.toLowerCase() ?? '';
   const isFITFile = lowerFileName.endsWith('.fit') || lowerFileName.endsWith('.fit.gz');
@@ -149,7 +210,6 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
   return (
     <div className={styles.courseDataImporter}>
-      {/* Loading Overlay */}
       {isProcessing && (
         <div className={styles.loadingOverlay}>
           <div className={styles.loadingCard}>
@@ -163,7 +223,6 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
         </div>
       )}
 
-      {/* Welcome Section */}
       <div className={styles.welcomeSection}>
         <div className={styles.hero}>
           <h1 className={styles.title}>
@@ -175,15 +234,37 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
           </p>
         </div>
 
-        {/* Import Section - Moved up prominently */}
         <div className={styles.uploadSection}>
           <FileUploadSection handleFileChange={handleFileChange} />
         </div>
 
         {importError && <div className={styles.errorMessage}>{importError}</div>}
-        {importWarning && <div className={styles.warningMessage}>{importWarning}</div>}
+        {pendingImport?.warning && (
+          <div className={styles.warningMessage}>{pendingImport.warning}</div>
+        )}
 
-        {/* Features Grid */}
+        {pendingImport && (
+          <section className={styles.assemblySection} aria-labelledby="course-assembly-heading">
+            <h2 id="course-assembly-heading">Course assembly</h2>
+            <p className={styles.assemblyIntro}>
+              Adjust the target length and mirroring before starting your assessment.
+            </p>
+            <CourseAssemblyControls
+              params={assemblyParams}
+              assemblyResult={assemblyPreview}
+              onChange={setAssemblyParams}
+            />
+            <button
+              type="button"
+              className={styles.startAssessmentButton}
+              onClick={handleStartAssessment}
+              disabled={!assemblyPreview}
+            >
+              Start assessment
+            </button>
+          </section>
+        )}
+
         <div className={styles.featuresGrid}>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>✏️</div>

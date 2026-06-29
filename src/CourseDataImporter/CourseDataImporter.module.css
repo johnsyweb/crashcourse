@@ -201,6 +201,56 @@
   line-height: 1.6;
 }
 
+.assemblySection {
+  background: var(--parkrun-light-grey);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem auto 1.5rem;
+  max-width: 500px;
+  width: 100%;
+  border: 2px solid var(--parkrun-aubergine);
+  text-align: left;
+}
+
+.assemblySection h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: var(--parkrun-aubergine);
+}
+
+.assemblyIntro {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--parkrun-dark-grey);
+}
+
+.startAssessmentButton {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--parkrun-white);
+  background-color: var(--parkrun-aubergine);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.startAssessmentButton:hover:not(:disabled) {
+  background-color: var(--parkrun-dark-aubergine);
+}
+
+.startAssessmentButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.startAssessmentButton:focus-visible {
+  outline: 2px solid var(--parkrun-apricot);
+  outline-offset: 2px;
+}
+
 .loadingOverlay {
   position: fixed;
   top: 0;

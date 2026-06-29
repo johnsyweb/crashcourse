@@ -5,6 +5,8 @@ import ElapsedTime from '../ElapsedTime';
 import ControlCard from './ControlCard';
 import styles from './Simulator.module.css';
 import { usePersistentState } from '../utils/usePersistentState';
+import { CourseAssemblyControls } from '../CourseAssembly';
+import type { CourseAssemblyParams, CourseAssemblyResult } from '../Course/assembleCourse';
 
 // Constants for participant configuration
 const MIN_PARTICIPANTS = 1;
@@ -44,6 +46,9 @@ const secondsToPace = (totalSeconds: number): string => {
 interface SimulatorProps {
   course: Course | null;
   participants?: Participant[];
+  assemblyParams?: CourseAssemblyParams;
+  assemblyResult?: CourseAssemblyResult | null;
+  onAssemblyParamsChange?: (params: CourseAssemblyParams) => void;
   onParticipantUpdate?: (participants: Participant[]) => void;
   onParticipantCountChange?: (count: number) => void;
   onPaceRangeChange?: (minPace: string, maxPace: string) => void;
@@ -55,6 +60,9 @@ interface SimulatorProps {
 const Simulator: React.FC<SimulatorProps> = ({
   course,
   participants = [],
+  assemblyParams,
+  assemblyResult,
+  onAssemblyParamsChange,
   onParticipantUpdate,
   onParticipantCountChange,
   onPaceRangeChange,
@@ -572,6 +580,15 @@ const Simulator: React.FC<SimulatorProps> = ({
 
         {/* Control Sections */}
         <div className={styles.controlSections}>
+          {assemblyParams && onAssemblyParamsChange && (
+            <ControlCard title="Course assembly">
+              <CourseAssemblyControls
+                params={assemblyParams}
+                assemblyResult={assemblyResult ?? null}
+                onChange={onAssemblyParamsChange}
+              />
+            </ControlCard>
+          )}
           {/* Lap Detection Control Section */}
           {course && (
             <ControlCard title="Lap Detection">

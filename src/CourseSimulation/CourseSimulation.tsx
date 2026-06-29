@@ -23,6 +23,7 @@ import { createShareableUrl } from '../utils/courseSharing';
 import { hasLapDetection } from '../Course/CourseWithLapDetection';
 import type { LapDetectionParams } from '../Course/CourseWithLapDetection';
 import type { CongestionPoint } from '../CongestionPoint/types';
+import type { CourseAssemblyParams, CourseAssemblyResult } from '../Course/assembleCourse';
 
 // Default pace values in minutes:seconds format
 const DEFAULT_MIN_PACE = '12:00'; // slowest
@@ -31,6 +32,10 @@ const DEFAULT_MAX_PACE = '2:30'; // fastest
 interface CourseSimulationProps {
   coursePoints: LatLngTuple[];
   courseMetadata?: { name?: string; description?: string };
+  segmentPoints?: LatLngTuple[];
+  assemblyParams?: CourseAssemblyParams;
+  assemblyResult?: CourseAssemblyResult | null;
+  onAssemblyParamsChange?: (params: CourseAssemblyParams) => void;
   onReset?: () => void;
   onCoursePointsChange?: (newCoursePoints: LatLngTuple[]) => void;
   onCourseMetadataChange?: (metadata: { name?: string; description?: string }) => void;
@@ -53,6 +58,10 @@ interface ParticipantProperties {
 const CourseSimulation: React.FC<CourseSimulationProps> = ({
   coursePoints,
   courseMetadata,
+  segmentPoints,
+  assemblyParams,
+  assemblyResult,
+  onAssemblyParamsChange,
   onReset,
   onCoursePointsChange,
   onCourseMetadataChange,
@@ -653,6 +662,8 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
 
       const shareUrl = createShareableUrl({
         points: coursePoints,
+        segmentPoints: segmentPoints ?? coursePoints,
+        courseAssembly: assemblyParams,
         metadata: courseMetadata,
         lapDetectionParams,
         version: '1.0',
@@ -690,7 +701,7 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
       console.error('Failed to share course:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate shareable URL');
     }
-  }, [course, coursePoints, courseMetadata]);
+  }, [course, coursePoints, courseMetadata, segmentPoints, assemblyParams]);
 
   if (error) {
     return <div className={styles.errorMessage}>{error}</div>;
@@ -778,6 +789,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   <Simulator
                     course={course}
                     participants={participants}
+                    assemblyParams={assemblyParams}
+                    assemblyResult={assemblyResult}
+                    onAssemblyParamsChange={onAssemblyParamsChange}
                     onParticipantUpdate={handleParticipantUpdate}
                     onParticipantCountChange={handleParticipantCountChange}
                     onPaceRangeChange={handlePaceRangeChange}
@@ -1000,6 +1014,9 @@ const CourseSimulation: React.FC<CourseSimulationProps> = ({
                   <Simulator
                     course={course}
                     participants={participants}
+                    assemblyParams={assemblyParams}
+                    assemblyResult={assemblyResult}
+                    onAssemblyParamsChange={onAssemblyParamsChange}
                     onParticipantUpdate={handleParticipantUpdate}
                     onParticipantCountChange={handleParticipantCountChange}
                     onPaceRangeChange={handlePaceRangeChange}

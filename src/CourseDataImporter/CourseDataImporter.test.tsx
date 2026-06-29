@@ -26,6 +26,16 @@ jest.mock('../FileUploadSection', () => ({
   )),
 }));
 
+jest.mock('../FITFile', () => ({
+  __esModule: true,
+  default: jest.fn(() => null),
+}));
+
+jest.mock('../KMLFile', () => ({
+  __esModule: true,
+  default: jest.fn(() => null),
+}));
+
 // Create a standard mock for GPXFile
 const standardGPXMock = jest.fn(({ onDataParsed }) => {
   // Call onDataParsed immediately for testing purposes
@@ -99,26 +109,54 @@ describe('CourseDataImporter', () => {
     expect(screen.getByTestId('mock-gpx-file')).toBeInTheDocument();
   });
 
-  it('calls onCourseDataImported when valid GPX data is parsed', async () => {
+  it('shows course assembly controls after valid GPX data is parsed', async () => {
     render(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
 
-    // Simulate file selection
     act(() => {
       screen.getByTestId('upload-button').click();
     });
 
-    // Wait for the async GPX parsing to complete
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /Course assembly/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /Start assessment/i })).toBeInTheDocument();
+    expect(mockOnCourseDataImported).not.toHaveBeenCalled();
+  });
+
+  it('calls onCourseDataImported when assessment is started', async () => {
+    render(<CourseDataImporter onCourseDataImported={mockOnCourseDataImported} />);
+
+    act(() => {
+      screen.getByTestId('upload-button').click();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Start assessment/i })).toBeEnabled();
+    });
+
+    act(() => {
+      screen.getByRole('button', { name: /Start assessment/i }).click();
+    });
+
     await waitFor(() => {
       expect(mockOnCourseDataImported).toHaveBeenCalledWith(
-        [
-          [10, 20],
-          [11, 21],
-        ],
+        expect.arrayContaining([expect.arrayContaining([expect.any(Number), expect.any(Number)])]),
         {
           name: 'Test Track',
           description: 'Test Description',
         },
-        undefined // lapDetectionParams
+        undefined,
+        expect.objectContaining({
+          segmentPoints: [
+            [10, 20],
+            [11, 21],
+          ],
+          assemblyParams: expect.objectContaining({
+            mirror: false,
+            targetLengthMeters: expect.any(Number),
+          }),
+        })
       );
     });
   });

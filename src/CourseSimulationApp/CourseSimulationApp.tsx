@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { LatLngTuple } from 'leaflet';
 import styles from './CourseSimulationApp.module.css';
@@ -7,8 +7,14 @@ import CourseSimulation from '../CourseSimulation';
 import { useUndoRedo, useUndoRedoKeyboard } from '../utils/useUndoRedo';
 import { useDocumentTitle } from '../utils/useDocumentTitle';
 import { extractCourseDataFromUrl } from '../utils/courseSharing';
+import {
+  assembleCourse,
+  CourseAssemblyParams,
+  CourseAssemblyResult,
+  defaultAssemblyParamsForSegment,
+} from '../Course/assembleCourse';
+import { usePersistentState } from '../utils/usePersistentState';
 
-// Removed empty interface and using React.FC without props type
 const CourseSimulationApp: React.FC = () => {
   const {
     current: coursePoints,
@@ -18,7 +24,7 @@ const CourseSimulationApp: React.FC = () => {
     canUndo,
     canRedo,
     clear: clearHistory,
-  } = useUndoRedo<LatLngTuple[]>([], 100); // Keep 100 history entries
+  } = useUndoRedo<LatLngTuple[]>([], 100);
 
   const {
     current: courseMetadata,
@@ -26,10 +32,41 @@ const CourseSimulationApp: React.FC = () => {
     clear: clearMetadataHistory,
   } = useUndoRedo<{ name?: string; description?: string }>({}, 100);
 
+  const [segmentPoints, setSegmentPoints] = usePersistentState<LatLngTuple[]>('SEGMENT_POINTS', []);
+  const [assemblyParams, setAssemblyParams] = usePersistentState<CourseAssemblyParams>(
+    'COURSE_ASSEMBLY',
+    {
+      targetLengthMeters: 5000,
+      mirror: false,
+    }
+  );
+
+  const assemblyResult = useMemo<CourseAssemblyResult | null>(() => {
+    if (segmentPoints.length < 2) {
+      return null;
+    }
+
+    try {
+      return assembleCourse(segmentPoints, assemblyParams);
+    } catch {
+      return null;
+    }
+  }, [segmentPoints, assemblyParams]);
+
   const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(() => {
-    // Check if URL has course data synchronously on mount
     return !!extractCourseDataFromUrl();
   });
+
+  const applyAssemblyToCourse = useCallback(
+    (segment: LatLngTuple[], params: CourseAssemblyParams) => {
+      const result = assembleCourse(segment, params);
+      setSegmentPoints(segment);
+      setAssemblyParams(params);
+      setCoursePoints(result.points);
+      return result;
+    },
+    [setAssemblyParams, setCoursePoints, setSegmentPoints]
+  );
 
   const handleCourseDataImported = useCallback(
     (
@@ -39,14 +76,20 @@ const CourseSimulationApp: React.FC = () => {
         stepMeters?: number;
         bearingToleranceDeg?: number;
         crossingToleranceMeters?: number;
+      },
+      importAssembly?: {
+        segmentPoints: LatLngTuple[];
+        assemblyParams: CourseAssemblyParams;
       }
     ) => {
-      setCoursePoints(points);
+      const segment = importAssembly?.segmentPoints ?? points;
+      const params = importAssembly?.assemblyParams ?? defaultAssemblyParamsForSegment(segment);
+      applyAssemblyToCourse(segment, params);
+
       if (metadata) {
         setCourseMetadata(metadata);
       }
 
-      // Store lap detection params in localStorage
       if (lapDetectionParams) {
         try {
           localStorage.setItem('lapDetectionParams', JSON.stringify(lapDetectionParams));
@@ -55,20 +98,30 @@ const CourseSimulationApp: React.FC = () => {
         }
       }
     },
-    [setCoursePoints, setCourseMetadata]
+    [applyAssemblyToCourse, setCourseMetadata]
   );
 
-  // Enable keyboard shortcuts for undo/redo
+  const handleAssemblyParamsChange = useCallback(
+    (params: CourseAssemblyParams) => {
+      if (segmentPoints.length < 2) {
+        return;
+      }
+      applyAssemblyToCourse(segmentPoints, params);
+    },
+    [applyAssemblyToCourse, segmentPoints]
+  );
+
   useUndoRedoKeyboard(undo, redo, coursePoints.length > 0);
 
-  // Auto-load course data from URL if present
   useEffect(() => {
     if (coursePoints.length === 0 && isLoadingFromUrl) {
       const sharedCourseData = extractCourseDataFromUrl();
       if (sharedCourseData) {
-        handleCourseDataImported(sharedCourseData.points, sharedCourseData.metadata);
+        const segment = sharedCourseData.segmentPoints ?? sharedCourseData.points;
+        const params = sharedCourseData.courseAssembly ?? defaultAssemblyParamsForSegment(segment);
+        applyAssemblyToCourse(segment, params);
+        setCourseMetadata(sharedCourseData.metadata ?? {});
 
-        // Store lap detection params if included
         if (sharedCourseData.lapDetectionParams) {
           try {
             localStorage.setItem(
@@ -80,17 +133,14 @@ const CourseSimulationApp: React.FC = () => {
           }
         }
 
-        // Clear the URL parameter after loading
         const url = new URL(window.location.href);
         url.searchParams.delete('course');
         window.history.replaceState({}, '', url.toString());
       }
-      // Schedule state update for next tick to avoid calling setState in effect
       setTimeout(() => setIsLoadingFromUrl(false), 0);
     }
-  }, [isLoadingFromUrl, coursePoints.length, handleCourseDataImported]);
+  }, [isLoadingFromUrl, coursePoints.length, applyAssemblyToCourse, setCourseMetadata]);
 
-  // Update document title based on application state
   useDocumentTitle(
     'Crash Course Simulator',
     coursePoints.length > 0
@@ -103,21 +153,32 @@ const CourseSimulationApp: React.FC = () => {
   const handleResetSimulation = () => {
     setCoursePoints([]);
     setCourseMetadata({});
-    clearHistory(); // Clear undo history when resetting
+    setSegmentPoints([]);
+    clearHistory();
     clearMetadataHistory();
   };
 
   const handleCoursePointsChange = (newPoints: LatLngTuple[]) => {
-    setCoursePoints(newPoints);
+    if (newPoints.length < 2) {
+      setCoursePoints(newPoints);
+      setSegmentPoints(newPoints);
+      return;
+    }
+
+    try {
+      applyAssemblyToCourse(newPoints, assemblyParams);
+    } catch {
+      setCoursePoints(newPoints);
+      setSegmentPoints(newPoints);
+    }
   };
 
   const handleCourseMetadataChange = (newMetadata: { name?: string; description?: string }) => {
     setCourseMetadata(newMetadata);
   };
 
-  // Don't show import screen while loading course data from URL
   if (isLoadingFromUrl && coursePoints.length === 0) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
@@ -128,6 +189,10 @@ const CourseSimulationApp: React.FC = () => {
         <CourseSimulation
           coursePoints={coursePoints}
           courseMetadata={courseMetadata}
+          assemblyParams={assemblyParams}
+          assemblyResult={assemblyResult}
+          segmentPoints={segmentPoints}
+          onAssemblyParamsChange={handleAssemblyParamsChange}
           onReset={handleResetSimulation}
           onCoursePointsChange={handleCoursePointsChange}
           onCourseMetadataChange={handleCourseMetadataChange}
