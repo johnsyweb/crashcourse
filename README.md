@@ -70,7 +70,18 @@ The main coordinator for the application flow. It handles the switching between 
 
 ### CourseDataImporter
 
-Handles the importing and processing of GPS course data. It manages the file selection interface and handles the parsing of GPS files through the GPXFile, FITFile, and KMLFile components.
+Handles the importing and processing of GPS course data. It manages the file selection interface, handles parsing through the GPXFile, FITFile, and KMLFile components, and presents **course assembly** controls so ambassadors can set target length and mirroring before starting an assessment.
+
+### Course assembly
+
+Builds a full course (~5 km by default) from a submitted segment by repeating and/or mirroring the path. Features include:
+
+- Target course length input (default 5000 m for parkrun assessment)
+- Mirror between repetitions for out-and-back cycles
+- Read-only repeat or cycle count derived from segment length and settings
+- Truncation of the final leg along the path to hit the target exactly
+- Controls on import and in the simulator; settings persist in the browser
+- Shared URLs and GPX export use the assembled course plus assembly settings
 
 ### CourseSimulation
 
