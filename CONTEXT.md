@@ -55,3 +55,43 @@ _Avoid_: Lap count, auto-lap
 **Import failure**:
 When a submitted KML or KMZ file cannot yield a valid Course path; the ambassador sees an explicit, actionable error message.
 _Avoid_: Parse error, invalid file (without explanation)
+
+**Submitted segment**:
+The course path used as the basis for assembly—initially from import, then replaced by the current point sequence whenever the ambassador edits waypoints on the map.
+_Avoid_: Partial course, original upload only
+
+**Course assembly**:
+Building the full Course from a submitted segment by repeating and/or mirroring that segment; distinct from lap detection on an already-complete path.
+_Avoid_: Lap duplication, path extension (informal)
+
+**Repeat count**:
+When mirror is off, how many times the submitted segment is chained forward. When mirror is on, use **out-and-back cycle** instead.
+_Avoid_: Lap count (when meaning inferred laps)
+
+**Out-and-back cycle**:
+One forward pass of the submitted segment plus one mirrored return; used when mirror between repetitions is enabled. Target course length determines how many cycles (including fractional) are assembled.
+_Avoid_: Lap, round trip (informal)
+
+**Mirror between repetitions**:
+When enabled, each repeat is an out-and-back cycle (forward then reversed). When disabled, each repeat appends the segment in the same direction only.
+_Avoid_: Flip, reflect
+
+**Target course length**:
+The distance the assembled Course should reach; defaults to 5000 m for parkrun assessment. Assembly computes the repeat multiplier (including fractional values) from the submitted segment and pattern, truncating the final leg along the path to hit the target exactly.
+_Avoid_: 5 km (when precision matters), total distance setting
+
+**Full course**:
+The Course after assembly—used for simulation and congestion analysis, typically ~5 km for parkrun events.
+_Avoid_: Complete route, final path
+
+**Course assembly controls**:
+Target course length and mirror on/off; the computed repeat or out-and-back cycle count is read-only feedback. Available after any import and in the simulator; settings persist across the session. Default is target length matching the imported path with mirror off.
+_Avoid_: Lap settings, manual lap count
+
+**Assembled course geometry**:
+The point sequence produced by course assembly; heuristic lap detection always runs on this geometry, independent of how it was built.
+_Avoid_: Expanded path, synthetic track
+
+**Shared course**:
+The full course (assembled geometry and settings) encoded for URL sharing and GPX export; not the raw submitted segment alone.
+_Avoid_: Import file, original upload
