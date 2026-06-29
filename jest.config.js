@@ -26,7 +26,7 @@ export default {
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!((?:\\.pnpm/)?(?:@turf(?:\\+|/)|geokdbush|tinyqueue|quickselect|kdbush)))',
+    '/node_modules/(?!.*(?:@turf(?:\\+|/)|geokdbush|tinyqueue|quickselect|kdbush)(?:/|@|$))',
   ],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
