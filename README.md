@@ -13,6 +13,8 @@ How accessible is this 5km course? Will participants and the public be able to e
 
 ## Developing
 
+Requires [mise](https://mise.jdx.dev/) with [aube](https://github.com/endevco/aube) and [hk](https://hk.jdx.dev/) (see `mise.toml`).
+
 To set up the development environment:
 
 1. Clone the repository:
@@ -22,19 +24,21 @@ To set up the development environment:
    cd crashcourse
    ```
 
-2. Install dependencies:
+2. Install tools, dependencies, and git hooks:
 
    ```bash
-   pnpm install
+   mise run setup
    ```
 
 3. Start the development server:
 
    ```bash
-   pnpm run dev
+   mise run dev
    ```
 
 4. Open your browser and navigate to the provided local development URL.
+
+Run checks locally with `mise run check`. Git hooks are managed by hk; `mise run setup` runs `hk install --mise`.
 
 ## Contributing
 
