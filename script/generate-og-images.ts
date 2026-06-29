@@ -38,7 +38,7 @@ async function generateOGImages(): Promise<void> {
     if (isCI) {
       console.log('📝 Running in CI mode (headless browser)');
     } else {
-      console.log('📝 Make sure the dev server is running: pnpm dev');
+      console.log('📝 Make sure the dev server is running: mise run dev');
     }
 
     // Launch browser
