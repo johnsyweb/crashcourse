@@ -50,11 +50,14 @@ We welcome contributions! To contribute:
    git checkout -b feature/your-feature-name
    ```
 
-2. Make your changes and commit them using Commitizen for conventional commits:
+2. Make your changes, run checks, and commit using [conventional commits](https://www.conventionalcommits.org/):
 
    ```bash
-   pnpm commit
+   mise run check
+   git commit -m "feat: describe your change"
    ```
+
+   hk runs `mise run check` on pre-commit and pre-push when hooks are installed via `mise run setup`.
 
 3. Push to your fork:
 
