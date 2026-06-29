@@ -377,14 +377,18 @@ const CoursePointsView: React.FC<CoursePointsViewProps> = ({
         course &&
         selectable.every((idx) => course.getSegmentWidth(idx) === firstWidth);
       const newValue = allSame ? firstWidth.toFixed(1) : '';
-      // Only update if value changed to avoid unnecessary renders
-      if (widthInputValue !== newValue) {
-        setWidthInputValue(newValue);
-      }
+      // Defer state updates to avoid synchronous setState in effect (react-hooks/set-state-in-effect)
+      setTimeout(() => {
+        if (widthInputValue !== newValue) {
+          setWidthInputValue(newValue);
+        }
+      }, 0);
     } else {
-      if (widthInputValue !== '') {
-        setWidthInputValue('');
-      }
+      setTimeout(() => {
+        if (widthInputValue !== '') {
+          setWidthInputValue('');
+        }
+      }, 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIndices.join(','), course]); // Re-run when selection or course changes

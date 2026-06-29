@@ -246,7 +246,7 @@ const FITFile: React.FC<FITFileProps> = ({ file, onDataParsed }) => {
 
   useEffect(() => {
     if (file) {
-      parseFIT();
+      setTimeout(() => parseFIT(), 0);
     }
   }, [file, parseFIT]);
 

@@ -73,7 +73,7 @@ const KMLFile: React.FC<KMLFileProps> = ({ file, onDataParsed }) => {
 
   useEffect(() => {
     if (file) {
-      parseKML();
+      setTimeout(() => parseKML(), 0);
     }
   }, [file, parseKML]);
 

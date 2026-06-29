@@ -141,7 +141,8 @@ describe('GPXFile Component', () => {
 
     render(<GPXFile file={mockFile} onDataParsed={onDataParsed} />);
 
-    // The loading indicator should be displayed
-    expect(screen.getByText(/Parsing GPX file/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Parsing GPX file/i)).toBeInTheDocument();
+    });
   });
 });

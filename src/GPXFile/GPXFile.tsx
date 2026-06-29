@@ -142,7 +142,7 @@ const GPXFile: React.FC<GPXFileProps> = ({ file, onDataParsed }) => {
   // Parse GPX when file changes
   useEffect(() => {
     if (file) {
-      parseGPX();
+      setTimeout(() => parseGPX(), 0);
     }
   }, [file, parseGPX]);
 
