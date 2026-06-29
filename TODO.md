@@ -58,7 +58,7 @@
 - [x] Format the elapsed time as HH:MM:SS
   - a 7-segment display theme would be a bonus.
 - [x] Combine Play(P)/Stop(S) controls to a single Play/Pause(P) control
-- [ ] Support Google Earth (KML) files for course specification, possibly with a third-party laibrary. Perhaps with drag n' drop
+- [x] Support Google Earth (KML/KMZ) files for course specification
 - [ ] Automatically analyse and report on congestion points on the course
 - [ ] Automatically analyse and report upon participant sentiment
 - [ ] Simulate random members of the public on the course and analyse their sentiment
