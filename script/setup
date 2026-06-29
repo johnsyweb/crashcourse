@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+export PUPPETEER_SKIP_DOWNLOAD=true
+mise install
+aube install
+hk install --mise

@@ -1,0 +1,32 @@
+[env]
+HK_MISE = "1"
+PUPPETEER_SKIP_DOWNLOAD = "true"
+
+[tools]
+node = "25.9.0"
+aube = "latest"
+hk = "latest"
+
+[tasks.setup]
+description = "Install mise tools, dependencies, and git hooks"
+file = "script/setup"
+
+[tasks.ci-install]
+description = "Frozen dependency install for CI (aube ci)"
+file = "script/ci-install"
+
+[tasks.check]
+description = "Format check, lint, typecheck, and test"
+file = "script/check"
+
+[tasks.test]
+description = "Run unit tests (optional path forwards to Jest)"
+file = "script/test"
+
+[tasks.dev]
+description = "Start the Vite development server"
+run = "aube run dev"
+
+[tasks.build]
+description = "Production build to dist/"
+run = "aube run build"

@@ -1,0 +1,10 @@
+paranoid: true
+packageManagerStrictVersion: true
+allowBuilds:
+  puppeteer: false
+  unrs-resolver: true
+  esbuild: true
+overrides:
+  js-yaml: '>=4.2.0'
+  uuid: '>=11.1.1'
+  http-proxy-middleware: '>=3.0.6'
