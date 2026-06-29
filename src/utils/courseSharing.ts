@@ -1,8 +1,11 @@
 import { LatLngTuple } from 'leaflet';
 import { LapDetectionParams } from '../Course/CourseWithLapDetection';
+import { CourseAssemblyParams } from '../Course/assembleCourse';
 
 export interface ShareableCourseData {
   points: LatLngTuple[];
+  segmentPoints?: LatLngTuple[];
+  courseAssembly?: CourseAssemblyParams;
   metadata?: {
     name?: string;
     description?: string;

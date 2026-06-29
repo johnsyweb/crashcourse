@@ -106,6 +106,12 @@ describe('courseSharing', () => {
           lapDetectionParams: { stepMeters: 2.0 },
           version: '1.0',
         },
+        {
+          points: [[51.505, -0.09] as LatLngTuple, [51.51, -0.1] as LatLngTuple],
+          segmentPoints: [[51.505, -0.09] as LatLngTuple],
+          courseAssembly: { targetLengthMeters: 5000, mirror: true },
+          version: '1.0',
+        },
       ];
 
       variants.forEach((variant) => {
