@@ -9,13 +9,13 @@ const FileUploadSection = ({
   return (
     <div className={styles.uploadSection}>
       <h2>Import Course</h2>
-      <p className={styles.uploadDescription}>Select a GPX or FIT file to begin</p>
+      <p className={styles.uploadDescription}>Select a GPX, FIT, or KML/KMZ file to begin</p>
       <button
         className={styles.uploadButton}
         onClick={() => {
           const input = document.createElement('input');
           input.type = 'file';
-          input.accept = '.gpx,.fit,.fit.gz';
+          input.accept = '.gpx,.fit,.fit.gz,.kml,.kmz';
           input.onchange = (event: Event) => {
             const target = event.target as HTMLInputElement;
             if (target && target.files) {

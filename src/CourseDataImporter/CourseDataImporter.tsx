@@ -4,6 +4,7 @@ import styles from './CourseDataImporter.module.css';
 import FileUploadSection from '../FileUploadSection';
 import GPXFile, { GPXData } from '../GPXFile';
 import FITFile, { FITData } from '../FITFile';
+import KMLFile, { KMLData } from '../KMLFile';
 
 export interface LapDetectionParams {
   stepMeters?: number;
@@ -22,6 +23,7 @@ interface CourseDataImporterProps {
 const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImported }) => {
   const [file, setFile] = useState<File | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [importWarning, setImportWarning] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,28 +52,38 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
     setFile(selectedFile);
     setImportError(null);
+    setImportWarning(null);
     setIsProcessing(true);
+  };
+
+  const importParsedCourse = (
+    points: LatLngTuple[],
+    metadata?: { name?: string; description?: string },
+    lapDetectionParams?: LapDetectionParams,
+    warning?: string
+  ) => {
+    if (points.length < 2) {
+      setImportError('Course must contain at least 2 GPS points.');
+      return;
+    }
+
+    setImportWarning(warning ?? null);
+    onCourseDataImported(points, metadata, lapDetectionParams);
   };
 
   const handleGPXDataParsed = (data: GPXData) => {
     setIsProcessing(false);
 
     if (data.isValid && data.points.length > 0) {
-      // Convert GPXPoint array to LatLngTuple array
       const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
-
-      if (points.length < 2) {
-        setImportError('Course must contain at least 2 GPS points.');
-        return;
-      }
-
-      // Pass metadata along with points
-      const metadata = {
-        name: data.name,
-        description: data.description,
-      };
-
-      onCourseDataImported(points, metadata, data.lapDetectionParams);
+      importParsedCourse(
+        points,
+        {
+          name: data.name,
+          description: data.description,
+        },
+        data.lapDetectionParams
+      );
     } else if (data.errorMessage) {
       setImportError(data.errorMessage);
     }
@@ -89,21 +101,14 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
 
     if (data.isValid && data.points.length > 0) {
       const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
-
-      if (points.length < 2) {
-        const error = 'Course must contain at least 2 GPS points.';
-        console.warn('CourseDataImporter:', error);
-        setImportError(error);
-        return;
-      }
-
-      console.log('CourseDataImporter: Importing course with', points.length, 'points');
-      const metadata = {
-        name: data.name,
-        description: data.description,
-      };
-
-      onCourseDataImported(points, metadata, data.lapDetectionParams);
+      importParsedCourse(
+        points,
+        {
+          name: data.name,
+          description: data.description,
+        },
+        data.lapDetectionParams
+      );
     } else if (data.errorMessage) {
       console.error('CourseDataImporter: FIT import error:', data.errorMessage);
 
@@ -118,6 +123,29 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
       setImportError('Failed to import FIT file: No valid data found.');
     }
   };
+
+  const handleKMLDataParsed = (data: KMLData) => {
+    setIsProcessing(false);
+
+    if (data.isValid && data.points.length > 0) {
+      const points: LatLngTuple[] = data.points.map((point) => [point.lat, point.lon]);
+      importParsedCourse(
+        points,
+        {
+          name: data.name,
+          description: data.description,
+        },
+        undefined,
+        data.warning
+      );
+    } else if (data.errorMessage) {
+      setImportError(data.errorMessage);
+    }
+  };
+
+  const lowerFileName = file?.name.toLowerCase() ?? '';
+  const isFITFile = lowerFileName.endsWith('.fit') || lowerFileName.endsWith('.fit.gz');
+  const isKMLFile = lowerFileName.endsWith('.kml') || lowerFileName.endsWith('.kmz');
 
   return (
     <div className={styles.courseDataImporter}>
@@ -153,6 +181,7 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
         </div>
 
         {importError && <div className={styles.errorMessage}>{importError}</div>}
+        {importWarning && <div className={styles.warningMessage}>{importWarning}</div>}
 
         {/* Features Grid */}
         <div className={styles.featuresGrid}>
@@ -180,8 +209,10 @@ const CourseDataImporter: React.FC<CourseDataImporterProps> = ({ onCourseDataImp
       </div>
 
       {file &&
-        (file.name.toLowerCase().endsWith('.fit') || file.name.toLowerCase().endsWith('.fit.gz') ? (
+        (isFITFile ? (
           <FITFile file={file} onDataParsed={handleFITDataParsed} />
+        ) : isKMLFile ? (
+          <KMLFile file={file} onDataParsed={handleKMLDataParsed} />
         ) : (
           <GPXFile file={file} onDataParsed={handleGPXDataParsed} />
         ))}
