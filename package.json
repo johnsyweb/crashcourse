@@ -19,11 +19,11 @@
   "dependencies": {
     "@turf/turf": "^7.4.0",
     "fast-xml-parser": "^5.11.2",
-    "fit-file-parser": "^6.2.1",
+    "fit-file-parser": "^6.2.2",
     "jszip": "^3.10.2",
     "leaflet": "^1.9.4",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
@@ -36,7 +36,7 @@
     "@jest/types": "^30.5.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.7",
+    "@testing-library/user-event": "^14.6.8",
     "@types/geojson": "^7946.0.16",
     "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.22",
@@ -46,7 +46,7 @@
     "@types/xml2js": "^0.4.14",
     "@vitejs/plugin-react": "^6.1.2",
     "babel-jest": "^30.5.2",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "eslint-plugin-spellcheck": "^0.0.20",
@@ -58,11 +58,11 @@
     "jest-svg-transformer": "^1.0.0",
     "jest-transform-stub": "^2.0.0",
     "prettier": "^3.9.10",
-    "puppeteer": "^25.13.0",
-    "ts-jest": "^29.4.14",
+    "puppeteer": "^25.14.0",
+    "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "typescript": "~7.0.2",
-    "typescript-eslint": "^8.71.1",
+    "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4"
   },
   "prettier": {
