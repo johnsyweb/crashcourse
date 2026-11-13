@@ -61,7 +61,7 @@
     "puppeteer": "^25.16.0",
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
-    "typescript": "~7.0.2",
+    "typescript": "~5.9.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.6"
   },
@@ -72,5 +72,5 @@
     "tabWidth": 2,
     "semi": true
   },
-  "packageManager": "pnpm@10.28.1+sha512.33097b555b3c2dc90c830207c14e7f3b8b14e0ea1ffc53b51ebbe82dbfad9071a71b6e20f75ac09f308a17cf6b08c084398d5bbe2d30b6e8a05e7f893f4e2e67"
+  "packageManager": "aube@2.7.0"
 }

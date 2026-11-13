@@ -1,0 +1,26 @@
+name: aube-lock
+
+# Regenerates aube-lock.yaml on Renovate branches, runs merge-gate scripts, and
+# publishes Check Runs on the final HEAD (no GitHub App). See
+# johnsyweb/renovate-config and ADR 0002.
+
+on:
+  push:
+    branches: ['renovate/**']
+
+permissions:
+  contents: write
+  checks: write
+
+jobs:
+  aube-lock:
+    uses: johnsyweb/renovate-config/.github/workflows/aube-lock.yml@77a749c75e86f3d40fc690c98ea3d87f7499279c
+    with:
+      verify_command: ./script/cibuild
+      check_name: renovate-verify
+      status_check_names: |
+        lint
+        typecheck
+        format-check
+        test
+        build
