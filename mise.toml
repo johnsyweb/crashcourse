@@ -1,11 +1,19 @@
 [env]
 HK_MISE = "1"
 PUPPETEER_SKIP_DOWNLOAD = "true"
+_.file = ".env"
 
 [tools]
 node = "25.9.0"
-aube = "latest"
+aube = "2.7.0"
 hk = "latest"
+
+[settings]
+npm.package_manager = "aube"
+
+[tasks.bootstrap]
+description = "Install dependencies with aube"
+run = "aube install"
 
 [tasks.setup]
 description = "Install mise tools, dependencies, and git hooks"
@@ -19,14 +27,34 @@ file = "script/ci-install"
 description = "Format check, lint, typecheck, and test"
 file = "script/check"
 
+[tasks.cibuild]
+description = "Run the same checks as CI: install, check, build"
+run = "./script/cibuild"
+
+[tasks.audit]
+description = "Audit dependencies for fixable advisories"
+run = "./script/audit"
+
+[tasks.update-deps]
+description = "Show outdated packages, then update within package.json ranges"
+depends = ["bootstrap"]
+run = "aube outdated || true; aube update"
+
 [tasks.test]
 description = "Run unit tests (optional path forwards to Jest)"
 file = "script/test"
 
+[tasks.lint]
+description = "Run ESLint, Prettier, and TypeScript checks"
+depends = ["bootstrap"]
+run = "aube run format:check && aube run lint && aube run typecheck"
+
 [tasks.dev]
 description = "Start the Vite development server"
+depends = ["bootstrap"]
 run = "aube run dev"
 
 [tasks.build]
 description = "Production build to dist/"
+depends = ["bootstrap"]
 run = "aube run build"

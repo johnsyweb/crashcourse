@@ -13,7 +13,7 @@ How accessible is this 5km course? Will participants and the public be able to e
 
 ## Developing
 
-Requires [mise](https://mise.jdx.dev/) with [aube](https://github.com/endevco/aube) and [hk](https://hk.jdx.dev/) (see `mise.toml`).
+Requires [mise](https://mise.jdx.dev/) with a pinned [aube](https://aube.sh/) and [hk](https://hk.jdx.dev/) (see `mise.toml`). `aube-lock.yaml` is the only lockfile.
 
 To set up the development environment:
 
@@ -27,6 +27,7 @@ To set up the development environment:
 2. Install tools, dependencies, and git hooks:
 
    ```bash
+   mise trust
    mise run setup
    ```
 
@@ -38,7 +39,18 @@ To set up the development environment:
 
 4. Open your browser and navigate to the provided local development URL.
 
-Run checks locally with `mise run check`. Git hooks are managed by hk; `mise run setup` runs `hk install --mise`.
+Run checks locally with `mise run check` (or `mise run cibuild` for the same steps as CI). Git hooks are managed by hk; `mise run setup` runs `hk install --mise`. Within-range dependency bumps: `mise run update-deps`.
+
+## Continuous integration and dependencies
+
+GitHub Actions (`.github/workflows/ci-cd.yml`) runs format, lint, typecheck, and tests on pull requests, then builds and deploys `dist/` to GitHub Pages on `main`.
+
+Dependency updates are handled by [Renovate](https://docs.renovatebot.com/) using the shared [johnsyweb/renovate-config](https://github.com/johnsyweb/renovate-config) preset, with the repository enrolled via [johnsyweb/github-infra](https://github.com/johnsyweb/github-infra). Renovate updates npm and GitHub Actions, then merges once every check is green.
+
+Renovate does not update `aube-lock.yaml`, so the **aube-lock** workflow (`.github/workflows/aube-lock.yml`) runs on `renovate/**` branches: it regenerates the lockfile, runs `./script/cibuild`, and publishes a `renovate-verify` check. Package-manager policy lives in `aube-workspace.yaml`. See the decision records:
+
+- [ADR 0001: aube with paranoid mode](docs/adr/0001-aube-paranoid-package-manager.md)
+- [ADR 0002: Renovate for dependency updates](docs/adr/0002-renovate-for-dependency-updates.md)
 
 ## Contributing
 
